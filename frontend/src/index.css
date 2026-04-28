@@ -161,6 +161,10 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 
-@media (prefers-reduced-motion: reduce) {
-  .brera-user-dot-inner { animation: none; }
+/* Push Emergent badge above the bottom nav on mobile so it doesn't overlap nav items */
+@media (max-width: 640px) {
+  #emergent-badge {
+    bottom: 76px !important;
+  }
 }
+

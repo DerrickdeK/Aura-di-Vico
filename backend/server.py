@@ -210,8 +210,10 @@ async def register(payload: RegisterIn, response: Response):
 @api_router.post("/auth/login", response_model=UserPublic)
 async def login(payload: LoginIn, request: Request, response: Response):
     email = payload.email.lower()
-    ip = request.client.host if request.client else "unknown"
-    identifier = f"{ip}:{email}"
+    # Use email-only identifier for brute-force lockout. Behind k8s/load-balancer
+    # ingresses, request.client.host points at a rotating proxy IP, which would
+    # split the per-(ip:email) counter and let attackers bypass the threshold.
+    identifier = f"email:{email}"
     await check_lockout(identifier)
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user["password_hash"]):

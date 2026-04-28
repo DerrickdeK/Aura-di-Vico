@@ -41,7 +41,7 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
               >
                 <X size={18} strokeWidth={1.6} />
               </button>
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[var(--bg)]/90 backdrop-blur text-xs font-medium tracking-widest uppercase text-[var(--text-secondary)]">
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[var(--text-primary)]/85 text-[var(--inverse)] backdrop-blur text-xs font-medium tracking-widest uppercase">
                 {poi.category}
               </div>
             </div>
