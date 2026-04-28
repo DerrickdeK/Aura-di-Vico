@@ -51,9 +51,15 @@ export function vibrate(pattern) {
     if (pattern && navigator?.vibrate) {
       navigator.vibrate(pattern);
     }
-  } catch { /* ignore */ }
+  } catch (err) {
+    console.warn("Vibration API call failed:", err);
+  }
 }
 
 export function stopVibration() {
-  try { navigator?.vibrate?.(0); } catch { /* ignore */ }
+  try {
+    navigator?.vibrate?.(0);
+  } catch (err) {
+    console.warn("Failed to stop vibration:", err);
+  }
 }

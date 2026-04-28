@@ -1,6 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 
+// Map (inRange, ratio) -> a single CSS color. Replaces a nested ternary
+// with an explicit, readable function.
+function pickRadarColor({ inRange, ratio }) {
+  if (inRange) return "#BD5745"; // terracotta — you're here
+  if (ratio > 0.5) return "#C98A3C"; // ochre — getting warmer
+  return "#1E3A2F"; // deep green — cold
+}
+
 /**
  * ProximityRadar
  * Floating circular UI showing distance + bearing to nearest POI.
@@ -18,8 +26,8 @@ export default function ProximityRadar({ nearest }) {
     ? 0
     : Math.max(0, Math.min(1, 1 - distance / (triggerRadius * 4)));
 
-  // Color blend cold -> hot
-  const color = inRange ? "#BD5745" : ratio > 0.5 ? "#C98A3C" : "#1E3A2F";
+  // Distance-based color: hot (in-range) → warm (≤ half max range) → cold.
+  const color = pickRadarColor({ inRange, ratio });
   const labelColor = inRange ? "#BD5745" : "#1A1A18";
 
   const pulseDuration = 2.6 - ratio * 1.7; // 2.6s far -> 0.9s close

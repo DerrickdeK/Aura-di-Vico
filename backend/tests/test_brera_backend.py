@@ -8,12 +8,22 @@ import time
 import uuid
 import requests
 import pytest
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load credentials from the backend .env (gitignored) instead of hardcoding them.
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://pickup-progress-9.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@brera.app"
-ADMIN_PASSWORD = "BreraAdmin2026!"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@brera.app")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+if not ADMIN_PASSWORD:
+    raise RuntimeError(
+        "ADMIN_PASSWORD must be provided via environment for the test run "
+        "(it is read from /app/backend/.env at runtime, but tests should pass it explicitly)."
+    )
 
 
 # ---------------------- Fixtures ----------------------
