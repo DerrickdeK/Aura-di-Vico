@@ -79,6 +79,21 @@ def clear_auth_cookies(response: Response):
     response.delete_cookie("refresh_token", path="/")
 
 
+SUPPORTED_LANGS = ["en", "it", "es", "de", "el", "fr", "pt"]
+INTEREST_TAGS = [
+    "hidden_gardens",
+    "historic_cafes",
+    "hidden_courtyards",
+    "renaissance_traces",
+    "artisan_workshops",
+]
+
+# Distance zones (in meters) for the "city talks" experience
+SENSED_RADIUS_M = 200   # outermost: tease only
+CALLED_RADIUS_M = 80    # mid: name + opening line revealed
+FOUND_RADIUS_M  = 25    # inner: full reveal + visit recorded
+
+
 # ------------------------------------------------------------------------------------
 # Models
 # ------------------------------------------------------------------------------------
@@ -89,6 +104,10 @@ class UserPublic(BaseModel):
     name: str
     role: Literal["user", "admin"] = "user"
     favorites: List[str] = Field(default_factory=list)
+    interests: List[str] = Field(default_factory=list)
+    language: str = "en"
+    onboarded: bool = False
+    notifications_enabled: bool = False
 
 class RegisterIn(BaseModel):
     email: EmailStr
@@ -106,6 +125,12 @@ class ResetIn(BaseModel):
     token: str
     password: str = Field(min_length=6)
 
+class ProfileIn(BaseModel):
+    interests: Optional[List[str]] = None
+    language: Optional[str] = None
+    notifications_enabled: Optional[bool] = None
+    onboarded: Optional[bool] = None
+
 class POIIn(BaseModel):
     name: str
     short_description: str
@@ -118,12 +143,19 @@ class POIIn(BaseModel):
     trigger_radius_m: int = 60
     hours: Optional[str] = None
     fun_fact: Optional[str] = None
+    interest_tags: List[str] = Field(default_factory=list)
+    # opening_line is a {language_code: text} map. Falls back to "en".
+    opening_line: dict = Field(default_factory=dict)
 
 class POI(POIIn):
     id: str
 
 class VisitIn(BaseModel):
     poi_id: str
+
+class DiscoverIn(BaseModel):
+    poi_id: str
+    zone: Literal["sensed", "called", "found"]
 
 
 # ------------------------------------------------------------------------------------
@@ -188,7 +220,12 @@ async def clear_login_attempts(identifier: str):
 def _user_to_public(u: dict) -> dict:
     return {
         "id": u["id"], "email": u["email"], "name": u["name"],
-        "role": u.get("role", "user"), "favorites": u.get("favorites", []),
+        "role": u.get("role", "user"),
+        "favorites": u.get("favorites", []),
+        "interests": u.get("interests", []),
+        "language": u.get("language", "en"),
+        "onboarded": u.get("onboarded", False),
+        "notifications_enabled": u.get("notifications_enabled", False),
     }
 
 @api_router.post("/auth/register", response_model=UserPublic)
@@ -201,6 +238,8 @@ async def register(payload: RegisterIn, response: Response):
         "id": user_id, "email": email, "name": payload.name,
         "password_hash": hash_password(payload.password),
         "role": "user", "favorites": [],
+        "interests": [], "language": "en", "onboarded": False,
+        "notifications_enabled": False,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.users.insert_one(doc)
@@ -378,6 +417,88 @@ async def list_visits(user: dict = Depends(get_current_user)):
     poi_ids = list({v["poi_id"] for v in visits})
     pois = {p["id"]: p for p in await db.pois.find({"id": {"$in": poi_ids}}, {"_id": 0}).to_list(500)}
     return [{"id": v["id"], "visited_at": v["visited_at"], "poi": pois.get(v["poi_id"])} for v in visits]
+
+
+# ------------------------------------------------------------------------------------
+# Profile + Discoveries (the "city talks" experience)
+# ------------------------------------------------------------------------------------
+@api_router.patch("/me/profile", response_model=UserPublic)
+async def update_profile(payload: ProfileIn, user: dict = Depends(get_current_user)):
+    update = {}
+    if payload.interests is not None:
+        invalid = [t for t in payload.interests if t not in INTEREST_TAGS]
+        if invalid:
+            raise HTTPException(status_code=400, detail=f"Unknown interests: {invalid}")
+        update["interests"] = payload.interests
+    if payload.language is not None:
+        if payload.language not in SUPPORTED_LANGS:
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {payload.language}")
+        update["language"] = payload.language
+    if payload.notifications_enabled is not None:
+        update["notifications_enabled"] = bool(payload.notifications_enabled)
+    if payload.onboarded is not None:
+        update["onboarded"] = bool(payload.onboarded)
+    if update:
+        await db.users.update_one({"id": user["id"]}, {"$set": update})
+    fresh = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
+    return _user_to_public(fresh)
+
+
+@api_router.post("/me/discoveries")
+async def record_discovery(payload: DiscoverIn, user: dict = Depends(get_current_user)):
+    """Persist that a POI has been sensed/called/found by the user.
+    The doc keeps the highest zone reached so far (sensed < called < found)."""
+    poi = await db.pois.find_one({"id": payload.poi_id})
+    if not poi:
+        raise HTTPException(status_code=404, detail="POI not found")
+    zone_rank = {"sensed": 1, "called": 2, "found": 3}
+    existing = await db.discoveries.find_one({"user_id": user["id"], "poi_id": payload.poi_id})
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if existing:
+        if zone_rank[payload.zone] > zone_rank[existing.get("zone", "sensed")]:
+            await db.discoveries.update_one(
+                {"_id": existing["_id"]},
+                {"$set": {"zone": payload.zone, "updated_at": now_iso}},
+            )
+        return {"ok": True, "upgraded": True}
+    await db.discoveries.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "poi_id": payload.poi_id,
+        "zone": payload.zone,
+        "discovered_at": now_iso,
+        "updated_at": now_iso,
+    })
+    return {"ok": True, "upgraded": False}
+
+
+@api_router.get("/me/discoveries")
+async def list_discoveries(user: dict = Depends(get_current_user)):
+    docs = await db.discoveries.find(
+        {"user_id": user["id"]}, {"_id": 0}
+    ).sort("discovered_at", -1).to_list(500)
+    poi_ids = [d["poi_id"] for d in docs]
+    pois = {p["id"]: p for p in await db.pois.find({"id": {"$in": poi_ids}}, {"_id": 0}).to_list(500)}
+    return [{
+        "id": d["id"], "zone": d["zone"],
+        "discovered_at": d["discovered_at"], "updated_at": d.get("updated_at"),
+        "poi": pois.get(d["poi_id"]),
+    } for d in docs if pois.get(d["poi_id"]) is not None]
+
+
+@api_router.get("/config")
+async def get_config():
+    """Public app configuration so the frontend doesn't hardcode constants."""
+    return {
+        "supported_languages": SUPPORTED_LANGS,
+        "interest_tags": INTEREST_TAGS,
+        "zones": {
+            "sensed_radius_m": SENSED_RADIUS_M,
+            "called_radius_m": CALLED_RADIUS_M,
+            "found_radius_m": FOUND_RADIUS_M,
+        },
+    }
+
 
 
 # ------------------------------------------------------------------------------------
@@ -611,13 +732,149 @@ BRERA_POI_SEED = [
 ]
 
 
+# Per-POI "voice" — opening line (the city's whisper) + interest tags.
+# Keyed by POI name so we don't have to edit every dict literal above.
+# `opening_line` is a {language_code: text} map. Add more languages later.
+POI_METADATA = {
+    "Orto Botanico di Brera": {
+        "interest_tags": ["hidden_gardens"],
+        "opening_line": {
+            "en": "Beyond this gate, a 240-year-old ginkgo is waiting for you to look up.",
+        },
+    },
+    "Cortile della Pinacoteca": {
+        "interest_tags": ["hidden_courtyards"],
+        "opening_line": {
+            "en": "Step inside — Napoleon, twice life-size, has been waiting for you in bronze.",
+        },
+    },
+    "Fioraio Bianchi Caffè": {
+        "interest_tags": ["historic_cafes", "artisan_workshops"],
+        "opening_line": {
+            "en": "Smell that? It's roses, and lunch, served at marble tables since 1976.",
+        },
+    },
+    "Cimitero di San Marco (vestiges)": {
+        "interest_tags": ["renaissance_traces"],
+        "opening_line": {
+            "en": "Look down — the stones beneath your feet were once tombstones. Mozart played near here at fourteen.",
+        },
+    },
+    "Casa degli Atellani — Vigna di Leonardo": {
+        "interest_tags": ["renaissance_traces", "hidden_gardens"],
+        "opening_line": {
+            "en": "Leonardo's vines are still thirsty. The same soil he sketched in 1498 is right behind you.",
+        },
+    },
+    "Libreria Bocca": {
+        "interest_tags": ["artisan_workshops"],
+        "opening_line": {
+            "en": "Pages from 1775 are turning, slowly. Marinetti's Futurist manifestos started right here.",
+        },
+    },
+    "Vicolo dei Lavandai": {
+        "interest_tags": ["renaissance_traces"],
+        "opening_line": {
+            "en": "The last open-air laundry of Milan still echoes with washermen of the 1700s.",
+        },
+    },
+    "Chiesa di San Carpoforo": {
+        "interest_tags": ["renaissance_traces", "hidden_courtyards"],
+        "opening_line": {
+            "en": "An eleventh-century church is hosting today's young artists. Romanesque stones, modern hands.",
+        },
+    },
+    "Bar Jamaica": {
+        "interest_tags": ["historic_cafes"],
+        "opening_line": {
+            "en": "Hemingway's table is empty, but the photographs on these walls are still watching.",
+        },
+    },
+    "Palazzo Cusani": {
+        "interest_tags": ["hidden_courtyards"],
+        "opening_line": {
+            "en": "Two facades, two architects, one quiet quarrel in stone since 1719.",
+        },
+    },
+    "Pasticceria Marchesi 1824": {
+        "interest_tags": ["historic_cafes"],
+        "opening_line": {
+            "en": "Walnut counters from 1824. Ask for the panettoncini — Verdi did.",
+        },
+    },
+    "Cortile della Magnolia": {
+        "interest_tags": ["hidden_courtyards", "hidden_gardens"],
+        "opening_line": {
+            "en": "A magnolia is blooming behind that unmarked door. Brera's open secret.",
+        },
+    },
+    "Studio Museo Francesco Messina": {
+        "interest_tags": ["hidden_courtyards", "renaissance_traces"],
+        "opening_line": {
+            "en": "A 17th-century church now holds 80 sculptures. You'll likely have it to yourself.",
+        },
+    },
+    "Antica Barbieria Colla": {
+        "interest_tags": ["artisan_workshops"],
+        "opening_line": {
+            "en": "A wet shave from 1904 is being prepared. Toscanini knew this scent.",
+        },
+    },
+    "Casa Museo Boschi Di Stefano": {
+        "interest_tags": ["renaissance_traces"],
+        "opening_line": {
+            "en": "Three hundred modernist masterpieces are quietly hung in someone's living room. Free, always.",
+        },
+    },
+    "Latteria di San Marco": {
+        "interest_tags": ["historic_cafes"],
+        "opening_line": {
+            "en": "Twelve tables. No menu. The risotto al salto would like you to sit down.",
+        },
+    },
+    "Chiostro dell'Umanitaria": {
+        "interest_tags": ["hidden_courtyards", "hidden_gardens"],
+        "opening_line": {
+            "en": "Two Renaissance cloisters are open behind a porter's desk. Walk in.",
+        },
+    },
+    "Via Bagnera": {
+        "interest_tags": ["renaissance_traces"],
+        "opening_line": {
+            "en": "Milan's narrowest alley would like you to know it once held the city's last public execution.",
+        },
+    },
+}
+
+
+def _enrich_seed(p: dict) -> dict:
+    meta = POI_METADATA.get(p["name"], {})
+    return {
+        **p,
+        "interest_tags": meta.get("interest_tags", []),
+        "opening_line": meta.get("opening_line", {}),
+    }
+
+
 async def seed_pois_if_empty() -> int:
+    """Insert default POIs only if the collection is empty.
+    Migrates stale documents (missing opening_line/interest_tags) by wiping and reseeding."""
     count = await db.pois.count_documents({})
     if count > 0:
-        return 0
+        # Detect stale schema and force a one-shot migration.
+        stale = await db.pois.find_one({"opening_line": {"$exists": False}})
+        if stale is None:
+            return 0
+        logger.info("Detected stale POIs missing opening_line; reseeding…")
+        await db.pois.delete_many({})
     docs = []
     for p in BRERA_POI_SEED:
-        docs.append({"id": str(uuid.uuid4()), **p, "created_at": datetime.now(timezone.utc).isoformat()})
+        enriched = _enrich_seed(p)
+        docs.append({
+            "id": str(uuid.uuid4()),
+            **enriched,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
     if docs:
         await db.pois.insert_many(docs)
     return len(docs)
@@ -633,15 +890,32 @@ async def seed_admin():
             "email": admin_email, "name": "Brera Admin",
             "password_hash": hash_password(admin_password),
             "role": "admin", "favorites": [],
+            "interests": list(INTEREST_TAGS),
+            "language": "en",
+            "onboarded": True,
+            "notifications_enabled": False,
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
         logger.info(f"Seeded admin: {admin_email}")
-    elif not verify_password(admin_password, existing["password_hash"]):
-        await db.users.update_one(
-            {"email": admin_email},
-            {"$set": {"password_hash": hash_password(admin_password), "role": "admin"}},
-        )
-        logger.info(f"Updated admin password for: {admin_email}")
+    else:
+        # Ensure existing admin has the new profile fields without overwriting custom values.
+        defaults = {}
+        if "interests" not in existing:
+            defaults["interests"] = list(INTEREST_TAGS)
+        if "language" not in existing:
+            defaults["language"] = "en"
+        if "onboarded" not in existing:
+            defaults["onboarded"] = True
+        if "notifications_enabled" not in existing:
+            defaults["notifications_enabled"] = False
+        if defaults:
+            await db.users.update_one({"email": admin_email}, {"$set": defaults})
+        if not verify_password(admin_password, existing["password_hash"]):
+            await db.users.update_one(
+                {"email": admin_email},
+                {"$set": {"password_hash": hash_password(admin_password), "role": "admin"}},
+            )
+            logger.info(f"Updated admin password for: {admin_email}")
 
 
 @app.on_event("startup")
@@ -652,6 +926,8 @@ async def on_startup():
     await db.login_attempts.create_index("identifier")
     await db.password_reset_tokens.create_index("expires_at", expireAfterSeconds=0)
     await db.visits.create_index([("user_id", 1), ("visited_at", -1)])
+    await db.discoveries.create_index([("user_id", 1), ("poi_id", 1)], unique=True)
+    await db.discoveries.create_index([("user_id", 1), ("discovered_at", -1)])
     await seed_admin()
     inserted = await seed_pois_if_empty()
     logger.info(f"Startup complete. POIs seeded: {inserted}")

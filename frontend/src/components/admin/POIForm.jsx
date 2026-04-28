@@ -1,4 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { api } from "../../lib/api";
+
+const ALL_INTERESTS = [
+  "hidden_gardens", "historic_cafes", "hidden_courtyards",
+  "renaissance_traces", "artisan_workshops",
+];
+const INTEREST_LABELS = {
+  hidden_gardens: "Hidden Gardens",
+  historic_cafes: "Historic Cafés & Trattorie",
+  hidden_courtyards: "Hidden Courtyards & Palaces",
+  renaissance_traces: "Renaissance & Historic Traces",
+  artisan_workshops: "Artisan Workshops & Shops",
+};
 
 // Replaces the previous nested ternary
 //   busy ? "Saving…" : editing === "new" ? "Create POI" : "Save changes"
@@ -10,6 +23,26 @@ function getSaveLabel({ busy, isNew }) {
 
 export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, onCancel }) {
   const update = (patch) => setForm({ ...form, ...patch });
+
+  const [supportedLangs, setSupportedLangs] = useState(["en", "it"]);
+  useEffect(() => {
+    api.get("/config")
+      .then(({ data }) => data?.supported_languages && setSupportedLangs(data.supported_languages))
+      .catch(() => {});
+  }, []);
+
+  const toggleTag = (tag) => {
+    const current = Array.isArray(form.interest_tags) ? form.interest_tags : [];
+    update({
+      interest_tags: current.includes(tag)
+        ? current.filter((x) => x !== tag)
+        : [...current, tag],
+    });
+  };
+
+  const setOpeningLine = (lang, text) => {
+    update({ opening_line: { ...(form.opening_line || {}), [lang]: text } });
+  };
 
   return (
     <form
@@ -28,7 +61,7 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
         />
       </div>
       <div>
-        <label className="eyebrow block mb-1">Category</label>
+        <label className="eyebrow block mb-1">Category (label only)</label>
         <input className="input-field" required value={form.category}
           onChange={(e) => update({ category: e.target.value })} />
       </div>
@@ -77,6 +110,55 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
         <input className="input-field" value={form.fun_fact || ""}
           onChange={(e) => update({ fun_fact: e.target.value })} />
       </div>
+
+      <div className="sm:col-span-2">
+        <label className="eyebrow block mb-2">Interest tags (used to match user interests)</label>
+        <div className="flex flex-wrap gap-2">
+          {ALL_INTERESTS.map((tag) => {
+            const active = (form.interest_tags || []).includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                className={`px-3 py-1.5 rounded-full border text-xs ${
+                  active
+                    ? "border-[var(--terracotta)] bg-[var(--terracotta)] text-[var(--inverse)]"
+                    : "border-[var(--border)] bg-[var(--surface)]"
+                }`}
+                data-testid={`admin-form-tag-${tag}`}
+              >
+                {INTEREST_LABELS[tag]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="sm:col-span-2">
+        <label className="eyebrow block mb-2">
+          Opening line — the city's whisper, per language
+        </label>
+        <p className="text-xs text-[var(--text-tertiary)] mb-3">
+          One short, evocative sentence. Shown when the visitor enters the &quot;called&quot; zone.
+          English is the fallback — leave the others empty if you don&apos;t use them.
+        </p>
+        <div className="space-y-2">
+          {supportedLangs.map((code) => (
+            <div key={code} className="flex items-center gap-2">
+              <span className="eyebrow w-10 text-center" style={{ fontSize: "0.65rem" }}>{code}</span>
+              <input
+                className="input-field flex-1"
+                value={(form.opening_line && form.opening_line[code]) || ""}
+                onChange={(e) => setOpeningLine(code, e.target.value)}
+                data-testid={`admin-form-opening-${code}`}
+                placeholder={code === "en" ? "Behind this wall, …" : ""}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
       {error && <p className="sm:col-span-2 text-sm text-[var(--terracotta)]">{error}</p>}
       <div className="sm:col-span-2 flex gap-2 justify-end">
         <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
@@ -92,3 +174,4 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
     </form>
   );
 }
+

@@ -1,0 +1,54 @@
+{
+  "summary": "Iteration 2 backend regression + new endpoints fully tested with pytest (39/39 passing). Frontend smoke test on mobile (390x844) revealed a CRITICAL React infinite render loop on the Listen (home) page: console floods with 'Maximum update depth exceeded' (>200 errors). Despite the loop, the page renders the listening compass, headline 'Brera is listening for you...', Whispers/Ghost walk controls, and 4-tab bottom nav (Listen/Whispers/Profile/Admin). Ghost walk click is registered but no whisper card appears within 12s and the simulator does not advance — likely blocked by the render loop. Admin tab navigates but list shows 0 POI rows (probably same render-loop cascade). Profile page renders correctly with 7 languages and 5 interest chips. Discoveries page loads with empty state. /favorites and /visits routes are properly removed (router warns 'No routes matched').",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ListenPage / useCityWhispers / ListeningCompass",
+        "issue": "CRITICAL: Maximum update depth exceeded — infinite re-render loop. Console emits the warning hundreds of times within 1-2 seconds of mounting / opens. This very likely indicates a useEffect whose dependency array contains a value that is recreated on every render (e.g., new object/array literal, new function, or `pois` array memoised differently each tick of ghost walk). It blocks downstream behaviour: the ghost-walk simulator never produces a visible whisper-card and the admin POI list renders 0 rows after we navigate from Listen.",
+        "selector": "(no specific selector — root-cause is in /app/frontend/src/hooks/useCityWhispers.js or /app/frontend/src/pages/ListenPage.jsx)",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "Listen page → Ghost walk simulator",
+        "issue": "After clicking 'Ghost walk', no whisper-card or motes appeared within 12s wall-clock. The body text after the click is essentially the same as before (255 chars, only headline/compass labels). Likely a downstream symptom of the render loop above; once that is fixed please retest.",
+        "selector": "[data-testid=\"whisper-card\"]",
+        "priority": "HIGH"
+      },
+      {
+        "component": "AdminPage POI list",
+        "issue": "Navigating to /admin from Listen shows 0 admin-row-* elements even though /api/pois returns 18 POIs (verified via pytest). Suspect the same render loop is preventing the admin page's data fetch effect from settling.",
+        "selector": "[data-testid^=\"admin-row-\"]",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix the React infinite render loop on the Listen page. Likely causes to inspect (in this order): (1) useCityWhispers hook — does it return a new pois/whispers/zones array literal every render that another useEffect depends on? Wrap in useMemo or move into stable refs. (2) ListenPage.jsx — any setState inside a useEffect whose deps include an object/array recreated each render. (3) ListeningCompass — RAF/setInterval that triggers setState without a dep guard. Run `yarn build` after fix; the warning must disappear from the console.",
+    "Re-verify ghost-walk simulator: within ~10s of toggling, motes should appear, whisper card should pop, and on found-zone the bottom drawer should auto-open with name/image/story.",
+    "Re-verify admin /admin loads ≥18 POI rows after the loop fix; verify the POIForm shows the 'Interest tags' chips and per-language 'Opening line' inputs."
+  ],
+  "critical_code_review_comments": [
+    "Backend (server.py, 964 lines) is now over the 700-line guideline — split into routers/auth.py, routers/pois.py, routers/me.py and a seeds.py for BRERA_POI_SEED + POI_METADATA. Already flagged in iteration 1; iteration 2 added more endpoints so the urgency increased.",
+    "The discoveries collection has unique index on (user_id, poi_id) — good, prevents duplicate races. But /api/me/discoveries does upsert via two-step find_one + update, which is racy under concurrent calls. Consider using update_one with $max on a numeric zone_rank field plus upsert=True for atomicity.",
+    "Brute-force lockout now keys on email only — works behind the proxy (verified: 6th attempt returns 429). Acceptable for OWASP guidance, but note this lets an attacker lock out a victim's email; document this trade-off or add a captcha after N failures.",
+    "POI_METADATA only ships English opening_line for the seeded POIs. The spec says 7 supported languages — admin must edit per-language values, but there's no fallback chain in the backend (frontend's i18n.getOpeningLine handles this). Acceptable, but document that non-en languages fall back to en client-side.",
+    "/api/me/discoveries response on no-change (same or lower zone) returns {ok:true, upgraded:true} — semantically misleading. 'upgraded' should be true only when the zone actually moved up. Suggest returning {upgraded: changed_bool}."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_brera_backend.py (added 16 new tests covering /api/config, POI new fields, profile PATCH, discoveries CRUD + zone upgrade/downgrade/duplicate, admin POI iter-2 fields)"
+  ],
+  "success_rate": {"backend": "100% (39/39)", "frontend": "~50% (Listen page broken by render loop, Profile/Discoveries/old-route-removal verified)"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! — verified working. New users created via TEST_<uuid>@example.com.",
+  "seed_data_creation": "None added beyond auto-seeded 18 POIs and ephemeral TEST_ users/POIs (cleaned up by fixtures).",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend test file: /app/backend/tests/test_brera_backend.py — 39 tests, run with `ADMIN_PASSWORD='BreraAdmin2026!' python -m pytest backend/tests/test_brera_backend.py -v`. Iteration 2 modules: TestConfig, TestPOINewFields, TestProfile, TestDiscoveries, TestAdminPOIIter2. The frontend's Listen page is currently throwing 'Maximum update depth exceeded' on mount — that single bug blocks the whole listening/ghost-walk experience and cascades to /admin. Once it's fixed, the next agent should: (1) confirm console is clean on /, (2) click Ghost walk, wait 8-12s, assert a whisper card and at least one mote, (3) keep ghost-walking until 'found' zone, assert bottom drawer auto-opens with all POI fields, (4) navigate to /discoveries, assert items with Sensed/Called/Found badges and italic opening_line, (5) test new-user register → onboarding wizard (3 steps), (6) verify /admin POIForm has 'Interest tags' chips and per-language opening_line inputs.",
+  "rca of the issue": "The Listen page (and likely useCityWhispers hook) has a useEffect whose dependency list contains a value re-created on every render (object/array literal, anonymous function, or a useMemo whose own deps are unstable). This causes setState → re-render → new dep identity → setState → infinite loop. React caps it at ~50 nested updates and prints 'Maximum update depth exceeded'. Reproduction: log in as admin, land on /, open devtools console — see hundreds of warnings within 1-2 seconds. Mitigation: in /app/frontend/src/hooks/useCityWhispers.js wrap derived arrays/maps in useMemo with primitive deps, and any inner functions in useCallback. In /app/frontend/src/pages/ListenPage.jsx audit every useEffect dependency for objects/arrays that should be referentially stable across renders. The infinite loop also blocks the ghost-walk simulator's setInterval/setTimeout from running cleanly, which is why no whisper-card ever appears."
+}

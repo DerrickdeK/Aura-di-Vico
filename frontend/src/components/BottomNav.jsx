@@ -1,6 +1,6 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { Map, Heart, History, Settings2, LogIn, LogOut, User } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Ear, Sparkles, User, Settings2, LogIn } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
 const tab = ({ isActive }) =>
@@ -8,8 +8,14 @@ const tab = ({ isActive }) =>
     isActive ? "text-[var(--terracotta)]" : "text-[var(--text-secondary)]"
   }`;
 
+// Routes where the bottom nav should be hidden (full-bleed flows).
+const HIDDEN_PATHS = ["/login", "/register", "/onboarding"];
+
 export default function BottomNav() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const location = useLocation();
+  if (HIDDEN_PATHS.some((p) => location.pathname.startsWith(p))) return null;
+
   const isAuthed = !!user && user !== false;
   const isAdmin = isAuthed && user.role === "admin";
 
@@ -20,33 +26,29 @@ export default function BottomNav() {
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px))" }}
     >
       <div className="max-w-xl mx-auto flex items-center justify-around px-2 py-2">
-        <NavLink to="/" end className={tab} data-testid="nav-map">
-          <Map size={20} strokeWidth={1.5} />
-          <span className="text-[10px] tracking-widest uppercase">Map</span>
+        <NavLink to="/" end className={tab} data-testid="nav-listen">
+          <Ear size={20} strokeWidth={1.5} />
+          <span className="text-[10px] tracking-widest uppercase">Listen</span>
         </NavLink>
-        <NavLink to="/favorites" className={tab} data-testid="nav-favorites">
-          <Heart size={20} strokeWidth={1.5} />
-          <span className="text-[10px] tracking-widest uppercase">Saved</span>
+        <NavLink to="/discoveries" className={tab} data-testid="nav-discoveries">
+          <Sparkles size={20} strokeWidth={1.5} />
+          <span className="text-[10px] tracking-widest uppercase">Whispers</span>
         </NavLink>
-        <NavLink to="/visits" className={tab} data-testid="nav-visits">
-          <History size={20} strokeWidth={1.5} />
-          <span className="text-[10px] tracking-widest uppercase">Visits</span>
-        </NavLink>
-        {isAdmin && (
-          <NavLink to="/admin" className={tab} data-testid="nav-admin">
-            <Settings2 size={20} strokeWidth={1.5} />
-            <span className="text-[10px] tracking-widest uppercase">Admin</span>
-          </NavLink>
-        )}
         {isAuthed ? (
-          <button onClick={logout} className={tab({ isActive: false })} data-testid="nav-logout">
-            <LogOut size={20} strokeWidth={1.5} />
-            <span className="text-[10px] tracking-widest uppercase">Sign out</span>
-          </button>
+          <NavLink to="/profile" className={tab} data-testid="nav-profile">
+            <User size={20} strokeWidth={1.5} />
+            <span className="text-[10px] tracking-widest uppercase">Profile</span>
+          </NavLink>
         ) : (
           <NavLink to="/login" className={tab} data-testid="nav-login">
             <LogIn size={20} strokeWidth={1.5} />
             <span className="text-[10px] tracking-widest uppercase">Sign in</span>
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink to="/admin" className={tab} data-testid="nav-admin">
+            <Settings2 size={20} strokeWidth={1.5} />
+            <span className="text-[10px] tracking-widest uppercase">Admin</span>
           </NavLink>
         )}
       </div>

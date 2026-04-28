@@ -296,3 +296,260 @@ class TestVisits:
     def test_visit_unknown_poi(self, normal_user_session):
         r = normal_user_session.post(f"{API}/me/visits", json={"poi_id": "ghost"}, timeout=10)
         assert r.status_code == 404
+
+
+# ---------------------- Module: Iteration 2 - Config endpoint ----------------------
+class TestConfig:
+    def test_config_shape(self):
+        r = requests.get(f"{API}/config", timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        # languages: 7 codes including required ones
+        langs = body.get("supported_languages")
+        assert isinstance(langs, list)
+        for code in ["en", "it", "es", "de", "el", "fr", "pt"]:
+            assert code in langs, f"language {code} missing from {langs}"
+        # interest tags
+        tags = body.get("interest_tags")
+        assert isinstance(tags, list)
+        for t in ["hidden_gardens", "historic_cafes", "hidden_courtyards",
+                  "renaissance_traces", "artisan_workshops"]:
+            assert t in tags
+        assert len(tags) == 5
+        # zone radii
+        z = body.get("zones") or {}
+        assert z.get("sensed_radius_m") == 200
+        assert z.get("called_radius_m") == 80
+        assert z.get("found_radius_m") == 25
+
+
+# ---------------------- Module: Iteration 2 - POI new fields ----------------------
+class TestPOINewFields:
+    def test_pois_have_opening_line_and_interests(self):
+        r = requests.get(f"{API}/pois", timeout=15)
+        assert r.status_code == 200
+        data = r.json()
+        for p in data:
+            assert "opening_line" in p, f"POI {p.get('name')} missing opening_line"
+            assert isinstance(p["opening_line"], dict)
+            # at least one POI should have 'en'
+            assert "interest_tags" in p
+            assert isinstance(p["interest_tags"], list)
+        # check at least one has en opening_line and tags
+        with_en = [p for p in data if p["opening_line"].get("en")]
+        assert len(with_en) >= 10, f"Expected >=10 POIs with English opening_line, got {len(with_en)}"
+        with_tags = [p for p in data if p["interest_tags"]]
+        assert len(with_tags) >= 10
+
+
+# ---------------------- Module: Iteration 2 - Profile PATCH ----------------------
+class TestProfile:
+    def test_admin_me_has_new_fields(self, admin_session):
+        r = admin_session.get(f"{API}/auth/me", timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        assert "interests" in body
+        assert "language" in body
+        assert "onboarded" in body
+        assert "notifications_enabled" in body
+        # Admin is auto-onboarded per migration
+        assert body["onboarded"] is True
+        assert isinstance(body["interests"], list)
+
+    def test_patch_profile_updates_all_fields(self, normal_user_session):
+        payload = {
+            "language": "it",
+            "interests": ["hidden_gardens", "historic_cafes", "hidden_courtyards"],
+            "notifications_enabled": True,
+            "onboarded": True,
+        }
+        r = normal_user_session.patch(f"{API}/me/profile", json=payload, timeout=10)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["language"] == "it"
+        assert sorted(body["interests"]) == sorted(payload["interests"])
+        assert body["notifications_enabled"] is True
+        assert body["onboarded"] is True
+        # Verify persistence via /auth/me
+        m = normal_user_session.get(f"{API}/auth/me", timeout=10)
+        assert m.status_code == 200
+        mb = m.json()
+        assert mb["language"] == "it"
+        assert mb["onboarded"] is True
+
+    def test_patch_profile_rejects_unknown_interest(self, normal_user_session):
+        r = normal_user_session.patch(
+            f"{API}/me/profile",
+            json={"interests": ["hidden_gardens", "definitely_not_a_tag"]},
+            timeout=10,
+        )
+        assert r.status_code == 400
+
+    def test_patch_profile_rejects_unsupported_language(self, normal_user_session):
+        r = normal_user_session.patch(
+            f"{API}/me/profile", json={"language": "zz"}, timeout=10,
+        )
+        assert r.status_code == 400
+
+    def test_patch_profile_unauthenticated(self):
+        r = requests.patch(f"{API}/me/profile", json={"language": "en"}, timeout=10)
+        assert r.status_code == 401
+
+
+# ---------------------- Module: Iteration 2 - Discoveries ----------------------
+class TestDiscoveries:
+    @pytest.fixture
+    def fresh_user_session(self):
+        email = f"TEST_disc_{uuid.uuid4().hex[:8]}@example.com"
+        s = requests.Session()
+        r = s.post(f"{API}/auth/register",
+                   json={"email": email, "password": "Sekret123!", "name": "Disc User"},
+                   timeout=15)
+        assert r.status_code == 200
+        return s
+
+    def test_create_sensed_discovery(self, fresh_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[0]["id"]
+        r = fresh_user_session.post(f"{API}/me/discoveries",
+                                    json={"poi_id": pid, "zone": "sensed"}, timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        assert body["ok"] is True
+        assert body["upgraded"] is False
+
+    def test_upgrade_zone_returns_upgraded_true(self, fresh_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[0]["id"]
+        # sensed
+        fresh_user_session.post(f"{API}/me/discoveries",
+                                json={"poi_id": pid, "zone": "sensed"}, timeout=10)
+        # called -> upgrade
+        r = fresh_user_session.post(f"{API}/me/discoveries",
+                                    json={"poi_id": pid, "zone": "called"}, timeout=10)
+        assert r.status_code == 200
+        assert r.json()["upgraded"] is True
+        # found -> further upgrade
+        r2 = fresh_user_session.post(f"{API}/me/discoveries",
+                                     json={"poi_id": pid, "zone": "found"}, timeout=10)
+        assert r2.status_code == 200
+        assert r2.json()["upgraded"] is True
+        # GET should return zone=found, single record (not duplicates)
+        listing = fresh_user_session.get(f"{API}/me/discoveries", timeout=10).json()
+        matches = [d for d in listing if d.get("poi") and d["poi"]["id"] == pid]
+        assert len(matches) == 1, f"Expected 1 discovery for POI, got {len(matches)}"
+        assert matches[0]["zone"] == "found"
+
+    def test_no_downgrade(self, fresh_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[1]["id"]
+        # found first
+        fresh_user_session.post(f"{API}/me/discoveries",
+                                json={"poi_id": pid, "zone": "found"}, timeout=10)
+        # sensed should not downgrade
+        r = fresh_user_session.post(f"{API}/me/discoveries",
+                                    json={"poi_id": pid, "zone": "sensed"}, timeout=10)
+        assert r.status_code == 200
+        listing = fresh_user_session.get(f"{API}/me/discoveries", timeout=10).json()
+        matches = [d for d in listing if d.get("poi") and d["poi"]["id"] == pid]
+        assert len(matches) == 1
+        assert matches[0]["zone"] == "found", "found should not downgrade to sensed"
+
+    def test_same_zone_no_duplicate(self, fresh_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[2]["id"]
+        fresh_user_session.post(f"{API}/me/discoveries",
+                                json={"poi_id": pid, "zone": "called"}, timeout=10)
+        fresh_user_session.post(f"{API}/me/discoveries",
+                                json={"poi_id": pid, "zone": "called"}, timeout=10)
+        listing = fresh_user_session.get(f"{API}/me/discoveries", timeout=10).json()
+        matches = [d for d in listing if d.get("poi") and d["poi"]["id"] == pid]
+        assert len(matches) == 1
+
+    def test_discoveries_list_embeds_poi(self, fresh_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[3]["id"]
+        fresh_user_session.post(f"{API}/me/discoveries",
+                                json={"poi_id": pid, "zone": "sensed"}, timeout=10)
+        r = fresh_user_session.get(f"{API}/me/discoveries", timeout=10)
+        assert r.status_code == 200
+        data = r.json()
+        assert isinstance(data, list)
+        assert len(data) >= 1
+        for d in data:
+            assert "zone" in d
+            assert d["zone"] in ("sensed", "called", "found")
+            assert "poi" in d and d["poi"] is not None
+            assert "_id" not in d
+            assert "_id" not in d["poi"]
+            assert "opening_line" in d["poi"]
+
+    def test_unknown_poi_404(self, fresh_user_session):
+        r = fresh_user_session.post(f"{API}/me/discoveries",
+                                    json={"poi_id": "no-such", "zone": "sensed"}, timeout=10)
+        assert r.status_code == 404
+
+    def test_invalid_zone_422(self, fresh_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[0]["id"]
+        r = fresh_user_session.post(f"{API}/me/discoveries",
+                                    json={"poi_id": pid, "zone": "wandering"}, timeout=10)
+        assert r.status_code == 422
+
+
+# ---------------------- Module: Iteration 2 - Admin POI new fields persist ----------------------
+class TestAdminPOIIter2:
+    def test_create_with_opening_line_and_tags(self, admin_session):
+        payload = {
+            "name": "TEST_I2_" + uuid.uuid4().hex[:6],
+            "short_description": "tmp",
+            "long_description": "tmp long",
+            "latitude": 45.4720, "longitude": 9.1880,
+            "address": "Brera test",
+            "category": "Test",
+            "image_url": "https://example.com/x.jpg",
+            "trigger_radius_m": 50,
+            "interest_tags": ["hidden_gardens", "historic_cafes"],
+            "opening_line": {
+                "en": "Quiet, the gate is just here.",
+                "it": "Silenzio, il cancello è qui.",
+            },
+        }
+        r = admin_session.post(f"{API}/pois", json=payload, timeout=15)
+        assert r.status_code == 200
+        body = r.json()
+        pid = body["id"]
+        try:
+            assert body["interest_tags"] == ["hidden_gardens", "historic_cafes"]
+            assert body["opening_line"]["en"].startswith("Quiet")
+            assert body["opening_line"]["it"].startswith("Silenzio")
+            # GET back
+            g = requests.get(f"{API}/pois/{pid}", timeout=10).json()
+            assert g["interest_tags"] == ["hidden_gardens", "historic_cafes"]
+            assert g["opening_line"]["it"] == payload["opening_line"]["it"]
+        finally:
+            admin_session.delete(f"{API}/pois/{pid}", timeout=10)
+
+    def test_update_changes_opening_line(self, admin_session):
+        # create
+        base = {
+            "name": "TEST_I2U_" + uuid.uuid4().hex[:6],
+            "short_description": "tmp", "long_description": "tmp",
+            "latitude": 45.47, "longitude": 9.18, "address": "x", "category": "x",
+            "image_url": "https://x/x.jpg",
+            "interest_tags": ["renaissance_traces"],
+            "opening_line": {"en": "v1"},
+        }
+        c = admin_session.post(f"{API}/pois", json=base, timeout=10)
+        pid = c.json()["id"]
+        try:
+            updated = {**base, "opening_line": {"en": "v2", "fr": "bonjour"},
+                       "interest_tags": ["artisan_workshops"]}
+            r = admin_session.put(f"{API}/pois/{pid}", json=updated, timeout=10)
+            assert r.status_code == 200
+            g = requests.get(f"{API}/pois/{pid}", timeout=10).json()
+            assert g["opening_line"]["en"] == "v2"
+            assert g["opening_line"]["fr"] == "bonjour"
+            assert g["interest_tags"] == ["artisan_workshops"]
+        finally:
+            admin_session.delete(f"{API}/pois/{pid}", timeout=10)

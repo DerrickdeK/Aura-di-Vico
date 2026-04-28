@@ -12,6 +12,8 @@ const EMPTY_POI = {
   address: "", category: "Hidden Gem",
   image_url: "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
   trigger_radius_m: 60, hours: "", fun_fact: "",
+  interest_tags: [],
+  opening_line: { en: "" },
 };
 
 function NotAdmin() {
@@ -90,6 +92,8 @@ export default function AdminPage() {
       latitude: parseFloat(form.latitude),
       longitude: parseFloat(form.longitude),
       trigger_radius_m: parseInt(form.trigger_radius_m, 10) || 60,
+      interest_tags: Array.isArray(form.interest_tags) ? form.interest_tags : [],
+      opening_line: form.opening_line || {},
     };
     try {
       if (editing === "new") await api.post("/pois", payload);
