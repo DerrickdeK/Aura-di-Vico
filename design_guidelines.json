@@ -1,0 +1,128 @@
+{
+  "theme": "Light",
+  "archetype": "1 (Organic & Earthy) - Milanese Architecture Adaptation",
+  "design_philosophy": "Distinctive and authentic to Brera, Milan. An editorial, tactile, and cartographic experience that feels like discovering hidden gems in an artistic, historic quarter. Mobile-first design where the map is the hero.",
+  "colors": {
+    "background": {
+      "default": "#F7F4EB",
+      "surface": "#FFFFFF",
+      "map_water": "#EBE7DB",
+      "map_land": "#F7F4EB"
+    },
+    "text": {
+      "primary": "#1A1A18",
+      "secondary": "#5C5A52",
+      "tertiary": "#8A877A",
+      "inverse": "#F7F4EB"
+    },
+    "brand": {
+      "terracotta": "#BD5745",
+      "deep_green": "#1E3A2F",
+      "warm_ochre": "#C98A3C"
+    },
+    "state": {
+      "hot_proximity": "#BD5745",
+      "cold_proximity": "#1E3A2F",
+      "neutral": "#C98A3C",
+      "border": "#E3DEC8"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Cormorant Garamond, serif",
+      "body": "Work Sans, sans-serif",
+      "accent": "Caveat, cursive"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none font-medium",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-medium",
+      "h3": "text-xl sm:text-2xl font-medium",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body": "text-base leading-relaxed text-[#5C5A52]",
+      "small": "text-sm uppercase tracking-[0.2em] font-medium text-[#8A877A]"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous spacing, optical alignment, mobile-first priority.",
+    "padding_scale": "p-4 md:p-6 lg:p-8",
+    "border_radius": {
+      "cards": "rounded-2xl",
+      "buttons": "rounded-full",
+      "sheets": "rounded-t-3xl"
+    },
+    "surfaces": {
+      "card": "bg-white border border-[#E3DEC8] shadow-sm",
+      "glass": "backdrop-blur-xl bg-[#F7F4EB]/80 border-t border-white/40"
+    }
+  },
+  "components": {
+    "navigation": {
+      "style": "Bottom tab bar for mobile users, utilizing glassmorphism to float above the map without obscuring it.",
+      "active_state": "Text and icon colored in #BD5745 (Terracotta)."
+    },
+    "map": {
+      "style": "Full-screen hero layout. Use custom styled Leaflet tiles with warm sepia/vintage tones matching the background #F7F4EB. Disable default UI controls to keep it cinematic.",
+      "markers": "Use custom SVG icons (Deep Green for undiscovered, Warm Ochre for in-range, Terracotta for visited)."
+    },
+    "poi_drawer": {
+      "style": "Bottom sheet (Shadcn customized) that slides up when in proximity or tapped. Rounded-t-3xl, no heavy shadows, just a 1px border. Tactile drag handle at top."
+    },
+    "proximity_radar": {
+      "style": "Floating circular UI element. Uses pulsating rings that expand. Color transitions from #1E3A2F (far/cold) to #BD5745 (close/hot).",
+      "vibration_logic": "Map distance to navigator.vibrate() frequency and intensity."
+    },
+    "admin_panel": {
+      "style": "Clean, dense dashboard for POI CRUD operations. Uses 'Swiss & High-Contrast' principles but tinted with the brand colors. Shadcn DataTables and Forms."
+    }
+  },
+  "motion": {
+    "proximity_rings": "Framer-motion spring animations. Scale and opacity pulse based on distance metric.",
+    "drawer": "Smooth y-axis spring physics for entering and exiting the viewport.",
+    "page_transitions": "Subtle fade and slide-up (y: 10px) on route changes."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Light, elegant strokes (strokeWidth 1.5). Minimalistic."
+  },
+  "images": {
+    "poi_examples": [
+      {
+        "url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda",
+        "category": "Hidden Courtyard (Example POI)"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1636742943367-d79c45199670",
+        "category": "Hidden Courtyard Alley (Example POI)"
+      },
+      {
+        "url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg",
+        "category": "Palazzo Brera (Example POI)"
+      },
+      {
+        "url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg",
+        "category": "Artisan Workshop (Example POI)"
+      }
+    ],
+    "textures": [
+      {
+        "url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df",
+        "category": "Vintage Map Texture Overlay (Blend-mode: multiply, low opacity)"
+      }
+    ]
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure all text meets APCA standards against the off-white background.",
+    "motion": "Respect prefers-reduced-motion for the proximity radar.",
+    "test_attributes": "All interactive elements MUST have data-testid attributes (e.g., data-testid='proximity-radar', data-testid='poi-card')."
+  },
+  "instructions_to_main_agent": [
+    "Build a mobile-first PWA. The primary interface is a full-screen interactive map using react-leaflet.",
+    "Apply the designated color palette (Terracotta, Deep Green, Ochre, Off-white) strictly. Do NOT use default Tailwind blues or purples.",
+    "Implement the 'Proximity Radar' component visually showing distance, and tie it to the web Vibration API (navigator.vibrate).",
+    "Use a bottom sheet (Drawer) for displaying POI details when tapped or triggered by proximity.",
+    "Use 'Cormorant Garamond' for headings to maintain the editorial, Milanese artistic vibe.",
+    "Include a 'Reset POI Data' toggle in the Admin section for student-led data entry exercises.",
+    "Ensure all mock POI images utilize the provided unsplash/pexels URLs.",
+    "Include data-testid tags on all actionable elements."
+  ]
+}
