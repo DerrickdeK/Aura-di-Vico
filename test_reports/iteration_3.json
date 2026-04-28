@@ -1,0 +1,35 @@
+{
+  "summary": "Iteration 3 retest after the useCityWhispers fix. Backend pytest 39/39 still green. Frontend render-loop is FULLY RESOLVED — 0 'Maximum update depth' warnings and 0 console errors throughout the entire mobile session (Listen mount, ghost walk run, navigation, onboarding, language switch, admin edit). Ghost walk produces motes within 12s and auto-opens the POI drawer with full fields (image, name, address, hours, italic opening line, story) when the found-zone is reached (~30s). Admin /admin lists 18 POIs and POIForm exposes 5 interest-tag chips and 7 per-language opening-line inputs (en/it/es/de/el/fr/pt). Discoveries page lists 9 items with FOUND/SENSED uppercase badges plus the italic per-language opening line. New user register → 3-step onboarding (language → interests with 3-to-5 gate enforced → notifications skip) → lands on / (Listen). Profile language switch to Italiano persists on reload — title becomes 'Brera ti sta ascoltando…' and copy 'Cammina. Aspetta. La città sussurrerà…'. Old routes /favorites and /visits no longer match (router renders blank), no nav links present. Bottom nav correctly hidden on /login, /register, /onboarding.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ListenPage (Italian)", "issues": ["The geolocation fallback string 'Location is off — try the ghost walk to feel how it works.' is not translated; remains English even when language=it. Minor i18n gap; everything else (h1, copy, compass labels via component, etc.) translated correctly."]},
+      {"screen": "Listen page bottom controls", "issues": ["Made with Emergent badge sits directly on top of the 'Ghost walk' / 'Whispers on' pill in the 390px viewport, causing pointer-event interception during automation (had to dispatch via JS or hide the badge to click). Real users on mobile may experience an awkward tap target near the bottom-right corner. Consider raising the controls 12-16 px or moving the badge."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional, minor) Translate the geo-fallback 'Location is off — try the ghost walk to feel how it works.' for non-en languages (it/es/de/el/fr/pt).",
+    "(Optional, minor) Lift bottom Listen-page controls above the Made-with-Emergent badge so the Ghost-walk pill is not partially covered on narrow viewports.",
+    "(Carry-over from iter 2, not blocking) Split /app/backend/server.py (>700 lines) into routers/auth.py, routers/pois.py, routers/me.py, seeds.py."
+  ],
+  "critical_code_review_comments": [
+    "useCityWhispers fix is sound: trigger() uses onFoundRef/languageRef/notifRef so the function identity stays stable; setSightings now bails when content (rounded distance/bearing/zone/poi.id arrays) is unchanged. This eliminated the infinite render loop verified earlier. Recommend adding a regression unit test (React Testing Library) that mounts ListenPage and asserts no console.error of 'Maximum update depth' over 5s with ghostOn=true.",
+    "Discoveries.upgraded semantics — backend now correctly returns upgraded:true only when zone increases and false otherwise. Verified in pytest TestDiscoveries. Good fix on the iter-2 review note.",
+    "POIForm UX nit: per-language opening_line inputs are stacked vertically without showing the language NAME (only ISO code). Fine for admins but consider tooltip on hover (en → English, it → Italiano).",
+    "Backend still 964 lines — refactor pending."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (39/39)", "frontend": "100% on the explicit retest list"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! verified. New TEST_<uuid>@example.com / Sekret123! users registered cleanly.",
+  "seed_data_creation": "None added beyond seeded 18 POIs and 9 ephemeral discoveries created by the admin's ghost walk during testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All iteration-3 retest items pass. Use `cd /app && ADMIN_PASSWORD='BreraAdmin2026!' python -m pytest backend/tests/test_brera_backend.py -v` for backend regression. For frontend, hide #emergent-badge before clicking the Listen-page bottom pill controls, and use [data-testid=\"onb-next\"] / [data-testid^=\"onb-interest-\"] / [data-testid^=\"onb-lang-\"] / [data-testid^=\"profile-lang-\"] / [data-testid=\"profile-save\"] / [data-testid^=\"admin-row-\"] / [data-testid^=\"admin-edit-\"] / [data-testid^=\"admin-form-tag-\"] / [data-testid^=\"admin-form-opening-\"] / [data-testid=\"poi-drawer\"] / [data-testid=\"poi-drawer-close\"] / [data-testid=\"ghost-walk-toggle\"]. Admin Italiano test: language buttons are [data-testid=\"profile-lang-it\"] etc.",
+  "rca of the issue": "Iteration 2 RCA was confirmed: trigger() in useCityWhispers was rebuilt every render because its useCallback deps included primitives that changed each tick, and setSightings(newArray) emitted a new array reference every call which fed back into a useEffect dep, producing the loop. Fix path now in place: refs (onFoundRef, languageRef, notifRef) hold mutable subscriber values instead of including them in deps; setSightings short-circuits when the content (distance rounded to whole meters, bearing rounded to integer degrees, zone string, poi.id) is unchanged; zone radii are memoised with primitive deps. Verified by 0 console errors over the full 30-second ghost walk plus subsequent navigation."
+}

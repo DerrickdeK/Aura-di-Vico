@@ -460,7 +460,8 @@ async def record_discovery(payload: DiscoverIn, user: dict = Depends(get_current
                 {"_id": existing["_id"]},
                 {"$set": {"zone": payload.zone, "updated_at": now_iso}},
             )
-        return {"ok": True, "upgraded": True}
+            return {"ok": True, "upgraded": True, "zone": payload.zone}
+        return {"ok": True, "upgraded": False, "zone": existing.get("zone", "sensed")}
     await db.discoveries.insert_one({
         "id": str(uuid.uuid4()),
         "user_id": user["id"],
@@ -469,7 +470,7 @@ async def record_discovery(payload: DiscoverIn, user: dict = Depends(get_current
         "discovered_at": now_iso,
         "updated_at": now_iso,
     })
-    return {"ok": True, "upgraded": False}
+    return {"ok": True, "upgraded": False, "zone": payload.zone}
 
 
 @api_router.get("/me/discoveries")

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { distanceMeters, bearingDeg, vibrate } from "../lib/geo";
 import { playChime, CHIMES } from "../lib/audio";
@@ -24,77 +24,98 @@ function classifyZone(distance, radii) {
 
 const ZONE_RANK = { sensed: 1, called: 2, found: 3 };
 
-/**
- * Watches all visible POIs against the user position and emits zone-entry
- * events. Returns:
- *   - sightings: array of { poi, distance, bearing, zone } currently in any zone
- *   - upgrade(poi.id): manual upgrade hook (unused for now)
- *   - radii (resolved from /api/config)
- */
+function sightingsChanged(a, b) {
+  if (a.length !== b.length) return true;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (
+      x.poi.id !== y.poi.id ||
+      x.zone !== y.zone ||
+      Math.round(x.distance) !== Math.round(y.distance) ||
+      Math.round(x.bearing) !== Math.round(y.bearing)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export default function useCityWhispers({
   position,
   pois,
   language = "en",
   notificationsEnabled = false,
   enabled = true,
-  onFound, // callback(poi) when a POI is upgraded to "found"
+  onFound,
 }) {
   const [radii, setRadii] = useState(DEFAULT_ZONES);
   const [sightings, setSightings] = useState([]);
-  // Track best zone per POI to avoid re-triggering chimes/notifications.
-  const stateRef = useRef(new Map());
 
+  // Refs for the latest non-pure values so they don't re-trigger the effect.
+  const onFoundRef = useRef(onFound);
+  const languageRef = useRef(language);
+  const notifRef = useRef(notificationsEnabled);
+  // Tracks the highest zone reached per POI in this session.
+  const reachedRef = useRef(new Map());
+
+  useEffect(() => { onFoundRef.current = onFound; }, [onFound]);
+  useEffect(() => { languageRef.current = language; }, [language]);
+  useEffect(() => { notifRef.current = notificationsEnabled; }, [notificationsEnabled]);
+
+  // Load zone radii once.
   useEffect(() => {
     api.get("/config")
-      .then(({ data }) => data?.zones && setRadii(data.zones))
+      .then(({ data }) => {
+        if (!data?.zones) return;
+        setRadii((prev) => {
+          const z = data.zones;
+          if (
+            prev.sensed_radius_m === z.sensed_radius_m &&
+            prev.called_radius_m === z.called_radius_m &&
+            prev.found_radius_m === z.found_radius_m
+          ) return prev;
+          return z;
+        });
+      })
       .catch(() => {});
   }, []);
 
-  const trigger = useCallback((poi, zone) => {
-    // Vibrate
-    vibrate(PATTERNS[zone]);
-    // Audio chime
-    playChime(CHIMES[zone]);
-    // Background notification only when called/found, and only if user opted in
-    if (notificationsEnabled && (zone === "called" || zone === "found")) {
-      const line = getOpeningLine(poi, language);
-      showWhisperNotification({
-        title: zone === "found" ? `You found ${poi.name}` : "Brera is calling",
-        body: zone === "found" ? "Open the whisper to read its story." : (line || poi.name),
-        tag: `whisper-${poi.id}`,
-      });
-    }
-    // Persist server-side
-    api.post("/me/discoveries", { poi_id: poi.id, zone })
-      .catch((err) => console.warn("Discovery persist failed:", err));
-    if (zone === "found") onFound?.(poi);
-  }, [language, notificationsEnabled, onFound]);
-
   useEffect(() => {
     if (!enabled || !position || !pois || pois.length === 0) {
-      setSightings([]);
+      setSightings((prev) => (prev.length === 0 ? prev : []));
       return;
     }
     const next = [];
     for (const poi of pois) {
       const distance = distanceMeters(position, poi);
       const zone = classifyZone(distance, radii);
-      if (!zone) {
-        // Falling out of all zones doesn't reset the persisted level.
-        continue;
-      }
+      if (!zone) continue;
       const bearing = bearingDeg(position, poi);
       next.push({ poi, distance, bearing, zone });
-      const prev = stateRef.current.get(poi.id);
-      if (!prev || ZONE_RANK[zone] > ZONE_RANK[prev]) {
-        stateRef.current.set(poi.id, zone);
-        trigger(poi, zone);
+
+      const prevZone = reachedRef.current.get(poi.id);
+      if (!prevZone || ZONE_RANK[zone] > ZONE_RANK[prevZone]) {
+        reachedRef.current.set(poi.id, zone);
+        // Side effects — fire ONCE per zone-upgrade.
+        vibrate(PATTERNS[zone]);
+        playChime(CHIMES[zone]);
+        if (notifRef.current && (zone === "called" || zone === "found")) {
+          const line = getOpeningLine(poi, languageRef.current);
+          showWhisperNotification({
+            title: zone === "found" ? `You found ${poi.name}` : "Brera is calling",
+            body: zone === "found" ? "Open the whisper to read its story." : (line || poi.name),
+            tag: `whisper-${poi.id}`,
+          });
+        }
+        api.post("/me/discoveries", { poi_id: poi.id, zone })
+          .catch((err) => console.warn("Discovery persist failed:", err));
+        if (zone === "found") onFoundRef.current?.(poi);
       }
     }
-    // Sort: nearer first
     next.sort((a, b) => a.distance - b.distance);
-    setSightings(next);
-  }, [position, pois, enabled, radii, trigger]);
+    setSightings((prev) => (sightingsChanged(prev, next) ? next : prev));
+  }, [position, pois, enabled, radii]);
 
   return { sightings, radii };
 }
