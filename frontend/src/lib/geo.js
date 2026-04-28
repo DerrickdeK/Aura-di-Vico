@@ -45,6 +45,8 @@ export function vibrationPatternFor(distance, triggerRadius = 60) {
   return [pulse, pause];
 }
 
+import { devWarn } from "./log";
+
 // Trigger a vibration once (no-ops if API is unavailable).
 export function vibrate(pattern) {
   try {
@@ -52,7 +54,7 @@ export function vibrate(pattern) {
       navigator.vibrate(pattern);
     }
   } catch (err) {
-    console.warn("Vibration API call failed:", err);
+    devWarn("Vibration API call failed:", err);
   }
 }
 
@@ -60,6 +62,6 @@ export function stopVibration() {
   try {
     navigator?.vibrate?.(0);
   } catch (err) {
-    console.warn("Failed to stop vibration:", err);
+    devWarn("Failed to stop vibration:", err);
   }
 }

@@ -1,6 +1,24 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 
+// Module-level animation constants so framer-motion doesn't see new object
+// identities on every render of <ListeningCompass>.
+const RING_INITIAL = { opacity: 0, scale: 0.95 };
+const RING_ANIMATE = { opacity: 1, scale: 1 };
+
+const USER_DOT_ANIMATE = {
+  boxShadow: [
+    "0 0 0 6px rgba(189,87,69,0.18)",
+    "0 0 0 14px rgba(189,87,69,0.04)",
+    "0 0 0 6px rgba(189,87,69,0.18)",
+  ],
+};
+const USER_DOT_TRANSITION = { duration: 2.5, repeat: Infinity };
+
+const MOTE_PULSE_INITIAL = { opacity: 0.6, scale: 0.6 };
+const MOTE_PULSE_ANIMATE = { opacity: 0, scale: 1.6 };
+const MOTE_PULSE_TRANSITION = { duration: 1.8, repeat: Infinity, ease: "easeOut" };
+
 // Map a sighting at distance d to a normalized radius (0=center, 1=edge of compass).
 function normalize(distance, sensedRadius) {
   if (sensedRadius <= 0) return 1;
@@ -47,9 +65,9 @@ export default function ListeningCompass({
       data-testid="listening-compass"
     >
       {/* Concentric rings */}
-      {[0.4, 0.7, 1].map((k, i) => (
+      {[0.4, 0.7, 1].map((k) => (
         <motion.div
-          key={i}
+          key={`ring-${k}`}
           className="absolute rounded-full border"
           style={{
             top: r - r * k,
@@ -58,9 +76,9 @@ export default function ListeningCompass({
             height: r * 2 * k,
             borderColor: "rgba(94, 90, 82, 0.18)",
           }}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: i * 0.15, duration: 0.6 }}
+          initial={RING_INITIAL}
+          animate={RING_ANIMATE}
+          transition={{ delay: (k - 0.4) * 0.5, duration: 0.6 }}
         />
       ))}
 
@@ -96,14 +114,8 @@ export default function ListeningCompass({
           background: "var(--terracotta)",
           boxShadow: "0 0 0 6px rgba(189,87,69,0.18)",
         }}
-        animate={{
-          boxShadow: [
-            "0 0 0 6px rgba(189,87,69,0.18)",
-            "0 0 0 14px rgba(189,87,69,0.04)",
-            "0 0 0 6px rgba(189,87,69,0.18)",
-          ],
-        }}
-        transition={{ duration: 2.5, repeat: Infinity }}
+        animate={USER_DOT_ANIMATE}
+        transition={USER_DOT_TRANSITION}
       />
 
       {/* POI motes */}
@@ -130,9 +142,9 @@ export default function ListeningCompass({
             <motion.span
               className="absolute inset-[-6px] rounded-full"
               style={{ border: `1.5px solid ${color}` }}
-              initial={{ opacity: 0.6, scale: 0.6 }}
-              animate={{ opacity: 0, scale: 1.6 }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+              initial={MOTE_PULSE_INITIAL}
+              animate={MOTE_PULSE_ANIMATE}
+              transition={MOTE_PULSE_TRANSITION}
             />
           </button>
         );

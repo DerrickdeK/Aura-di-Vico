@@ -2,6 +2,11 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { t, getOpeningLine, bearingLabel } from "../lib/i18n";
 
+const CARD_INITIAL = { opacity: 0, y: 12 };
+const CARD_ANIMATE = { opacity: 1, y: 0 };
+const CARD_EXIT = { opacity: 0, y: -8 };
+const CARD_TRANSITION = { duration: 0.45 };
+
 /**
  * Floating whisper card shown above the compass when a POI is in 'sensed' or
  * 'called' zone. 'sensed' is a tease (no name), 'called' reveals the name + opening line.
@@ -32,10 +37,10 @@ export default function WhisperCard({ sighting, language = "en", onTap }) {
         key={`${poi.id}-${zone}`}
         onClick={() => onTap?.(sighting)}
         className="block w-full max-w-md text-left bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-5 py-4 shadow-md"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.45 }}
+        initial={CARD_INITIAL}
+        animate={CARD_ANIMATE}
+        exit={CARD_EXIT}
+        transition={CARD_TRANSITION}
         data-testid={`whisper-card-${zone}`}
       >
         <div className="flex items-center gap-2 eyebrow" style={{ color: "var(--text-tertiary)" }}>

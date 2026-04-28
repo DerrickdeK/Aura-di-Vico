@@ -5,6 +5,7 @@ import { Navigation, MapPin, Lock } from "lucide-react";
 
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { devWarn } from "../lib/log";
 import useGeolocation from "../hooks/useGeolocation";
 import useNearestPoi from "../hooks/useNearestPoi";
 import useProximityVibration from "../hooks/useProximityVibration";
@@ -35,7 +36,7 @@ export default function MapView({ favorites, refreshFavorites }) {
     api.get("/pois")
       .then(({ data }) => setPois(data))
       .catch((err) => {
-        console.warn("Failed to load POIs:", err);
+        devWarn("Failed to load POIs:", err);
         setPois([]);
       });
   }, []);
@@ -52,7 +53,7 @@ export default function MapView({ favorites, refreshFavorites }) {
       else await api.post(`/me/favorites/${poi.id}`);
       refreshFavorites?.();
     } catch (err) {
-      console.warn("Favorite toggle failed:", err);
+      devWarn("Favorite toggle failed:", err);
     }
   };
 

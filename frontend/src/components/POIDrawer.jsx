@@ -2,6 +2,15 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, MapPin, Clock, Sparkles } from "lucide-react";
 
+const BACKDROP_INITIAL = { opacity: 0 };
+const BACKDROP_ANIMATE = { opacity: 1 };
+const BACKDROP_EXIT = { opacity: 0 };
+
+const DRAWER_INITIAL = { y: "100%" };
+const DRAWER_ANIMATE = { y: 0 };
+const DRAWER_EXIT = { y: "100%" };
+const DRAWER_TRANSITION = { type: "spring", damping: 28, stiffness: 260 };
+
 export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, isAuthed }) {
   return (
     <AnimatePresence>
@@ -9,18 +18,18 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
         <>
           <motion.div
             className="fixed inset-0 bg-[#1A1A18]/30 z-[1000]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={BACKDROP_INITIAL}
+            animate={BACKDROP_ANIMATE}
+            exit={BACKDROP_EXIT}
             onClick={onClose}
             data-testid="poi-drawer-backdrop"
           />
           <motion.div
             className="fixed bottom-0 left-0 right-0 z-[1001] bg-[var(--surface)] rounded-t-3xl border-t border-[var(--border)] drawer-content max-h-[88vh] overflow-y-auto"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 260 }}
+            initial={DRAWER_INITIAL}
+            animate={DRAWER_ANIMATE}
+            exit={DRAWER_EXIT}
+            transition={DRAWER_TRANSITION}
             data-testid="poi-drawer"
           >
             <div className="flex justify-center pt-3">

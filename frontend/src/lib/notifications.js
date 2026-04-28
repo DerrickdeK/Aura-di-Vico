@@ -1,10 +1,12 @@
+import { devWarn } from "./log";
+
 // Utility to register the service worker and request the Notification permission.
 export async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return null;
   try {
     return await navigator.serviceWorker.register("/service-worker.js");
   } catch (err) {
-    console.warn("Service worker registration failed:", err);
+    devWarn("Service worker registration failed:", err);
     return null;
   }
 }
@@ -16,7 +18,7 @@ export async function requestNotificationPermission() {
   try {
     return await Notification.requestPermission();
   } catch (err) {
-    console.warn("Notification permission request failed:", err);
+    devWarn("Notification permission request failed:", err);
     return "denied";
   }
 }
@@ -36,6 +38,6 @@ export function showWhisperNotification({ title, body, tag }) {
     const n = new Notification(title, { body, tag });
     n.onclick = () => { window.focus(); n.close(); };
   } catch (err) {
-    console.warn("Notification fallback failed:", err);
+    devWarn("Notification fallback failed:", err);
   }
 }

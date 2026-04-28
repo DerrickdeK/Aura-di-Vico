@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Plus, RotateCcw, Sparkles } from "lucide-react";
 import { api, formatApiError } from "../lib/api";
+import { devWarn } from "../lib/log";
 import { useAuth } from "../lib/auth";
 import POIRow from "../components/admin/POIRow";
 import POIForm from "../components/admin/POIForm";
@@ -113,7 +114,7 @@ export default function AdminPage() {
       await api.delete(`/pois/${id}`);
       await reload();
     } catch (err) {
-      console.warn("Delete failed:", err);
+      devWarn("Delete failed:", err);
     }
   };
 
@@ -124,7 +125,7 @@ export default function AdminPage() {
       await reload();
       setConfirmReset(false);
     } catch (err) {
-      console.warn("Reset failed:", err);
+      devWarn("Reset failed:", err);
     } finally {
       setBusy(false);
     }
@@ -136,7 +137,7 @@ export default function AdminPage() {
       await api.post("/pois/seed");
       await reload();
     } catch (err) {
-      console.warn("Re-seed failed:", err);
+      devWarn("Re-seed failed:", err);
     } finally {
       setBusy(false);
     }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { devWarn } from "../lib/log";
 
 /**
  * Records a visit when the user enters a POI's trigger radius (debounced via
@@ -19,7 +20,7 @@ export default function useAutoVisitRecording(nearest, isAuthed) {
         return next;
       });
       api.post("/me/visits", { poi_id: id }).catch((err) => {
-        console.warn("Failed to record visit:", err);
+        devWarn("Failed to record visit:", err);
       });
     }
   }, [nearest, isAuthed, visitedIds]);

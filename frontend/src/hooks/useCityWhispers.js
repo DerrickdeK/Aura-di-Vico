@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
+import { devWarn } from "../lib/log";
 import { distanceMeters, bearingDeg, vibrate } from "../lib/geo";
 import { playChime, CHIMES } from "../lib/audio";
 import { showWhisperNotification } from "../lib/notifications";
@@ -109,7 +110,7 @@ export default function useCityWhispers({
           });
         }
         api.post("/me/discoveries", { poi_id: poi.id, zone })
-          .catch((err) => console.warn("Discovery persist failed:", err));
+          .catch((err) => devWarn("Discovery persist failed:", err));
         if (zone === "found") onFoundRef.current?.(poi);
       }
     }

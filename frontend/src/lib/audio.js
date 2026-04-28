@@ -1,3 +1,5 @@
+import { devWarn } from "./log";
+
 // Tiny helper around Web Audio API to play a soft "whisper" chime.
 // Lazily creates a single AudioContext (browsers require user gesture).
 
@@ -19,7 +21,7 @@ export async function unlockAudio() {
   const c = getCtx();
   if (!c) return;
   if (c.state === "suspended") {
-    try { await c.resume(); } catch (e) { console.warn("AudioContext resume failed", e); }
+    try { await c.resume(); } catch (e) { devWarn("AudioContext resume failed", e); }
   }
 }
 
@@ -40,7 +42,7 @@ export function playChime({ frequency = 660, duration = 0.55, volume = 0.18 } = 
     osc.start(now);
     osc.stop(now + duration + 0.02);
   } catch (e) {
-    console.warn("Chime failed:", e);
+    devWarn("Chime failed:", e);
   }
 }
 

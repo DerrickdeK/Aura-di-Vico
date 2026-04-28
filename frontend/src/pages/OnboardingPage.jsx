@@ -18,7 +18,7 @@ function StepDots({ step, total }) {
     <div className="flex items-center gap-1.5 justify-center mb-6">
       {Array.from({ length: total }).map((_, i) => (
         <span
-          key={i}
+          key={`step-${i}`}
           className={`h-1 rounded-full transition-all ${
             i === step ? "w-8 bg-[var(--terracotta)]" : "w-3 bg-[var(--border)]"
           }`}

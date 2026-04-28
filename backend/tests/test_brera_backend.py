@@ -54,7 +54,7 @@ class TestPublicPOIs:
     def test_root(self):
         r = requests.get(f"{API}/", timeout=10)
         assert r.status_code == 200
-        assert r.json().get("ok") is True
+        assert r.json().get("ok") == True
 
     def test_list_pois_seeded(self):
         r = requests.get(f"{API}/pois", timeout=15)
@@ -277,7 +277,7 @@ class TestVisits:
         # duplicate within 6h
         r2 = normal_user_session.post(f"{API}/me/visits", json={"poi_id": pid}, timeout=10)
         assert r2.status_code == 200
-        assert r2.json().get("duplicate") is True
+        assert r2.json().get("duplicate") == True
 
     def test_list_visits_includes_poi(self, normal_user_session):
         pois = requests.get(f"{API}/pois", timeout=10).json()
@@ -353,7 +353,7 @@ class TestProfile:
         assert "onboarded" in body
         assert "notifications_enabled" in body
         # Admin is auto-onboarded per migration
-        assert body["onboarded"] is True
+        assert body["onboarded"] == True
         assert isinstance(body["interests"], list)
 
     def test_patch_profile_updates_all_fields(self, normal_user_session):
@@ -368,14 +368,14 @@ class TestProfile:
         body = r.json()
         assert body["language"] == "it"
         assert sorted(body["interests"]) == sorted(payload["interests"])
-        assert body["notifications_enabled"] is True
-        assert body["onboarded"] is True
+        assert body["notifications_enabled"] == True
+        assert body["onboarded"] == True
         # Verify persistence via /auth/me
         m = normal_user_session.get(f"{API}/auth/me", timeout=10)
         assert m.status_code == 200
         mb = m.json()
         assert mb["language"] == "it"
-        assert mb["onboarded"] is True
+        assert mb["onboarded"] == True
 
     def test_patch_profile_rejects_unknown_interest(self, normal_user_session):
         r = normal_user_session.patch(
@@ -415,8 +415,8 @@ class TestDiscoveries:
                                     json={"poi_id": pid, "zone": "sensed"}, timeout=10)
         assert r.status_code == 200
         body = r.json()
-        assert body["ok"] is True
-        assert body["upgraded"] is False
+        assert body["ok"] == True
+        assert body["upgraded"] == False
 
     def test_upgrade_zone_returns_upgraded_true(self, fresh_user_session):
         pois = requests.get(f"{API}/pois", timeout=10).json()
@@ -428,12 +428,12 @@ class TestDiscoveries:
         r = fresh_user_session.post(f"{API}/me/discoveries",
                                     json={"poi_id": pid, "zone": "called"}, timeout=10)
         assert r.status_code == 200
-        assert r.json()["upgraded"] is True
+        assert r.json()["upgraded"] == True
         # found -> further upgrade
         r2 = fresh_user_session.post(f"{API}/me/discoveries",
                                      json={"poi_id": pid, "zone": "found"}, timeout=10)
         assert r2.status_code == 200
-        assert r2.json()["upgraded"] is True
+        assert r2.json()["upgraded"] == True
         # GET should return zone=found, single record (not duplicates)
         listing = fresh_user_session.get(f"{API}/me/discoveries", timeout=10).json()
         matches = [d for d in listing if d.get("poi") and d["poi"]["id"] == pid]

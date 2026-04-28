@@ -1,6 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
 
+const RING_INITIAL = { scale: 0.4, opacity: 0.6 };
+const RING_ANIMATE = { scale: [0.4, 1.05], opacity: [0.55, 0] };
+
 // Map (inRange, ratio) -> a single CSS color. Replaces a nested ternary
 // with an explicit, readable function.
 function pickRadarColor({ inRange, ratio }) {
@@ -40,11 +43,11 @@ export default function ProximityRadar({ nearest }) {
       <div className="relative w-[140px] h-[140px] flex items-center justify-center">
         {[0, 1, 2].map((i) => (
           <motion.span
-            key={i}
+            key={`ring-${i}`}
             className="absolute inset-0 rounded-full"
             style={{ border: `1.5px solid ${color}` }}
-            initial={{ scale: 0.4, opacity: 0.6 }}
-            animate={{ scale: [0.4, 1.05], opacity: [0.55, 0] }}
+            initial={RING_INITIAL}
+            animate={RING_ANIMATE}
             transition={{
               duration: pulseDuration,
               repeat: Infinity,
