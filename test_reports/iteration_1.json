@@ -1,0 +1,64 @@
+{
+  "summary": "Comprehensive backend (pytest, 22/23 passing) + frontend Playwright e2e of Brera Discover PWA. Map loads with all 18 seeded POIs, admin dashboard works, POI CRUD + reset/seed verified, register/login/me/logout/refresh + cookies all OK. Two issues: (1) brute-force lockout fails through public preview proxy because request.client.host returns multiple K8s ingress IPs, splitting the per-(ip:email) counter — works locally but not in deployed config; (2) on mobile (390px) the floating 'Made with Emergent' badge overlaps the right side of the bottom nav, hiding the last tab(s).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/api/auth/login",
+        "issue": "Brute-force lockout NOT triggering through public URL. After 7 wrong attempts via the preview domain we still get 401 (never 429). Root cause: identifier is f'{request.client.host}:{email}'. Behind the K8s ingress, request.client.host alternates between proxy IPs (verified: 10.79.131.85 and 10.79.131.86), so each pod has its own counter and none crosses the 5-attempt threshold. Verified working on http://localhost:8001 (returns 429 on the 6th attempt). Fix: derive client IP from the X-Forwarded-For header (or use just the email as identifier) so the counter is consistent.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "BottomNav (mobile)",
+        "issue": "The floating 'Made with Emergent' badge (bottom-right) overlaps the bottom navigation bar at 390px viewport, covering Visits and Sign in/Admin tabs. The nav items exist (data-testids visible) but are visually hidden behind the badge.",
+        "selector": "[data-testid=bottom-nav]",
+        "priority": "HIGH"
+      },
+      {
+        "component": "POIDrawer header",
+        "issue": "Category label (e.g., 'HIDDEN GARDEN') is overlaid on top of the hero image with low contrast — hard to read against varied photographs. Add a translucent dark scrim or move the badge below the image.",
+        "selector": "[data-testid=poi-drawer]",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Map (mobile)",
+        "issues": ["'Made with Emergent' badge clashes with bottom nav and 'Vibration on' toggle right above it"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Backend: make brute-force identifier proxy-aware. Read X-Forwarded-For (left-most public IP) or simply key the lockout on email only. Otherwise 429 is unreachable in production deployment.",
+    "Frontend: lift bottom nav z-index above the Emergent badge or add bottom padding / move the badge so all 4–5 nav items are tappable on mobile.",
+    "Frontend (minor): add a dark gradient overlay to the drawer hero image so the category label remains readable."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 686 lines — close to the 700 threshold. Consider splitting into routers/ (auth.py, pois.py, me.py) and a seeds.py for the BRERA_POI_SEED list before adding more features.",
+    "Brute-force identifier ignores X-Forwarded-For — incorrect behind any reverse proxy (see HIGH backend issue).",
+    "_id is consistently excluded via {'_id': 0} projections — verified on /pois, /pois/{id}, /auth/me, /me/favorites, /me/visits. Good.",
+    "JWT_SECRET is correctly read from env. Cookies set httpOnly + secure + samesite=none — required for cross-site preview, and works (verified by login → /auth/me with cookies).",
+    "/auth/refresh response sets a new access cookie but a fresh JWT generated within the same UTC second yields an identical signature (no jti). Not a security issue but worth noting if a UI ever asserts on token rotation.",
+    "Admin reseed endpoint only inserts when collection is empty, so calling /pois/seed after a partial admin add is a no-op. Acceptable for the curator flow but should be documented in the admin UI tooltip."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/backend/tests/__init__.py"
+  ],
+  "success_rate": {"backend": "95.6% (22/23)", "frontend": "100% of tested flows"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! (verified working). Normal users are created on the fly with TEST_ prefix.",
+  "seed_data_creation": "None added beyond the auto-seeded 18 Brera POIs and ephemeral TEST_ users created during pytest runs. Reset+reseed exercised and restored to 18.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend test file is /app/backend/tests/test_brera_backend.py — 23 tests, run with: python -m pytest backend/tests/test_brera_backend.py -v. The single failing test (TestBruteForce::test_5_wrong_then_429) is gating on the proxy-IP bug; once the main agent fixes the identifier to use X-Forwarded-For (or email-only), this test should pass through the public URL. Frontend uses these data-testids: login-{email,password,submit}, register-{name,email,password,submit}, admin-{add-btn,reseed-btn,reset-btn,row-<id>,edit-<id>,delete-<id>,form-name,form-save}, poi-drawer-{name,close,favorite-btn}, nav-{map,favorites,visits,login,logout}, map-view, geo-error, vibration-toggle, recenter-btn.",
+  "rca of the issue": "Brute-force bypass: server.py:213 uses `ip = request.client.host`, which under Starlette behind k8s ingress is the proxy peer (10.79.131.85/86), not the real client. With multiple proxy IPs, the per-(ip:email) counter never reaches 5. Reproduction: register a user, send 7 POSTs with wrong password to /api/auth/login via the public URL — every response is 401. Mitigation: parse X-Forwarded-For (first hop) or trust a TrustedHostMiddleware-derived client; alternatively change identifier to email-only (already low-cardinality and matches typical OWASP recommendation for pre-auth lockout)."
+}

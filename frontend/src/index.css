@@ -1,115 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&family=Caveat:wght@400;600&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #F7F4EB;
+  --surface: #FFFFFF;
+  --map-water: #EBE7DB;
+  --text-primary: #1A1A18;
+  --text-secondary: #5C5A52;
+  --text-tertiary: #8A877A;
+  --inverse: #F7F4EB;
+  --terracotta: #BD5745;
+  --deep-green: #1E3A2F;
+  --warm-ochre: #C98A3C;
+  --border: #E3DEC8;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
 body {
-    margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Work Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+.font-serif { font-family: 'Cormorant Garamond', serif; }
+.font-script { font-family: 'Caveat', cursive; }
+
+::selection {
+  background: var(--terracotta);
+  color: var(--inverse);
 }
 
-@layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
+/* Leaflet map theming - subtle warm sepia overlay */
+.leaflet-container {
+  background: var(--map-water) !important;
+  font-family: 'Work Sans', sans-serif;
+}
+.leaflet-tile-pane {
+  filter: sepia(0.18) saturate(0.85) hue-rotate(-8deg) brightness(1.02);
+}
+.leaflet-control-attribution {
+  background: rgba(247,244,235,0.85) !important;
+  font-size: 10px !important;
+  color: var(--text-tertiary) !important;
+}
+.leaflet-control-attribution a { color: var(--text-secondary) !important; }
+
+/* Custom map markers */
+.brera-marker {
+  background: transparent;
+  border: none;
+}
+.brera-marker-pin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg);
+  box-shadow: 0 4px 14px rgba(26,26,24,0.25);
+}
+.brera-marker-pin > span {
+  transform: rotate(45deg);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  color: var(--bg);
+  font-size: 14px;
+}
+.brera-marker-undiscovered { background: var(--deep-green); }
+.brera-marker-inrange { background: var(--warm-ochre); }
+.brera-marker-visited { background: var(--terracotta); }
+
+.brera-user-dot {
+  background: transparent;
+  border: none;
+}
+.brera-user-dot-inner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 6px rgba(189,87,69,0.25);
+  animation: userPulse 2s ease-in-out infinite;
+}
+@keyframes userPulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(189,87,69,0.25); }
+  50% { box-shadow: 0 0 0 14px rgba(189,87,69,0.05); }
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
+/* Bottom drawer scroll lock helper */
+.drawer-content {
+  -webkit-overflow-scrolling: touch;
 }
 
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
+/* Buttons */
+.btn-primary {
+  background: var(--terracotta);
+  color: var(--inverse);
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.btn-primary:hover { background: #a8493a; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.65rem 1.4rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+.btn-ghost:hover { background: var(--surface); }
+
+.input-field {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 1rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.input-field:focus { border-color: var(--terracotta); }
+
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.glass-bar {
+  backdrop-filter: blur(18px);
+  background: rgba(247,244,235,0.78);
+  border-top: 1px solid rgba(255,255,255,0.5);
+}
+
+/* Hide scrollbars on tab strip */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .brera-user-dot-inner { animation: none; }
 }

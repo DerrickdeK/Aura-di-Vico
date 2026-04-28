@@ -1,0 +1,288 @@
+"""
+Brera Discover backend regression tests.
+Covers: POI listing/detail, auth (register/login/me/logout/refresh), admin POI CRUD,
+reset/seed, favorites, visits (with duplicate window), brute-force lockout, and _id leak guard.
+"""
+import os
+import time
+import uuid
+import requests
+import pytest
+
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://pickup-progress-9.preview.emergentagent.com").rstrip("/")
+API = f"{BASE_URL}/api"
+
+ADMIN_EMAIL = "admin@brera.app"
+ADMIN_PASSWORD = "BreraAdmin2026!"
+
+
+# ---------------------- Fixtures ----------------------
+@pytest.fixture(scope="session")
+def admin_session():
+    s = requests.Session()
+    r = s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=20)
+    assert r.status_code == 200, f"Admin login failed: {r.status_code} {r.text}"
+    body = r.json()
+    assert body.get("role") == "admin"
+    return s
+
+
+@pytest.fixture(scope="session")
+def normal_user_session():
+    email = f"TEST_user_{uuid.uuid4().hex[:8]}@example.com"
+    pwd = "TestPass2026!"
+    s = requests.Session()
+    r = s.post(f"{API}/auth/register", json={"email": email, "password": pwd, "name": "Test User"}, timeout=20)
+    assert r.status_code == 200, f"register failed: {r.status_code} {r.text}"
+    s.email = email
+    s.password = pwd
+    return s
+
+
+# ---------------------- Module: Health & POIs (public) ----------------------
+class TestPublicPOIs:
+    def test_root(self):
+        r = requests.get(f"{API}/", timeout=10)
+        assert r.status_code == 200
+        assert r.json().get("ok") is True
+
+    def test_list_pois_seeded(self):
+        r = requests.get(f"{API}/pois", timeout=15)
+        assert r.status_code == 200
+        data = r.json()
+        assert isinstance(data, list)
+        # spec says ~18 seeded POIs
+        assert len(data) >= 18, f"Expected >=18 seeded POIs, got {len(data)}"
+        sample = data[0]
+        for k in ["id", "name", "latitude", "longitude", "address", "category", "image_url", "trigger_radius_m"]:
+            assert k in sample, f"POI missing key {k}"
+        # No mongo _id leaked
+        for p in data:
+            assert "_id" not in p
+
+    def test_get_single_poi(self):
+        listing = requests.get(f"{API}/pois", timeout=15).json()
+        target = listing[0]
+        r = requests.get(f"{API}/pois/{target['id']}", timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        assert body["id"] == target["id"]
+        assert "_id" not in body
+
+    def test_get_poi_not_found(self):
+        r = requests.get(f"{API}/pois/does-not-exist-xyz", timeout=10)
+        assert r.status_code == 404
+
+
+# ---------------------- Module: Auth ----------------------
+class TestAuth:
+    def test_admin_login_sets_cookies(self):
+        s = requests.Session()
+        r = s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
+        assert r.status_code == 200
+        body = r.json()
+        assert body["email"] == ADMIN_EMAIL
+        assert body["role"] == "admin"
+        assert "access_token" in s.cookies, f"no access_token cookie set, cookies={dict(s.cookies)}"
+        assert "refresh_token" in s.cookies
+
+    def test_me_with_cookies(self, admin_session):
+        r = admin_session.get(f"{API}/auth/me", timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        assert body["email"] == ADMIN_EMAIL
+        assert body["role"] == "admin"
+        assert "_id" not in body
+        assert "password_hash" not in body
+
+    def test_me_unauthenticated(self):
+        r = requests.get(f"{API}/auth/me", timeout=10)
+        assert r.status_code == 401
+
+    def test_refresh_with_valid_refresh_cookie(self):
+        s = requests.Session()
+        s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
+        # remove access cookie - keep refresh
+        s.cookies.pop("access_token", None)
+        # ensure refresh issues a NEW token by waiting a second so exp changes
+        time.sleep(1.2)
+        r = s.post(f"{API}/auth/refresh", timeout=10)
+        assert r.status_code == 200
+        assert s.cookies.get("access_token")
+        # Use cookie to call /me successfully
+        me = s.get(f"{API}/auth/me", timeout=10)
+        assert me.status_code == 200
+        assert me.json()["email"] == ADMIN_EMAIL
+
+    def test_register_user_sets_cookies(self):
+        email = f"TEST_reg_{uuid.uuid4().hex[:8]}@example.com"
+        s = requests.Session()
+        r = s.post(f"{API}/auth/register", json={"email": email, "password": "Sekret123!", "name": "Reg User"}, timeout=15)
+        assert r.status_code == 200
+        body = r.json()
+        assert body["email"] == email.lower()
+        assert body["role"] == "user"
+        assert body["favorites"] == []
+        assert "access_token" in s.cookies
+
+    def test_register_duplicate_email(self, normal_user_session):
+        r = requests.post(f"{API}/auth/register",
+                          json={"email": normal_user_session.email, "password": "Whatever123", "name": "Dup"},
+                          timeout=15)
+        assert r.status_code == 400
+
+    def test_logout_clears_cookies(self):
+        s = requests.Session()
+        s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
+        r = s.post(f"{API}/auth/logout", timeout=10)
+        assert r.status_code == 200
+        # subsequent /me should be 401
+        r2 = s.get(f"{API}/auth/me", timeout=10)
+        assert r2.status_code == 401
+
+
+# ---------------------- Module: Brute-force ----------------------
+class TestBruteForce:
+    def test_5_wrong_then_429(self):
+        # use an isolated identifier so we don't conflict
+        email = f"TEST_bf_{uuid.uuid4().hex[:8]}@example.com"
+        # register first so that response is 401 (wrong password) not 401(no user)
+        requests.post(f"{API}/auth/register",
+                      json={"email": email, "password": "Correct123!", "name": "BF"}, timeout=15)
+        last_status = None
+        for _ in range(6):
+            r = requests.post(f"{API}/auth/login",
+                              json={"email": email, "password": "WRONG_PASS"}, timeout=10)
+            last_status = r.status_code
+        assert last_status == 429, f"Expected 429 after 5 fails, got {last_status}"
+
+
+# ---------------------- Module: Admin POI CRUD ----------------------
+class TestAdminPOIs:
+    @pytest.fixture
+    def temp_poi(self, admin_session):
+        payload = {
+            "name": "TEST_POI_" + uuid.uuid4().hex[:6],
+            "short_description": "tmp",
+            "long_description": "tmp long",
+            "latitude": 45.4720, "longitude": 9.1880,
+            "address": "Brera test",
+            "category": "Test",
+            "image_url": "https://example.com/x.jpg",
+            "trigger_radius_m": 50,
+            "hours": "24/7",
+            "fun_fact": "Created by automated test",
+        }
+        r = admin_session.post(f"{API}/pois", json=payload, timeout=15)
+        assert r.status_code == 200, r.text
+        poi = r.json()
+        yield poi
+        admin_session.delete(f"{API}/pois/{poi['id']}", timeout=10)
+
+    def test_create_requires_admin(self, normal_user_session):
+        r = normal_user_session.post(f"{API}/pois",
+                                     json={"name": "x", "short_description": "x", "long_description": "x",
+                                           "latitude": 0, "longitude": 0, "address": "x", "category": "x",
+                                           "image_url": "https://x.example/x.jpg"}, timeout=10)
+        assert r.status_code == 403
+
+    def test_create_unauth_returns_401(self):
+        r = requests.post(f"{API}/pois", json={"name": "x"}, timeout=10)
+        assert r.status_code in (401, 422)
+
+    def test_update_poi(self, admin_session, temp_poi):
+        new_name = temp_poi["name"] + "_EDITED"
+        body = {**temp_poi, "name": new_name}
+        body.pop("id", None)
+        r = admin_session.put(f"{API}/pois/{temp_poi['id']}", json=body, timeout=15)
+        assert r.status_code == 200
+        # GET to verify persistence
+        g = requests.get(f"{API}/pois/{temp_poi['id']}", timeout=10)
+        assert g.status_code == 200
+        assert g.json()["name"] == new_name
+
+    def test_delete_poi(self, admin_session):
+        # create independently
+        payload = {
+            "name": "TEST_DEL_" + uuid.uuid4().hex[:6],
+            "short_description": "d", "long_description": "d",
+            "latitude": 45.47, "longitude": 9.18, "address": "x", "category": "x",
+            "image_url": "https://x/x.jpg",
+        }
+        c = admin_session.post(f"{API}/pois", json=payload, timeout=10)
+        pid = c.json()["id"]
+        d = admin_session.delete(f"{API}/pois/{pid}", timeout=10)
+        assert d.status_code == 200
+        g = requests.get(f"{API}/pois/{pid}", timeout=10)
+        assert g.status_code == 404
+
+    def test_reset_and_reseed(self, admin_session):
+        # reset wipes all
+        r = admin_session.post(f"{API}/pois/reset", timeout=20)
+        assert r.status_code == 200
+        listing = requests.get(f"{API}/pois", timeout=15).json()
+        assert listing == []
+        # seed re-inserts defaults
+        r2 = admin_session.post(f"{API}/pois/seed", timeout=30)
+        assert r2.status_code == 200
+        body = r2.json()
+        assert body["inserted"] >= 18
+        listing2 = requests.get(f"{API}/pois", timeout=15).json()
+        assert len(listing2) >= 18
+
+    def test_seed_idempotent_when_not_empty(self, admin_session):
+        r = admin_session.post(f"{API}/pois/seed", timeout=15)
+        assert r.status_code == 200
+        # Should be 0 inserted because collection is non-empty
+        assert r.json()["inserted"] == 0
+
+
+# ---------------------- Module: Favorites ----------------------
+class TestFavorites:
+    def test_add_get_delete_favorite(self, normal_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[0]["id"]
+        r = normal_user_session.post(f"{API}/me/favorites/{pid}", timeout=10)
+        assert r.status_code == 200
+        g = normal_user_session.get(f"{API}/me/favorites", timeout=10)
+        assert g.status_code == 200
+        assert any(p["id"] == pid for p in g.json())
+        d = normal_user_session.delete(f"{API}/me/favorites/{pid}", timeout=10)
+        assert d.status_code == 200
+        g2 = normal_user_session.get(f"{API}/me/favorites", timeout=10)
+        assert all(p["id"] != pid for p in g2.json())
+
+    def test_add_favorite_unknown_poi(self, normal_user_session):
+        r = normal_user_session.post(f"{API}/me/favorites/no-such-id", timeout=10)
+        assert r.status_code == 404
+
+
+# ---------------------- Module: Visits ----------------------
+class TestVisits:
+    def test_record_visit_and_duplicate(self, normal_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[1]["id"]
+        r1 = normal_user_session.post(f"{API}/me/visits", json={"poi_id": pid}, timeout=10)
+        assert r1.status_code == 200
+        # duplicate within 6h
+        r2 = normal_user_session.post(f"{API}/me/visits", json={"poi_id": pid}, timeout=10)
+        assert r2.status_code == 200
+        assert r2.json().get("duplicate") is True
+
+    def test_list_visits_includes_poi(self, normal_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[2]["id"]
+        normal_user_session.post(f"{API}/me/visits", json={"poi_id": pid}, timeout=10)
+        r = normal_user_session.get(f"{API}/me/visits", timeout=10)
+        assert r.status_code == 200
+        data = r.json()
+        assert isinstance(data, list)
+        assert any(v.get("poi") and v["poi"]["id"] == pid for v in data)
+        for v in data:
+            assert "_id" not in v
+            if v.get("poi"):
+                assert "_id" not in v["poi"]
+
+    def test_visit_unknown_poi(self, normal_user_session):
+        r = normal_user_session.post(f"{API}/me/visits", json={"poi_id": "ghost"}, timeout=10)
+        assert r.status_code == 404
