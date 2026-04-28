@@ -11,6 +11,9 @@ const STRINGS = {
     tapToReadStory: "Tap to read its story",
     discoveriesTitle: "Whispers collected",
     discoveriesEmpty: "Nothing has called you yet. Step outside and listen.",
+    silenceCity: "The city is quiet. Keep walking.",
+    silenceFix: "Listening for a fix on you…",
+    silenceGeoOff: "Location is off — try the ghost walk to feel how it works.",
     onboarding: {
       welcome: "Welcome to Brera",
       step1: "Choose your language",
@@ -55,6 +58,9 @@ const STRINGS = {
     tapToReadStory: "Tocca per leggere la sua storia",
     discoveriesTitle: "Sussurri raccolti",
     discoveriesEmpty: "Nessuno ti ha ancora chiamato. Esci e ascolta.",
+    silenceCity: "La città è silenziosa. Continua a camminare.",
+    silenceFix: "In attesa di localizzarti…",
+    silenceGeoOff: "Posizione disattivata — prova la passeggiata fantasma per scoprire come funziona.",
     onboarding: {
       welcome: "Benvenuto a Brera",
       step1: "Scegli la lingua",

@@ -149,17 +149,17 @@ export default function ListenPage() {
               data-testid="silence-message"
             >
               {position
-                ? "The city is quiet. Keep walking."
+                ? t(language, "silenceCity")
                 : (geoError
-                  ? "Location is off — try the ghost walk to feel how it works."
-                  : "Listening for a fix on you…")}
+                  ? t(language, "silenceGeoOff")
+                  : t(language, "silenceFix"))}
             </motion.p>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Compact controls */}
-      <div className="fixed bottom-20 left-0 right-0 z-[400] flex justify-center px-4 pointer-events-none">
+      {/* Compact controls — sit above the Emergent badge on small viewports */}
+      <div className="fixed bottom-32 sm:bottom-24 left-0 right-0 z-[400] flex justify-center px-4 pointer-events-none">
         <div className="pointer-events-auto inline-flex items-center gap-2 bg-[var(--surface)]/90 backdrop-blur border border-[var(--border)] rounded-full px-3 py-2 shadow-md">
           <button
             onClick={() => setAudioOn((v) => !v)}
