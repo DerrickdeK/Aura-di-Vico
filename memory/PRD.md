@@ -43,22 +43,24 @@ All chip groups allow zero selections (treated as "no preference"). Personal-mod
 - **Iteration 1** — Initial map+auth+favorites+visits+admin MVP (23 backend tests).
 - **Iteration 2** — "City seeks visitor" rework: Listening canvas, three-zone whispers, multilingual onboarding (5 themes), opt-in background notifications, admin per-language opening lines. Critical infinite render loop fixed via stable refs in `useCityWhispers`.
 - **Iteration 3** — Code-review polish pass: `devWarn` log helper, `useMemo` AuthContext, animation constants, stable keys, ruff-clean Python.
-- **Iteration 4 (current)** — Onboarding redesign per user spec: 6-step wizard with anonymous branching, taxonomy expanded from 5 interest tags to 8 themes (POIs auto-migrated and re-tagged), new user fields (relationship_mode/status/gender/profession/companions/accessibility/response_formats/contribution_interests), continuous gradient haptic restored, voice mode (TTS) added. Backend now 50/50 tests passing. Two minor UX polish items addressed (duplicate `data-testid`, last-step layout separator).
+- **Iteration 4** — Onboarding redesign: 6-step wizard with anonymous branching, taxonomy expanded from 5 interest tags to 8 themes (POIs auto-migrated and re-tagged), new user fields (relationship_mode/status/gender/profession/companions/accessibility/response_formats/contribution_interests), continuous gradient haptic restored, voice mode (TTS) added. Backend 50/50 tests passing.
+- **Iteration 5 (current — Apr 2026)** — Public landing page with anonymous "aura" dots; **Virtual Navigation** (3 modes: auto-walk / step-forward / drag-pin minimap) so users not in Milan can experience the app; **Student Contribution System** with open registration as `contributor` role, per-POI submissions (narrative / dialogue prompt / fun fact / photo URL), admin moderation queue, public approved-only feed surfaced inside POI drawer. Backend now 68/68 tests passing.
 
 ## Test Credentials
 - **Admin**: admin@brera.app / BreraAdmin2026!
 - Test users: `TEST_<uuid>@example.com` / `Sekret123!`
+- **Contributor**: register via `/register?role=contributor` UI or `POST /api/auth/register` with `as_contributor:true`
 
 ## Backlog
 - **P0** — Wire the *Brera-as-narrator* intro story (700-word monologue I drafted) right after the language pick on first run; English & Italian written; other 5 languages fallback to English until students translate.
+- **P1** — AI-supported dialogue per POI (`response_formats.dialogue`): each POI becomes a character via Emergent LLM key (Claude/GPT) with a per-POI system prompt; seeded by approved `dialogue_prompt` contributions.
 - **P1** — Translate UI strings + opening lines + intro into Spanish/German/Greek/French/Portuguese.
-- **P1** — AI-supported dialogue per POI (`response_formats.dialogue`): each POI becomes a character via Emergent LLM key (Claude/GPT) with a per-POI system prompt.
 - **P1** — Manifest.json + installable PWA icon, full background notification flow on iOS/Android.
-- **P2** — Contribution flows (identify/illustrate/narrate/create_poi) — UIs + admin moderation queue.
+- **P2** — Photo upload pipeline (currently photo URLs only — switch to S3/local persistent storage + thumbnail generation).
 - **P2** — Public per-POI `/place/<slug>` pages, social cards, and shareable visit map.
 - **P2** — Multi-area selector (Brera + Navigli + Isola, etc.) — admin can pick the active area and reuse the codebase as a template per city.
 - **P3** — Native wearable bridge (Capacitor for Apple Watch / Wear OS / smart glasses).
-- **Carry-over** — Refactor `server.py` (>1000 lines) into routers/auth.py, routers/pois.py, routers/me.py, routers/admin.py, seeds.py.
+- **Carry-over** — Refactor `server.py` (~1300 lines now) into routers/auth.py, routers/pois.py, routers/me.py, routers/admin.py, routers/contributions.py, seeds.py.
 
 ## Brera-as-Narrator (in memory, ready to wire)
 Approximately 700 words / ~4 minutes spoken. Voice: first person, slightly mythic, conversational. Begins *"They've given me many names over the centuries — Braida, Brayda, Brera..."* and ends *"I am a quarter of a city. A field. A school. A canvas. A drinking glass. A memory. Walk slowly. Listen. Begin."* Stored in chat history; will be added to a content file when the intro experience ships.

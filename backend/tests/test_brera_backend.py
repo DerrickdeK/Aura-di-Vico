@@ -698,7 +698,6 @@ class TestContributions:
         assert body["poi_id"] == pid
         assert body["type"] == "narrative"
         assert "id" in body
-        return body["id"]
 
     def test_admin_creates_auto_approved(self, admin_session):
         pois = requests.get(f"{API}/pois", timeout=10).json()
