@@ -219,15 +219,15 @@ export default function ProfilePage() {
             <p className="text-sm text-[var(--text-secondary)] mb-2">profession</p>
             <RadioChips value={professionValue} options={PROFESSION_OPTIONS} onChange={setProfessionValue}
               lang={language} kind="profession" testidPrefix="profile-profession" />
-            {professionValue === "other" && (
-              <input
-                className="input-field mt-3"
-                placeholder={t(language, "profile.free_text_other")}
-                value={professionOther}
-                onChange={(e) => setProfessionOther(e.target.value)}
-                data-testid="profile-profession-other"
-              />
-            )}
+              {professionValue === "other" && (
+                <input
+                  className="input-field mt-3"
+                  placeholder={t(language, "profile.free_text_other")}
+                  value={professionOther}
+                  onChange={(e) => setProfessionOther(e.target.value)}
+                  data-testid="profile-profession-other-input"
+                />
+              )}
           </div>
         </section>
       )}

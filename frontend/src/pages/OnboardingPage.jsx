@@ -376,27 +376,30 @@ export default function OnboardingPage() {
               />
             </div>
 
-            <div className="mt-8 p-5 bg-[var(--surface)] border border-[var(--border)] rounded-2xl text-center">
-              <p className="font-serif text-xl">{t(language, "profile.notifications")}</p>
-              <p className="text-sm text-[var(--text-secondary)] mt-1">
-                {t(language, "profile.notificationsHint")}
-              </p>
-              <div className="mt-4 flex gap-2 justify-center">
-                <button
-                  onClick={enableNotifications}
-                  className="btn-primary"
-                  disabled={busy || notif}
-                  data-testid="onb-notif-enable"
-                >
-                  {notif ? "✓" : t(language, "onboarding.enable")}
-                </button>
-                <button
-                  onClick={() => setNotif(false)}
-                  className="btn-ghost"
-                  data-testid="onb-notif-skip"
-                >
-                  {t(language, "onboarding.skip")}
-                </button>
+            <div className="mt-10 pt-8 border-t border-[var(--border)]">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 text-center">
+                <p className="eyebrow mb-2">One last thing</p>
+                <p className="font-serif text-xl">{t(language, "profile.notifications")}</p>
+                <p className="text-sm text-[var(--text-secondary)] mt-1">
+                  {t(language, "profile.notificationsHint")}
+                </p>
+                <div className="mt-4 flex gap-2 justify-center">
+                  <button
+                    onClick={enableNotifications}
+                    className="btn-primary"
+                    disabled={busy || notif}
+                    data-testid="onb-notif-enable"
+                  >
+                    {notif ? "✓" : t(language, "onboarding.enable")}
+                  </button>
+                  <button
+                    onClick={() => setNotif(false)}
+                    className="btn-ghost"
+                    data-testid="onb-notif-skip"
+                  >
+                    {t(language, "onboarding.skip")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
