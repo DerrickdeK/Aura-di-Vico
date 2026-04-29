@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Footprints, Pause, Play, Volume2, VolumeX } from "lucide-react";
@@ -7,28 +7,30 @@ import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import useGeolocation from "../hooks/useGeolocation";
 import useCityWhispers from "../hooks/useCityWhispers";
+import useGradientHaptic from "../hooks/useGradientHaptic";
 import ListeningCompass from "../components/ListeningCompass";
 import WhisperCard from "../components/WhisperCard";
 import POIDrawer from "../components/POIDrawer";
 import { unlockAudio } from "../lib/audio";
-import { t } from "../lib/i18n";
+import { speak, stopSpeaking } from "../lib/speech";
+import { t, getOpeningLine } from "../lib/i18n";
 
 const BRERA_CENTER = { latitude: 45.4719, longitude: 9.1881 };
 
 /** A scripted walk through Brera that visits a few POIs in sequence — used
  * when the device has no real GPS so the experience can be demoed indoors. */
 const GHOST_WALK = [
-  { latitude: 45.4719, longitude: 9.1881 }, // Orto Botanico vicinity
-  { latitude: 45.4720, longitude: 9.1879 }, // Cortile della Pinacoteca
-  { latitude: 45.4738, longitude: 9.1874 }, // Bar Jamaica
-  { latitude: 45.4742, longitude: 9.1907 }, // Fioraio Bianchi
-  { latitude: 45.4754, longitude: 9.1908 }, // Latteria di San Marco
-  { latitude: 45.4736, longitude: 9.1908 }, // Cortile della Magnolia
+  { latitude: 45.4719, longitude: 9.1881 },
+  { latitude: 45.4720, longitude: 9.1879 },
+  { latitude: 45.4738, longitude: 9.1874 },
+  { latitude: 45.4742, longitude: 9.1907 },
+  { latitude: 45.4754, longitude: 9.1908 },
+  { latitude: 45.4736, longitude: 9.1908 },
 ];
 
 function useGhostWalk(enabled) {
   const [idx, setIdx] = useState(0);
-  const [step, setStep] = useState(0); // 0..1 between two waypoints
+  const [step, setStep] = useState(0);
   useEffect(() => {
     if (!enabled) return undefined;
     const id = setInterval(() => {
@@ -52,6 +54,16 @@ function useGhostWalk(enabled) {
   };
 }
 
+// Filter POIs by user themes (interests). Empty interests => no filter.
+function filterByThemes(pois, interests) {
+  if (!interests || interests.length === 0) return pois;
+  return pois.filter((p) => {
+    const tags = p.interest_tags || [];
+    if (tags.length === 0) return true;  // untagged = visible to everyone
+    return tags.some((tag) => interests.includes(tag));
+  });
+}
+
 export default function ListenPage() {
   const { user } = useAuth();
   const { position: realPosition, error: geoError } = useGeolocation();
@@ -66,21 +78,28 @@ export default function ListenPage() {
 
   const language = user?.language || "en";
   const interests = user?.interests || [];
+  const responseFormats = user?.response_formats || ["writing"];
+  const voiceEnabled = responseFormats.includes("voice");
   const notif = user?.notifications_enabled || false;
 
-  // Filter POIs by user interests (empty interests => show all).
-  const filteredPois = useMemo(() => {
-    if (!interests || interests.length === 0) return pois;
-    return pois.filter((p) =>
-      !p.interest_tags || p.interest_tags.length === 0
-        ? false
-        : p.interest_tags.some((t) => interests.includes(t))
-    );
-  }, [pois, interests]);
+  const filteredPois = useMemo(() => filterByThemes(pois, interests), [pois, interests]);
 
   useEffect(() => {
     api.get("/pois").then(({ data }) => setPois(data)).catch(() => setPois([]));
   }, []);
+
+  // Speak the opening line aloud when a POI enters the Called zone (only if
+  // the user opted in to voice during onboarding/profile).
+  const spokenIdsRef = useRef(new Set());
+  const onWhisperEvent = (poi, zone) => {
+    if (!voiceEnabled || !audioOn) return;
+    if (zone !== "called" && zone !== "found") return;
+    const key = `${poi.id}-${zone}`;
+    if (spokenIdsRef.current.has(key)) return;
+    spokenIdsRef.current.add(key);
+    const line = getOpeningLine(poi, language);
+    if (line) speak(line, { lang: language });
+  };
 
   const { sightings, radii } = useCityWhispers({
     position,
@@ -88,11 +107,13 @@ export default function ListenPage() {
     language,
     notificationsEnabled: notif,
     enabled: audioOn,
-    onFound: (poi) => {
-      // Auto-open the drawer the moment a POI moves into the 'found' zone.
-      setActivePoi(poi);
-    },
+    onZoneUpgrade: onWhisperEvent,
+    onFound: (poi) => setActivePoi(poi),
   });
+
+  // Continuous gradient haptic — independent of zone-entry signatures.
+  const nearest = sightings[0] || null;
+  useGradientHaptic({ nearest, enabled: audioOn });
 
   // First user gesture on page unlocks the AudioContext.
   useEffect(() => {
@@ -100,6 +121,11 @@ export default function ListenPage() {
     window.addEventListener("pointerdown", onTouch, { once: true });
     return () => window.removeEventListener("pointerdown", onTouch);
   }, []);
+
+  // Stop any TTS when audio is turned off.
+  useEffect(() => {
+    if (!audioOn) stopSpeaking();
+  }, [audioOn]);
 
   if (user === null) return <p className="p-10 text-[var(--text-tertiary)]">…</p>;
   if (user === false) return <Navigate to="/login" replace />;
@@ -124,8 +150,6 @@ export default function ListenPage() {
           sightings={sightings}
           sensedRadius={radii.sensed_radius_m}
           onSelectSighting={(s) => {
-            // Reveal the POI for sighting in 'called' or 'found'. In 'sensed'
-            // we keep the tease (no full info yet).
             if (s.zone !== "sensed") setActivePoi(s.poi);
           }}
         />
@@ -158,7 +182,6 @@ export default function ListenPage() {
         </AnimatePresence>
       </div>
 
-      {/* Compact controls — sit above the Emergent badge on small viewports */}
       <div className="fixed bottom-32 sm:bottom-24 left-0 right-0 z-[400] flex justify-center px-4 pointer-events-none">
         <div className="pointer-events-auto inline-flex items-center gap-2 bg-[var(--surface)]/90 backdrop-blur border border-[var(--border)] rounded-full px-3 py-2 shadow-md">
           <button
@@ -177,7 +200,7 @@ export default function ListenPage() {
               ghostOn ? "bg-[var(--terracotta)] text-[var(--inverse)]" : ""
             }`}
             data-testid="ghost-walk-toggle"
-            title="Simulate a walk through Brera (for desktops without GPS)"
+            title="Simulate a walk through Brera"
           >
             {ghostOn ? <Pause size={14} /> : <Play size={14} />}
             <Footprints size={14} />

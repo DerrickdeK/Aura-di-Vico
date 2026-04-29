@@ -54,7 +54,7 @@ class TestPublicPOIs:
     def test_root(self):
         r = requests.get(f"{API}/", timeout=10)
         assert r.status_code == 200
-        assert r.json().get("ok") == True
+        assert r.json().get("ok") is True
 
     def test_list_pois_seeded(self):
         r = requests.get(f"{API}/pois", timeout=15)
@@ -277,7 +277,7 @@ class TestVisits:
         # duplicate within 6h
         r2 = normal_user_session.post(f"{API}/me/visits", json={"poi_id": pid}, timeout=10)
         assert r2.status_code == 200
-        assert r2.json().get("duplicate") == True
+        assert r2.json().get("duplicate") is True
 
     def test_list_visits_includes_poi(self, normal_user_session):
         pois = requests.get(f"{API}/pois", timeout=10).json()
@@ -312,10 +312,10 @@ class TestConfig:
         # interest tags
         tags = body.get("interest_tags")
         assert isinstance(tags, list)
-        for t in ["hidden_gardens", "historic_cafes", "hidden_courtyards",
-                  "renaissance_traces", "artisan_workshops"]:
-            assert t in tags
-        assert len(tags) == 5
+        for tag in ["local_legends", "curios", "art", "history",
+                    "architecture", "sceneries", "food", "shopping"]:
+            assert tag in tags
+        assert len(tags) == 8
         # zone radii
         z = body.get("zones") or {}
         assert z.get("sensed_radius_m") == 200
@@ -353,13 +353,13 @@ class TestProfile:
         assert "onboarded" in body
         assert "notifications_enabled" in body
         # Admin is auto-onboarded per migration
-        assert body["onboarded"] == True
+        assert body["onboarded"] is True
         assert isinstance(body["interests"], list)
 
     def test_patch_profile_updates_all_fields(self, normal_user_session):
         payload = {
             "language": "it",
-            "interests": ["hidden_gardens", "historic_cafes", "hidden_courtyards"],
+            "interests": ["history", "art", "food"],
             "notifications_enabled": True,
             "onboarded": True,
         }
@@ -368,19 +368,19 @@ class TestProfile:
         body = r.json()
         assert body["language"] == "it"
         assert sorted(body["interests"]) == sorted(payload["interests"])
-        assert body["notifications_enabled"] == True
-        assert body["onboarded"] == True
+        assert body["notifications_enabled"] is True
+        assert body["onboarded"] is True
         # Verify persistence via /auth/me
         m = normal_user_session.get(f"{API}/auth/me", timeout=10)
         assert m.status_code == 200
         mb = m.json()
         assert mb["language"] == "it"
-        assert mb["onboarded"] == True
+        assert mb["onboarded"] is True
 
     def test_patch_profile_rejects_unknown_interest(self, normal_user_session):
         r = normal_user_session.patch(
             f"{API}/me/profile",
-            json={"interests": ["hidden_gardens", "definitely_not_a_tag"]},
+            json={"interests": ["local_legends", "definitely_not_a_tag"]},
             timeout=10,
         )
         assert r.status_code == 400
@@ -415,8 +415,8 @@ class TestDiscoveries:
                                     json={"poi_id": pid, "zone": "sensed"}, timeout=10)
         assert r.status_code == 200
         body = r.json()
-        assert body["ok"] == True
-        assert body["upgraded"] == False
+        assert body["ok"] is True
+        assert body["upgraded"] is False
 
     def test_upgrade_zone_returns_upgraded_true(self, fresh_user_session):
         pois = requests.get(f"{API}/pois", timeout=10).json()
@@ -428,12 +428,12 @@ class TestDiscoveries:
         r = fresh_user_session.post(f"{API}/me/discoveries",
                                     json={"poi_id": pid, "zone": "called"}, timeout=10)
         assert r.status_code == 200
-        assert r.json()["upgraded"] == True
+        assert r.json()["upgraded"] is True
         # found -> further upgrade
         r2 = fresh_user_session.post(f"{API}/me/discoveries",
                                      json={"poi_id": pid, "zone": "found"}, timeout=10)
         assert r2.status_code == 200
-        assert r2.json()["upgraded"] == True
+        assert r2.json()["upgraded"] is True
         # GET should return zone=found, single record (not duplicates)
         listing = fresh_user_session.get(f"{API}/me/discoveries", timeout=10).json()
         matches = [d for d in listing if d.get("poi") and d["poi"]["id"] == pid]
@@ -509,7 +509,7 @@ class TestAdminPOIIter2:
             "category": "Test",
             "image_url": "https://example.com/x.jpg",
             "trigger_radius_m": 50,
-            "interest_tags": ["hidden_gardens", "historic_cafes"],
+            "interest_tags": ["local_legends", "food"],
             "opening_line": {
                 "en": "Quiet, the gate is just here.",
                 "it": "Silenzio, il cancello è qui.",
@@ -520,15 +520,105 @@ class TestAdminPOIIter2:
         body = r.json()
         pid = body["id"]
         try:
-            assert body["interest_tags"] == ["hidden_gardens", "historic_cafes"]
+            assert body["interest_tags"] == ["local_legends", "food"]
             assert body["opening_line"]["en"].startswith("Quiet")
             assert body["opening_line"]["it"].startswith("Silenzio")
             # GET back
             g = requests.get(f"{API}/pois/{pid}", timeout=10).json()
-            assert g["interest_tags"] == ["hidden_gardens", "historic_cafes"]
+            assert g["interest_tags"] == ["local_legends", "food"]
             assert g["opening_line"]["it"] == payload["opening_line"]["it"]
         finally:
             admin_session.delete(f"{API}/pois/{pid}", timeout=10)
+
+    def test_iter4_config_has_all_option_lists(self):
+        r = requests.get(f"{API}/config", timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        # 8 themes
+        assert sorted(body["interest_tags"]) == sorted([
+            "local_legends","curios","art","history","architecture","sceneries","food","shopping"
+        ])
+        # 7 supported languages
+        assert sorted(body["supported_languages"]) == sorted(["en","it","es","de","el","fr","pt"])
+        # New option lists must be present and well-formed
+        assert body["relationship_modes"] == ["anonymous","personal"]
+        assert sorted(body["status_options"]) == sorted(["citizen","visitor","guest","tourist","other"])
+        assert sorted(body["gender_options"]) == sorted(["male","female","non_binary","prefer_not_to_say"])
+        assert sorted(body["profession_options"]) == sorted([
+            "student","researcher","employee","manual_craft",
+            "self_employed_professional","retired","other"])
+        assert sorted(body["companion_options"]) == sorted([
+            "alone","with_partner","with_family","with_friends_or_group","with_guide"])
+        assert sorted(body["accessibility_options"]) == sorted([
+            "walking_freely","limited_stamina","wheelchair","stroller",
+            "with_assistant","prefer_not_to_say"])
+        assert sorted(body["response_formats"]) == sorted(["writing","voice","image","dialogue"])
+        assert sorted(body["contribution_options"]) == sorted(["identify","illustrate","narrate","create_poi"])
+
+    def test_iter4_pois_only_use_new_taxonomy(self):
+        r = requests.get(f"{API}/pois", timeout=15)
+        data = r.json()
+        assert len(data) == 18, f"Expected exactly 18 POIs, got {len(data)}"
+        valid = {"local_legends","curios","art","history","architecture","sceneries","food","shopping"}
+        legacy = {"hidden_gardens","historic_cafes","hidden_courtyards",
+                  "renaissance_traces","artisan_workshops"}
+        for p in data:
+            tags = p.get("interest_tags") or []
+            assert tags, f"POI {p['name']} has no tags"
+            for t in tags:
+                assert t in valid, f"POI {p['name']} has invalid tag {t}"
+                assert t not in legacy, f"POI {p['name']} still has legacy tag {t}"
+
+    def test_iter4_profile_accepts_all_new_fields(self, normal_user_session):
+        payload = {
+            "relationship_mode":"personal",
+            "status":"visitor",
+            "gender":"non_binary",
+            "profession":"other",
+            "profession_other":"Astronaut",
+            "companions":["alone","with_friends_or_group"],
+            "accessibility":["wheelchair","prefer_not_to_say"],
+            "response_formats":["writing","voice","image","dialogue"],
+            "contribution_interests":["identify","illustrate","narrate","create_poi"],
+        }
+        r = normal_user_session.patch(f"{API}/me/profile", json=payload, timeout=10)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["relationship_mode"] == "personal"
+        assert body["status"] == "visitor"
+        assert body["gender"] == "non_binary"
+        assert body["profession"] == "other"
+        assert body["profession_other"] == "Astronaut"
+        assert sorted(body["companions"]) == sorted(payload["companions"])
+        assert sorted(body["accessibility"]) == sorted(payload["accessibility"])
+        assert sorted(body["response_formats"]) == sorted(payload["response_formats"])
+        assert sorted(body["contribution_interests"]) == sorted(payload["contribution_interests"])
+        # Verify persistence via /auth/me
+        m = normal_user_session.get(f"{API}/auth/me", timeout=10).json()
+        assert m["gender"] == "non_binary"
+        assert m["profession_other"] == "Astronaut"
+        assert "wheelchair" in m["accessibility"]
+
+    @pytest.mark.parametrize("field,bad_value", [
+        ("status", "alien"),
+        ("gender", "robot"),
+        ("profession", "wizard"),
+        ("companions", ["with_dog"]),
+        ("accessibility", ["jetpack"]),
+        ("response_formats", ["telepathy"]),
+        ("contribution_interests", ["destroy_poi"]),
+    ])
+    def test_iter4_profile_rejects_unknown_values(self, normal_user_session, field, bad_value):
+        r = normal_user_session.patch(f"{API}/me/profile", json={field: bad_value}, timeout=10)
+        assert r.status_code == 400, f"{field}={bad_value} should 400, got {r.status_code} {r.text}"
+
+    def test_iter4_profile_rejects_legacy_interest_tag(self, normal_user_session):
+        r = normal_user_session.patch(
+            f"{API}/me/profile",
+            json={"interests": ["hidden_gardens"]},
+            timeout=10,
+        )
+        assert r.status_code == 400
 
     def test_update_changes_opening_line(self, admin_session):
         # create
@@ -537,19 +627,19 @@ class TestAdminPOIIter2:
             "short_description": "tmp", "long_description": "tmp",
             "latitude": 45.47, "longitude": 9.18, "address": "x", "category": "x",
             "image_url": "https://x/x.jpg",
-            "interest_tags": ["renaissance_traces"],
+            "interest_tags": ["history"],
             "opening_line": {"en": "v1"},
         }
         c = admin_session.post(f"{API}/pois", json=base, timeout=10)
         pid = c.json()["id"]
         try:
             updated = {**base, "opening_line": {"en": "v2", "fr": "bonjour"},
-                       "interest_tags": ["artisan_workshops"]}
+                       "interest_tags": ["curios"]}
             r = admin_session.put(f"{API}/pois/{pid}", json=updated, timeout=10)
             assert r.status_code == 200
             g = requests.get(f"{API}/pois/{pid}", timeout=10).json()
             assert g["opening_line"]["en"] == "v2"
             assert g["opening_line"]["fr"] == "bonjour"
-            assert g["interest_tags"] == ["artisan_workshops"]
+            assert g["interest_tags"] == ["curios"]
         finally:
             admin_session.delete(f"{API}/pois/{pid}", timeout=10)

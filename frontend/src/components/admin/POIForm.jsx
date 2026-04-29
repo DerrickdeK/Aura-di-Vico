@@ -2,15 +2,18 @@ import React, { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 
 const ALL_INTERESTS = [
-  "hidden_gardens", "historic_cafes", "hidden_courtyards",
-  "renaissance_traces", "artisan_workshops",
+  "local_legends", "curios", "art", "history",
+  "architecture", "sceneries", "food", "shopping",
 ];
 const INTEREST_LABELS = {
-  hidden_gardens: "Hidden Gardens",
-  historic_cafes: "Historic Cafés & Trattorie",
-  hidden_courtyards: "Hidden Courtyards & Palaces",
-  renaissance_traces: "Renaissance & Historic Traces",
-  artisan_workshops: "Artisan Workshops & Shops",
+  local_legends: "Local legends",
+  curios: "Curiosities",
+  art: "Art",
+  history: "History",
+  architecture: "Architecture",
+  sceneries: "Sceneries",
+  food: "Food",
+  shopping: "Shopping",
 };
 
 // Replaces the previous nested ternary

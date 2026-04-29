@@ -49,18 +49,21 @@ export default function useCityWhispers({
   notificationsEnabled = false,
   enabled = true,
   onFound,
+  onZoneUpgrade,
 }) {
   const [radii, setRadii] = useState(DEFAULT_ZONES);
   const [sightings, setSightings] = useState([]);
 
   // Refs for the latest non-pure values so they don't re-trigger the effect.
   const onFoundRef = useRef(onFound);
+  const onZoneUpgradeRef = useRef(onZoneUpgrade);
   const languageRef = useRef(language);
   const notifRef = useRef(notificationsEnabled);
   // Tracks the highest zone reached per POI in this session.
   const reachedRef = useRef(new Map());
 
   useEffect(() => { onFoundRef.current = onFound; }, [onFound]);
+  useEffect(() => { onZoneUpgradeRef.current = onZoneUpgrade; }, [onZoneUpgrade]);
   useEffect(() => { languageRef.current = language; }, [language]);
   useEffect(() => { notifRef.current = notificationsEnabled; }, [notificationsEnabled]);
 
@@ -111,6 +114,7 @@ export default function useCityWhispers({
         }
         api.post("/me/discoveries", { poi_id: poi.id, zone })
           .catch((err) => devWarn("Discovery persist failed:", err));
+        onZoneUpgradeRef.current?.(poi, zone);
         if (zone === "found") onFoundRef.current?.(poi);
       }
     }

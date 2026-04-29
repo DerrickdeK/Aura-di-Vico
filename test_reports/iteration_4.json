@@ -1,0 +1,35 @@
+{
+  "summary": "Iteration 4 testing complete. Backend pytest 50/50 PASS (added 11 new iter-4 tests covering /api/config option lists, 18 POIs only on new 8-theme taxonomy with no legacy hidden_gardens tag, PATCH /me/profile accepts all new fields incl. profession_other, 7 parametrised rejection tests for unknown values across status/gender/profession/companions/accessibility/response_formats/contribution_interests, and legacy 'hidden_gardens' interest rejection). Frontend onboarding: Anonymous flow = 6 steps, Personal flow = 7 steps with personal-info step inserted; 'Other' profession reveals onb-profession-other free-text input that accepted 'Astronaut' cleanly; 8 themes / 5 companions / 6 accessibility (incl. wheelchair + prefer_not_to_say) / 4 formats / 4 contribution chips all rendered with data-testids; finishing redirects to / (Listen). Language switch in step 1 changes UI strings (verified 'WELCOME TO BRERA'→'BENVENUTO A BRERA' / Next→Avanti). Listen page ghost walk for 30s: 4-6 motes visible continuously, drawer auto-opened on found-zone, ZERO console errors, ZERO 'Maximum update depth' warnings. Profile save persists across reload — relationship_mode=personal, gender=non_binary, theme=art, accessibility=wheelchair, format=voice all retained the active terracotta state class after page refresh.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "OnboardingPage step 7 (contribute)", "issues": ["Step 7 mixes the 4 contribution chips with the notification enable/skip buttons (onb-notif-enable, onb-notif-skip). The review request describes step 6 as purely 'contribute' but the wizard renders contribute + notification together as the final step. Functionally fine and Finish button is present, but the 'Would you like to give back?' header may feel busy when the notif row is appended."]},
+      {"screen": "ProfilePage", "issues": ["Two elements share data-testid=\"profile-profession-other\" (the chip button AND the free-text input). It works, but a Playwright selector by that testid will hit whichever appears first in DOM order. Recommend renaming the input to profile-profession-other-input."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Minor) Disambiguate duplicate data-testid 'profile-profession-other' (chip vs free-text input) — rename input to 'profile-profession-other-input'.",
+    "(Minor, optional) Consider separating the notification opt-in row from the Contribute step — or rename the step header so users understand the final card has two intents.",
+    "(Carry-over from iter 3) Split /app/backend/server.py (>1000 lines) into routers/auth.py, routers/pois.py, routers/me.py, routers/admin.py, seeds.py."
+  ],
+  "critical_code_review_comments": [
+    "Backend validators (_validate_subset / _validate_value) are clean, raise HTTPException 400 with the offending value list — verified by 7 parametrised tests. Good design.",
+    "ProfileIn.profession_other is stored as None when blank (`(payload.profession_other or '').strip() or None`) — sensible normalisation; idempotent across re-saves.",
+    "POI migration logic at startup detects legacy tags and reseeds — verified tests show only the 8 new tags. Migration is one-shot and idempotent.",
+    "Voice mode (Web Speech API) was not exercised by automation (Playwright runs without audio surface); recommend a manual smoke check that opting in to voice format triggers speechSynthesis.speak at the called-zone first transition.",
+    "useGradientHaptic continuous vibration similarly not testable headlessly — recommend manual mobile QA. The hook should also guard navigator.vibrate behind a feature check (which it appears to do)."
+  ],
+  "updated_files": ["/app/backend/tests/test_brera_backend.py"],
+  "success_rate": {"backend": "100% (50/50)", "frontend": "100% on the explicit retest list"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! verified. New TEST_<uuid>@example.com / Sekret123! users registered cleanly through both anonymous and personal onboarding flows.",
+  "seed_data_creation": "None added beyond the 18 seeded POIs and ephemeral discoveries created by the admin's ghost walk during testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All iter-4 acceptance tests pass. Run backend regression with: cd /app && ADMIN_PASSWORD='BreraAdmin2026!' python -m pytest backend/tests/test_brera_backend.py -v. Onboarding chip prefixes are: onb-lang-, onb-rel-, onb-status-, onb-gender-, onb-profession-, onb-theme-, onb-companion-, onb-acc-, onb-format-, onb-contrib-, plus onb-back / onb-next / onb-finish (last step), and onb-notif-enable / onb-notif-skip on the final card. Profile prefixes mirror these but with 'profile-' instead of 'onb-'. Hide #emergent-badge before clicking bottom-positioned controls on the 390-wide viewport. Voice TTS and gradient haptic are NOT exercised by Playwright — flag them for manual mobile QA."
+}

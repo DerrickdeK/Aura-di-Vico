@@ -80,18 +80,51 @@ def clear_auth_cookies(response: Response):
 
 
 SUPPORTED_LANGS = ["en", "it", "es", "de", "el", "fr", "pt"]
+
+# 8 thematic preferences (replaces the previous 5 interest tags).
 INTEREST_TAGS = [
-    "hidden_gardens",
-    "historic_cafes",
-    "hidden_courtyards",
-    "renaissance_traces",
-    "artisan_workshops",
+    "local_legends", "curios", "art", "history",
+    "architecture", "sceneries", "food", "shopping",
 ]
+
+RELATIONSHIP_MODES = ["anonymous", "personal"]
+STATUS_OPTIONS    = ["citizen", "visitor", "guest", "tourist", "other"]
+GENDER_OPTIONS    = ["male", "female", "non_binary", "prefer_not_to_say"]
+PROFESSION_OPTIONS = [
+    "student", "researcher", "employee", "manual_craft",
+    "self_employed_professional", "retired", "other",
+]
+COMPANION_OPTIONS = [
+    "alone", "with_partner", "with_family",
+    "with_friends_or_group", "with_guide",
+]
+ACCESSIBILITY_OPTIONS = [
+    "walking_freely", "limited_stamina", "wheelchair",
+    "stroller", "with_assistant", "prefer_not_to_say",
+]
+RESPONSE_FORMATS  = ["writing", "voice", "image", "dialogue"]
+CONTRIBUTION_OPTIONS = ["identify", "illustrate", "narrate", "create_poi"]
 
 # Distance zones (in meters) for the "city talks" experience
 SENSED_RADIUS_M = 200   # outermost: tease only
 CALLED_RADIUS_M = 80    # mid: name + opening line revealed
 FOUND_RADIUS_M  = 25    # inner: full reveal + visit recorded
+
+
+def _validate_subset(values, allowed, label):
+    """Raise 400 if any of `values` is not in `allowed`."""
+    if values is None:
+        return
+    invalid = [v for v in values if v not in allowed]
+    if invalid:
+        raise HTTPException(status_code=400, detail=f"Unknown {label}: {invalid}")
+
+
+def _validate_value(value, allowed, label):
+    if value is None or value == "":
+        return
+    if value not in allowed:
+        raise HTTPException(status_code=400, detail=f"Unknown {label}: {value}")
 
 
 # ------------------------------------------------------------------------------------
@@ -108,6 +141,16 @@ class UserPublic(BaseModel):
     language: str = "en"
     onboarded: bool = False
     notifications_enabled: bool = False
+    # Onboarding questionnaire — all optional / blank by design.
+    relationship_mode: Optional[str] = "anonymous"
+    status: Optional[str] = None
+    gender: Optional[str] = None
+    profession: Optional[str] = None
+    profession_other: Optional[str] = None  # free-text when profession == "other"
+    companions: List[str] = Field(default_factory=list)
+    accessibility: List[str] = Field(default_factory=list)
+    response_formats: List[str] = Field(default_factory=lambda: ["writing"])
+    contribution_interests: List[str] = Field(default_factory=list)
 
 class RegisterIn(BaseModel):
     email: EmailStr
@@ -130,6 +173,15 @@ class ProfileIn(BaseModel):
     language: Optional[str] = None
     notifications_enabled: Optional[bool] = None
     onboarded: Optional[bool] = None
+    relationship_mode: Optional[str] = None
+    status: Optional[str] = None
+    gender: Optional[str] = None
+    profession: Optional[str] = None
+    profession_other: Optional[str] = None
+    companions: Optional[List[str]] = None
+    accessibility: Optional[List[str]] = None
+    response_formats: Optional[List[str]] = None
+    contribution_interests: Optional[List[str]] = None
 
 class POIIn(BaseModel):
     name: str
@@ -226,6 +278,15 @@ def _user_to_public(u: dict) -> dict:
         "language": u.get("language", "en"),
         "onboarded": u.get("onboarded", False),
         "notifications_enabled": u.get("notifications_enabled", False),
+        "relationship_mode": u.get("relationship_mode", "anonymous"),
+        "status": u.get("status"),
+        "gender": u.get("gender"),
+        "profession": u.get("profession"),
+        "profession_other": u.get("profession_other"),
+        "companions": u.get("companions", []),
+        "accessibility": u.get("accessibility", []),
+        "response_formats": u.get("response_formats", ["writing"]),
+        "contribution_interests": u.get("contribution_interests", []),
     }
 
 @api_router.post("/auth/register", response_model=UserPublic)
@@ -240,6 +301,12 @@ async def register(payload: RegisterIn, response: Response):
         "role": "user", "favorites": [],
         "interests": [], "language": "en", "onboarded": False,
         "notifications_enabled": False,
+        "relationship_mode": "anonymous",
+        "status": None, "gender": None,
+        "profession": None, "profession_other": None,
+        "companions": [], "accessibility": [],
+        "response_formats": ["writing"],
+        "contribution_interests": [],
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.users.insert_one(doc)
@@ -425,19 +492,50 @@ async def list_visits(user: dict = Depends(get_current_user)):
 @api_router.patch("/me/profile", response_model=UserPublic)
 async def update_profile(payload: ProfileIn, user: dict = Depends(get_current_user)):
     update = {}
+
+    # List-of-tags fields
     if payload.interests is not None:
-        invalid = [t for t in payload.interests if t not in INTEREST_TAGS]
-        if invalid:
-            raise HTTPException(status_code=400, detail=f"Unknown interests: {invalid}")
+        _validate_subset(payload.interests, INTEREST_TAGS, "interests")
         update["interests"] = payload.interests
+    if payload.companions is not None:
+        _validate_subset(payload.companions, COMPANION_OPTIONS, "companions")
+        update["companions"] = payload.companions
+    if payload.accessibility is not None:
+        _validate_subset(payload.accessibility, ACCESSIBILITY_OPTIONS, "accessibility")
+        update["accessibility"] = payload.accessibility
+    if payload.response_formats is not None:
+        _validate_subset(payload.response_formats, RESPONSE_FORMATS, "response_formats")
+        update["response_formats"] = payload.response_formats
+    if payload.contribution_interests is not None:
+        _validate_subset(payload.contribution_interests, CONTRIBUTION_OPTIONS, "contribution_interests")
+        update["contribution_interests"] = payload.contribution_interests
+
+    # Single-value enum fields (None/empty allowed = blank)
     if payload.language is not None:
         if payload.language not in SUPPORTED_LANGS:
             raise HTTPException(status_code=400, detail=f"Unsupported language: {payload.language}")
         update["language"] = payload.language
+    if payload.relationship_mode is not None:
+        _validate_value(payload.relationship_mode, RELATIONSHIP_MODES, "relationship_mode")
+        update["relationship_mode"] = payload.relationship_mode
+    if payload.status is not None:
+        _validate_value(payload.status, STATUS_OPTIONS, "status")
+        update["status"] = payload.status or None
+    if payload.gender is not None:
+        _validate_value(payload.gender, GENDER_OPTIONS, "gender")
+        update["gender"] = payload.gender or None
+    if payload.profession is not None:
+        _validate_value(payload.profession, PROFESSION_OPTIONS, "profession")
+        update["profession"] = payload.profession or None
+    if payload.profession_other is not None:
+        update["profession_other"] = (payload.profession_other or "").strip() or None
+
+    # Booleans
     if payload.notifications_enabled is not None:
         update["notifications_enabled"] = bool(payload.notifications_enabled)
     if payload.onboarded is not None:
         update["onboarded"] = bool(payload.onboarded)
+
     if update:
         await db.users.update_one({"id": user["id"]}, {"$set": update})
     fresh = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
@@ -493,6 +591,14 @@ async def get_config():
     return {
         "supported_languages": SUPPORTED_LANGS,
         "interest_tags": INTEREST_TAGS,
+        "relationship_modes": RELATIONSHIP_MODES,
+        "status_options": STATUS_OPTIONS,
+        "gender_options": GENDER_OPTIONS,
+        "profession_options": PROFESSION_OPTIONS,
+        "companion_options": COMPANION_OPTIONS,
+        "accessibility_options": ACCESSIBILITY_OPTIONS,
+        "response_formats": RESPONSE_FORMATS,
+        "contribution_options": CONTRIBUTION_OPTIONS,
         "zones": {
             "sensed_radius_m": SENSED_RADIUS_M,
             "called_radius_m": CALLED_RADIUS_M,
@@ -738,109 +844,109 @@ BRERA_POI_SEED = [
 # `opening_line` is a {language_code: text} map. Add more languages later.
 POI_METADATA = {
     "Orto Botanico di Brera": {
-        "interest_tags": ["hidden_gardens"],
+        "interest_tags": ["sceneries", "history", "curios"],
         "opening_line": {
             "en": "Beyond this gate, a 240-year-old ginkgo is waiting for you to look up.",
         },
     },
     "Cortile della Pinacoteca": {
-        "interest_tags": ["hidden_courtyards"],
+        "interest_tags": ["art", "architecture", "history"],
         "opening_line": {
             "en": "Step inside — Napoleon, twice life-size, has been waiting for you in bronze.",
         },
     },
     "Fioraio Bianchi Caffè": {
-        "interest_tags": ["historic_cafes", "artisan_workshops"],
+        "interest_tags": ["food", "curios"],
         "opening_line": {
             "en": "Smell that? It's roses, and lunch, served at marble tables since 1976.",
         },
     },
     "Cimitero di San Marco (vestiges)": {
-        "interest_tags": ["renaissance_traces"],
+        "interest_tags": ["local_legends", "history"],
         "opening_line": {
             "en": "Look down — the stones beneath your feet were once tombstones. Mozart played near here at fourteen.",
         },
     },
     "Casa degli Atellani — Vigna di Leonardo": {
-        "interest_tags": ["renaissance_traces", "hidden_gardens"],
+        "interest_tags": ["history", "sceneries", "local_legends"],
         "opening_line": {
             "en": "Leonardo's vines are still thirsty. The same soil he sketched in 1498 is right behind you.",
         },
     },
     "Libreria Bocca": {
-        "interest_tags": ["artisan_workshops"],
+        "interest_tags": ["art", "history", "shopping"],
         "opening_line": {
             "en": "Pages from 1775 are turning, slowly. Marinetti's Futurist manifestos started right here.",
         },
     },
     "Vicolo dei Lavandai": {
-        "interest_tags": ["renaissance_traces"],
+        "interest_tags": ["local_legends", "history", "sceneries"],
         "opening_line": {
             "en": "The last open-air laundry of Milan still echoes with washermen of the 1700s.",
         },
     },
     "Chiesa di San Carpoforo": {
-        "interest_tags": ["renaissance_traces", "hidden_courtyards"],
+        "interest_tags": ["history", "architecture", "art"],
         "opening_line": {
             "en": "An eleventh-century church is hosting today's young artists. Romanesque stones, modern hands.",
         },
     },
     "Bar Jamaica": {
-        "interest_tags": ["historic_cafes"],
+        "interest_tags": ["curios", "history", "food"],
         "opening_line": {
             "en": "Hemingway's table is empty, but the photographs on these walls are still watching.",
         },
     },
     "Palazzo Cusani": {
-        "interest_tags": ["hidden_courtyards"],
+        "interest_tags": ["architecture", "history"],
         "opening_line": {
             "en": "Two facades, two architects, one quiet quarrel in stone since 1719.",
         },
     },
     "Pasticceria Marchesi 1824": {
-        "interest_tags": ["historic_cafes"],
+        "interest_tags": ["food", "history", "curios"],
         "opening_line": {
             "en": "Walnut counters from 1824. Ask for the panettoncini — Verdi did.",
         },
     },
     "Cortile della Magnolia": {
-        "interest_tags": ["hidden_courtyards", "hidden_gardens"],
+        "interest_tags": ["sceneries", "architecture", "local_legends"],
         "opening_line": {
             "en": "A magnolia is blooming behind that unmarked door. Brera's open secret.",
         },
     },
     "Studio Museo Francesco Messina": {
-        "interest_tags": ["hidden_courtyards", "renaissance_traces"],
+        "interest_tags": ["art", "architecture", "history"],
         "opening_line": {
             "en": "A 17th-century church now holds 80 sculptures. You'll likely have it to yourself.",
         },
     },
     "Antica Barbieria Colla": {
-        "interest_tags": ["artisan_workshops"],
+        "interest_tags": ["curios", "shopping", "history"],
         "opening_line": {
             "en": "A wet shave from 1904 is being prepared. Toscanini knew this scent.",
         },
     },
     "Casa Museo Boschi Di Stefano": {
-        "interest_tags": ["renaissance_traces"],
+        "interest_tags": ["art", "history"],
         "opening_line": {
             "en": "Three hundred modernist masterpieces are quietly hung in someone's living room. Free, always.",
         },
     },
     "Latteria di San Marco": {
-        "interest_tags": ["historic_cafes"],
+        "interest_tags": ["food", "curios"],
         "opening_line": {
             "en": "Twelve tables. No menu. The risotto al salto would like you to sit down.",
         },
     },
     "Chiostro dell'Umanitaria": {
-        "interest_tags": ["hidden_courtyards", "hidden_gardens"],
+        "interest_tags": ["architecture", "sceneries", "history"],
         "opening_line": {
             "en": "Two Renaissance cloisters are open behind a porter's desk. Walk in.",
         },
     },
     "Via Bagnera": {
-        "interest_tags": ["renaissance_traces"],
+        "interest_tags": ["local_legends", "history"],
         "opening_line": {
             "en": "Milan's narrowest alley would like you to know it once held the city's last public execution.",
         },
@@ -859,14 +965,18 @@ def _enrich_seed(p: dict) -> dict:
 
 async def seed_pois_if_empty() -> int:
     """Insert default POIs only if the collection is empty.
-    Migrates stale documents (missing opening_line/interest_tags) by wiping and reseeding."""
+    Migrates stale documents (missing opening_line OR using the legacy
+    5-tag taxonomy) by wiping and reseeding."""
+    LEGACY_TAGS = {"hidden_gardens", "historic_cafes", "hidden_courtyards",
+                   "renaissance_traces", "artisan_workshops"}
     count = await db.pois.count_documents({})
     if count > 0:
-        # Detect stale schema and force a one-shot migration.
+        # Detect stale schema or legacy tags and force a one-shot migration.
         stale = await db.pois.find_one({"opening_line": {"$exists": False}})
-        if stale is None:
+        legacy = await db.pois.find_one({"interest_tags": {"$in": list(LEGACY_TAGS)}})
+        if stale is None and legacy is None:
             return 0
-        logger.info("Detected stale POIs missing opening_line; reseeding…")
+        logger.info("Detected stale/legacy POIs; reseeding…")
         await db.pois.delete_many({})
     docs = []
     for p in BRERA_POI_SEED:
@@ -895,13 +1005,19 @@ async def seed_admin():
             "language": "en",
             "onboarded": True,
             "notifications_enabled": False,
+            "relationship_mode": "personal",
+            "status": "citizen", "gender": None,
+            "profession": None, "profession_other": None,
+            "companions": [], "accessibility": [],
+            "response_formats": ["writing"],
+            "contribution_interests": [],
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
         logger.info(f"Seeded admin: {admin_email}")
     else:
         # Ensure existing admin has the new profile fields without overwriting custom values.
         defaults = {}
-        if "interests" not in existing:
+        if "interests" not in existing or any(t not in INTEREST_TAGS for t in existing.get("interests", [])):
             defaults["interests"] = list(INTEREST_TAGS)
         if "language" not in existing:
             defaults["language"] = "en"
@@ -909,6 +1025,13 @@ async def seed_admin():
             defaults["onboarded"] = True
         if "notifications_enabled" not in existing:
             defaults["notifications_enabled"] = False
+        if "relationship_mode" not in existing:
+            defaults["relationship_mode"] = "personal"
+        if "response_formats" not in existing:
+            defaults["response_formats"] = ["writing"]
+        for f in ("companions", "accessibility", "contribution_interests"):
+            if f not in existing:
+                defaults[f] = []
         if defaults:
             await db.users.update_one({"email": admin_email}, {"$set": defaults})
         if not verify_password(admin_password, existing["password_hash"]):
