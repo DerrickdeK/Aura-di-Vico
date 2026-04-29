@@ -1,13 +1,16 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { api, formatApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { refresh } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [asContributor, setAsContributor] = useState(searchParams.get("role") === "contributor");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,10 +18,17 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const res = await register(email, password, name);
-    setLoading(false);
-    if (res.ok) navigate("/");
-    else setError(res.error);
+    try {
+      await api.post("/auth/register", {
+        email, password, name, as_contributor: asContributor,
+      });
+      await refresh();
+      setLoading(false);
+      navigate(asContributor ? "/contribute" : "/");
+    } catch (err) {
+      setLoading(false);
+      setError(formatApiError(err.response?.data?.detail) || err.message);
+    }
   };
 
   return (
@@ -28,7 +38,9 @@ export default function RegisterPage() {
           <p className="eyebrow">Begin wandering</p>
           <h1 className="font-serif text-5xl mt-2 leading-none">Create an account</h1>
           <p className="mt-3 text-[var(--text-secondary)]">
-            Save the courtyards, cafés, and oddities you discover.
+            {asContributor
+              ? "Curate Brera with your students. Your contributions go through admin review."
+              : "Save the courtyards, cafés, and oddities you discover."}
           </p>
         </div>
         <form onSubmit={submit} className="space-y-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
@@ -66,13 +78,28 @@ export default function RegisterPage() {
             />
             <p className="text-xs mt-1 text-[var(--text-tertiary)]">At least 6 characters.</p>
           </div>
+
+          <label className="flex items-start gap-3 pt-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={asContributor}
+              onChange={(e) => setAsContributor(e.target.checked)}
+              className="mt-1 accent-[var(--terracotta)]"
+              data-testid="register-contributor-toggle"
+            />
+            <span className="text-sm text-[var(--text-secondary)]">
+              I'd like to <strong className="text-[var(--text-primary)]">contribute</strong> narratives, fun facts, or
+              dialogue prompts to Brera. (Each contribution is moderated.)
+            </span>
+          </label>
+
           {error && (
             <p className="text-sm text-[var(--terracotta)]" data-testid="register-error">
               {error}
             </p>
           )}
           <button type="submit" className="btn-primary w-full" disabled={loading} data-testid="register-submit">
-            {loading ? "Creating…" : "Create account"}
+            {loading ? "Creating…" : asContributor ? "Become a contributor" : "Create account"}
           </button>
         </form>
         <p className="text-center mt-6 text-sm text-[var(--text-secondary)]">

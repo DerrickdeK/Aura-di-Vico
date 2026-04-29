@@ -1,6 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, MapPin, Clock, Sparkles } from "lucide-react";
+import { X, Heart, MapPin, Clock, Sparkles, BookOpen, MessageCircle, Image as ImageIcon } from "lucide-react";
+import { api } from "../lib/api";
+import { devWarn } from "../lib/log";
+
+const TYPE_ICONS = {
+  narrative: BookOpen,
+  dialogue_prompt: MessageCircle,
+  fun_fact: Sparkles,
+  photo_url: ImageIcon,
+};
+
+function ContributionItem({ c }) {
+  const Icon = TYPE_ICONS[c.type] || BookOpen;
+  if (c.type === "photo_url") {
+    return (
+      <div className="rounded-xl overflow-hidden border border-[var(--border)]" data-testid={`drawer-contribution-${c.id}`}>
+        <img src={c.content} alt={c.title || "Contributor photo"}
+             className="w-full h-44 object-cover"
+             onError={(e) => { e.currentTarget.style.display = "none"; }} />
+        {(c.title || c.user_name) && (
+          <p className="p-2 text-xs text-[var(--text-tertiary)]">
+            {c.title || c.user_name}
+          </p>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="border border-[var(--border)] rounded-xl p-3 bg-[var(--bg)]" data-testid={`drawer-contribution-${c.id}`}>
+      <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)] uppercase tracking-widest">
+        <Icon size={12} /> <span>{c.type.replace("_", " ")}</span>
+        {c.user_name && <span className="ml-auto normal-case tracking-normal italic">— {c.user_name}</span>}
+      </div>
+      {c.title && <p className="font-serif text-base mt-1.5">{c.title}</p>}
+      <p className="text-sm text-[var(--text-secondary)] mt-1 whitespace-pre-line">{c.content}</p>
+    </div>
+  );
+}
 
 const BACKDROP_INITIAL = { opacity: 0 };
 const BACKDROP_ANIMATE = { opacity: 1 };
@@ -12,6 +49,18 @@ const DRAWER_EXIT = { y: "100%" };
 const DRAWER_TRANSITION = { type: "spring", damping: 28, stiffness: 260 };
 
 export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, isAuthed }) {
+  const [contributions, setContributions] = useState([]);
+
+  useEffect(() => {
+    if (!poi) {
+      setContributions([]);
+      return;
+    }
+    api.get(`/pois/${poi.id}/contributions`)
+      .then(({ data }) => setContributions(data))
+      .catch((err) => { devWarn("Failed to load contributions:", err); setContributions([]); });
+  }, [poi?.id]);
+
   return (
     <AnimatePresence>
       {poi && (
@@ -91,6 +140,20 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
                   {poi.long_description}
                 </p>
               </div>
+
+              {contributions.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-[var(--border)]" data-testid="poi-drawer-contributions">
+                  <p className="font-serif text-xl text-[var(--text-primary)] leading-snug">
+                    Brera through other walkers
+                  </p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                    {contributions.length} contribution{contributions.length === 1 ? "" : "s"} from the curator community.
+                  </p>
+                  <div className="mt-3 space-y-3">
+                    {contributions.map((c) => <ContributionItem key={c.id} c={c} />)}
+                  </div>
+                </div>
+              )}
 
               {isAuthed && (
                 <button

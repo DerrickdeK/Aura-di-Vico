@@ -164,7 +164,7 @@ export default function OnboardingPage() {
         onboarded: true,
       });
       await refresh();
-      navigate("/");
+      navigate("/listen");
     } catch (e) {
       setError(formatApiError(e.response?.data?.detail) || e.message);
     } finally {

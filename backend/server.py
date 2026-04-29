@@ -135,7 +135,7 @@ class UserPublic(BaseModel):
     id: str
     email: EmailStr
     name: str
-    role: Literal["user", "admin"] = "user"
+    role: Literal["user", "admin", "contributor"] = "user"
     favorites: List[str] = Field(default_factory=list)
     interests: List[str] = Field(default_factory=list)
     language: str = "en"
@@ -156,6 +156,7 @@ class RegisterIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6)
     name: str = Field(min_length=1, max_length=80)
+    as_contributor: bool = False
 
 class LoginIn(BaseModel):
     email: EmailStr
@@ -208,6 +209,22 @@ class VisitIn(BaseModel):
 class DiscoverIn(BaseModel):
     poi_id: str
     zone: Literal["sensed", "called", "found"]
+
+
+CONTRIBUTION_TYPES = ["narrative", "dialogue_prompt", "fun_fact", "photo_url"]
+CONTRIBUTION_STATUSES = ["pending", "approved", "rejected"]
+
+
+class ContributionIn(BaseModel):
+    poi_id: str
+    type: Literal["narrative", "dialogue_prompt", "fun_fact", "photo_url"]
+    content: str = Field(min_length=2, max_length=4000)
+    title: Optional[str] = Field(default=None, max_length=120)
+
+
+class ContributionModerateIn(BaseModel):
+    status: Literal["approved", "rejected"]
+    note: Optional[str] = None
 
 
 # ------------------------------------------------------------------------------------
@@ -295,10 +312,11 @@ async def register(payload: RegisterIn, response: Response):
     if await db.users.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="Email already registered")
     user_id = str(uuid.uuid4())
+    role = "contributor" if payload.as_contributor else "user"
     doc = {
         "id": user_id, "email": email, "name": payload.name,
         "password_hash": hash_password(payload.password),
-        "role": "user", "favorites": [],
+        "role": role, "favorites": [],
         "interests": [], "language": "en", "onboarded": False,
         "notifications_enabled": False,
         "relationship_mode": "anonymous",
@@ -600,12 +618,133 @@ async def get_config():
         "accessibility_options": ACCESSIBILITY_OPTIONS,
         "response_formats": RESPONSE_FORMATS,
         "contribution_options": CONTRIBUTION_OPTIONS,
+        "contribution_types": CONTRIBUTION_TYPES,
         "zones": {
             "sensed_radius_m": SENSED_RADIUS_M,
             "called_radius_m": CALLED_RADIUS_M,
             "found_radius_m": FOUND_RADIUS_M,
         },
     }
+
+
+# ------------------------------------------------------------------------------------
+# Contributions (student-curated narratives, dialogue prompts, fun-facts, photos)
+# ------------------------------------------------------------------------------------
+def _serialize_contribution(c: dict) -> dict:
+    return {
+        "id": c["id"],
+        "poi_id": c["poi_id"],
+        "user_id": c["user_id"],
+        "user_name": c.get("user_name", ""),
+        "type": c["type"],
+        "title": c.get("title"),
+        "content": c["content"],
+        "status": c.get("status", "pending"),
+        "moderation_note": c.get("moderation_note"),
+        "created_at": c.get("created_at"),
+        "updated_at": c.get("updated_at"),
+    }
+
+
+def _is_contributor_or_admin(user: dict) -> bool:
+    return user.get("role") in ("contributor", "admin")
+
+
+@api_router.post("/contributions")
+async def create_contribution(payload: ContributionIn, user: dict = Depends(get_current_user)):
+    if not _is_contributor_or_admin(user):
+        raise HTTPException(status_code=403, detail="Contributor role required. Sign up as a contributor or ask an admin to upgrade your account.")
+    poi = await db.pois.find_one({"id": payload.poi_id})
+    if not poi:
+        raise HTTPException(status_code=404, detail="POI not found")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "id": str(uuid.uuid4()),
+        "poi_id": payload.poi_id,
+        "user_id": user["id"],
+        "user_name": user.get("name", ""),
+        "type": payload.type,
+        "title": (payload.title or "").strip() or None,
+        "content": payload.content.strip(),
+        "status": "approved" if user.get("role") == "admin" else "pending",
+        "moderation_note": None,
+        "created_at": now_iso,
+        "updated_at": now_iso,
+    }
+    await db.contributions.insert_one(doc)
+    return _serialize_contribution(doc)
+
+
+@api_router.get("/contributions/mine")
+async def list_my_contributions(user: dict = Depends(get_current_user)):
+    docs = await db.contributions.find(
+        {"user_id": user["id"]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+    poi_ids = list({d["poi_id"] for d in docs})
+    pois = {p["id"]: p for p in await db.pois.find({"id": {"$in": poi_ids}}, {"_id": 0}).to_list(500)}
+    return [{**_serialize_contribution(d), "poi": pois.get(d["poi_id"])} for d in docs]
+
+
+@api_router.get("/contributions")
+async def list_all_contributions(
+    status: Optional[str] = None,
+    _: dict = Depends(require_admin),
+):
+    query: dict = {}
+    if status:
+        if status not in CONTRIBUTION_STATUSES:
+            raise HTTPException(status_code=400, detail=f"Unknown status: {status}")
+        query["status"] = status
+    docs = await db.contributions.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    poi_ids = list({d["poi_id"] for d in docs})
+    pois = {p["id"]: p for p in await db.pois.find({"id": {"$in": poi_ids}}, {"_id": 0}).to_list(500)}
+    return [{**_serialize_contribution(d), "poi": pois.get(d["poi_id"])} for d in docs]
+
+
+@api_router.patch("/contributions/{contribution_id}/moderate")
+async def moderate_contribution(
+    contribution_id: str,
+    payload: ContributionModerateIn,
+    _: dict = Depends(require_admin),
+):
+    rec = await db.contributions.find_one({"id": contribution_id})
+    if not rec:
+        raise HTTPException(status_code=404, detail="Contribution not found")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    await db.contributions.update_one(
+        {"id": contribution_id},
+        {"$set": {
+            "status": payload.status,
+            "moderation_note": (payload.note or "").strip() or None,
+            "updated_at": now_iso,
+        }},
+    )
+    fresh = await db.contributions.find_one({"id": contribution_id}, {"_id": 0})
+    return _serialize_contribution(fresh)
+
+
+@api_router.delete("/contributions/{contribution_id}")
+async def delete_contribution(contribution_id: str, user: dict = Depends(get_current_user)):
+    rec = await db.contributions.find_one({"id": contribution_id})
+    if not rec:
+        raise HTTPException(status_code=404, detail="Contribution not found")
+    is_owner_pending = rec["user_id"] == user["id"] and rec.get("status") == "pending"
+    if user.get("role") != "admin" and not is_owner_pending:
+        raise HTTPException(status_code=403, detail="Not allowed")
+    await db.contributions.delete_one({"id": contribution_id})
+    return {"ok": True}
+
+
+@api_router.get("/pois/{poi_id}/contributions")
+async def list_poi_contributions(poi_id: str):
+    """Public: only approved contributions are exposed."""
+    poi = await db.pois.find_one({"id": poi_id})
+    if not poi:
+        raise HTTPException(status_code=404, detail="POI not found")
+    docs = await db.contributions.find(
+        {"poi_id": poi_id, "status": "approved"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+    return [_serialize_contribution(d) for d in docs]
 
 
 
@@ -1053,6 +1192,9 @@ async def on_startup():
     await db.visits.create_index([("user_id", 1), ("visited_at", -1)])
     await db.discoveries.create_index([("user_id", 1), ("poi_id", 1)], unique=True)
     await db.discoveries.create_index([("user_id", 1), ("discovered_at", -1)])
+    await db.contributions.create_index([("poi_id", 1), ("status", 1)])
+    await db.contributions.create_index([("user_id", 1), ("created_at", -1)])
+    await db.contributions.create_index("id", unique=True)
     await seed_admin()
     inserted = await seed_pois_if_empty()
     logger.info(f"Startup complete. POIs seeded: {inserted}")

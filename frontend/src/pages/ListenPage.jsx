@@ -1,62 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Footprints, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Footprints, Volume2, VolumeX } from "lucide-react";
 
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import useGeolocation from "../hooks/useGeolocation";
 import useCityWhispers from "../hooks/useCityWhispers";
 import useGradientHaptic from "../hooks/useGradientHaptic";
+import useVirtualPosition from "../hooks/useVirtualPosition";
 import ListeningCompass from "../components/ListeningCompass";
 import WhisperCard from "../components/WhisperCard";
 import POIDrawer from "../components/POIDrawer";
+import VirtualNavPanel from "../components/VirtualNavPanel";
 import { unlockAudio } from "../lib/audio";
 import { speak, stopSpeaking } from "../lib/speech";
 import { t, getOpeningLine } from "../lib/i18n";
 
-const BRERA_CENTER = { latitude: 45.4719, longitude: 9.1881 };
-
 // Module-level animation constants (avoid recreating per render).
 const SILENCE_INITIAL = { opacity: 0 };
 const SILENCE_ANIMATE = { opacity: 1 };
-
-/** A scripted walk through Brera that visits a few POIs in sequence — used
- * when the device has no real GPS so the experience can be demoed indoors. */
-const GHOST_WALK = [
-  { latitude: 45.4719, longitude: 9.1881 },
-  { latitude: 45.4720, longitude: 9.1879 },
-  { latitude: 45.4738, longitude: 9.1874 },
-  { latitude: 45.4742, longitude: 9.1907 },
-  { latitude: 45.4754, longitude: 9.1908 },
-  { latitude: 45.4736, longitude: 9.1908 },
-];
-
-function useGhostWalk(enabled) {
-  const [idx, setIdx] = useState(0);
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    if (!enabled) return undefined;
-    const id = setInterval(() => {
-      setStep((s) => {
-        if (s >= 1) {
-          setIdx((i) => (i + 1) % GHOST_WALK.length);
-          return 0;
-        }
-        return s + 0.04;
-      });
-    }, 350);
-    return () => clearInterval(id);
-  }, [enabled]);
-
-  if (!enabled) return null;
-  const a = GHOST_WALK[idx];
-  const b = GHOST_WALK[(idx + 1) % GHOST_WALK.length];
-  return {
-    latitude: a.latitude + (b.latitude - a.latitude) * step,
-    longitude: a.longitude + (b.longitude - a.longitude) * step,
-  };
-}
 
 // Filter POIs by user themes (interests). Empty interests => no filter.
 function filterByThemes(pois, interests) {
@@ -71,14 +34,21 @@ function filterByThemes(pois, interests) {
 export default function ListenPage() {
   const { user } = useAuth();
   const { position: realPosition, error: geoError } = useGeolocation();
+  const [searchParams] = useSearchParams();
 
   const [pois, setPois] = useState([]);
   const [activePoi, setActivePoi] = useState(null);
   const [audioOn, setAudioOn] = useState(true);
-  const [ghostOn, setGhostOn] = useState(false);
 
-  const ghostPosition = useGhostWalk(ghostOn);
-  const position = ghostOn ? ghostPosition : realPosition;
+  // Virtual mode: triggered explicitly by user. ?virtual=1 query enables on load.
+  const [virtualOn, setVirtualOn] = useState(searchParams.get("virtual") === "1");
+  const [virtualMode, setVirtualMode] = useState("auto"); // "auto" | "step" | "drag"
+
+  const { position: virtualPosition, stepForward, setDragPosition } = useVirtualPosition({
+    enabled: virtualOn,
+    mode: virtualMode,
+  });
+  const position = virtualOn ? virtualPosition : realPosition;
 
   const language = user?.language || "en";
   const interests = user?.interests || [];
@@ -140,7 +110,7 @@ export default function ListenPage() {
   return (
     <div className="min-h-screen pb-28 px-5 pt-12 max-w-xl mx-auto" data-testid="listen-page">
       <header className="text-center">
-        <p className="eyebrow">Brera · Milano</p>
+        <p className="eyebrow">Brera · Milano {virtualOn && "· virtual walk"}</p>
         <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-none">
           {t(language, "listeningTitle")}
         </h1>
@@ -186,6 +156,16 @@ export default function ListenPage() {
         </AnimatePresence>
       </div>
 
+      <VirtualNavPanel
+        enabled={virtualOn}
+        mode={virtualMode}
+        onSetMode={setVirtualMode}
+        onClose={() => setVirtualOn(false)}
+        onStep={stepForward}
+        position={virtualPosition}
+        onSetDragPosition={setDragPosition}
+      />
+
       <div className="fixed bottom-32 sm:bottom-24 left-0 right-0 z-[400] flex justify-center px-4 pointer-events-none">
         <div className="pointer-events-auto inline-flex items-center gap-2 bg-[var(--surface)]/90 backdrop-blur border border-[var(--border)] rounded-full px-3 py-2 shadow-md">
           <button
@@ -199,16 +179,15 @@ export default function ListenPage() {
           </button>
           <span className="w-px h-4 bg-[var(--border)]" />
           <button
-            onClick={() => setGhostOn((v) => !v)}
+            onClick={() => setVirtualOn((v) => !v)}
             className={`px-3 py-1 rounded-full text-xs flex items-center gap-1.5 ${
-              ghostOn ? "bg-[var(--terracotta)] text-[var(--inverse)]" : ""
+              virtualOn ? "bg-[var(--terracotta)] text-[var(--inverse)]" : ""
             }`}
-            data-testid="ghost-walk-toggle"
-            title="Simulate a walk through Brera"
+            data-testid="virtual-walk-toggle"
+            title="Walk Brera virtually (no GPS needed)"
           >
-            {ghostOn ? <Pause size={14} /> : <Play size={14} />}
             <Footprints size={14} />
-            <span>{ghostOn ? "Walking…" : "Ghost walk"}</span>
+            <span>{virtualOn ? "Virtual on" : "Virtual walk"}</span>
           </button>
         </div>
       </div>

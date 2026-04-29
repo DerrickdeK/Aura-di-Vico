@@ -1,0 +1,33 @@
+{
+  "summary": "Iteration 5 testing complete. Backend pytest 68/68 PASS — 50 regression tests still green plus 18 new tests covering the contribution module: register-as-contributor role assignment, plain-user 403 on POST /api/contributions, contributor pending vs admin auto-approved status, /contributions/mine with embedded poi, admin-only listing with status filter (400 for unknown status), admin-only PATCH moderate (approve/reject flow), public /api/pois/{id}/contributions returning ONLY approved entries, owner-can-delete-pending vs cannot-delete-approved (admin can), unknown-poi 404 and invalid-type 422. Frontend verified end-to-end: Landing shows 'Walk Brera virtually →' CTA + 'Become a contributor' section; /register?role=contributor pre-checks contributor checkbox and creates a user with role='contributor' via real API; /contribute page exposes all data-testids (contribution-form, contribution-poi-select, contribution-type-{narrative|dialogue_prompt|fun_fact|photo_url}, contribution-title, contribution-content, contribution-submit) plus bottom-nav with nav-contribute / nav-profile / nav-listen / nav-discoveries; POST /api/contributions from contributor session returns status='pending' and shows up in /contributions/mine; plain user navigating to /contribute sees the 'Become a contributor' upgrade CTA; admin /admin/contributions shows Pending/Approved/Rejected tabs with Approve/Reject buttons and the click moves the entry; after admin approval the contribution appears in public /api/pois/{id}/contributions feed (POIDrawer integration confirmed at API level). ListenPage Virtual walk replaces Ghost-walk: clicking the toggle reveals the three-mode panel with Auto-walk / Step forward / Drag pin labels and Auto-walk advances automatically (drawer auto-opens at Cortile della Pinacoteca during the run).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Minor / housekeeping) test_contributor_creates_pending returns the contribution id — pytest emitted PytestReturnNotNoneWarning. Replace 'return body[\"id\"]' with a local variable to silence the warning.",
+    "(Carry-over from iter 4) Disambiguate duplicate data-testid 'profile-profession-other' (chip vs free-text input) — rename input to 'profile-profession-other-input'.",
+    "(Carry-over from iter 3) Split /app/backend/server.py (>1200 lines) into routers/auth.py, routers/pois.py, routers/me.py, routers/contributions.py, routers/admin.py, seeds.py."
+  ],
+  "critical_code_review_comments": [
+    "Contribution endpoints are clean: POST checks role via helper _is_contributor_or_admin and verifies POI exists before insert; admin-created docs are auto-approved while contributor docs start 'pending' — verified by tests.",
+    "Public endpoint GET /api/pois/{poi_id}/contributions correctly filters by status='approved' so unmoderated entries cannot leak.",
+    "DELETE /api/contributions/{id} grants delete to admin OR (owner AND status=='pending') — verified plain-owner cannot delete approved.",
+    "Mongo indexes added on (poi_id,status), (user_id,created_at) and unique 'id' — good for the moderation list and /mine listings.",
+    "Pydantic Literal types on ContributionIn.type and ContributionModerateIn.status correctly emit 422 for invalid values without leaking server internals.",
+    "_serialize_contribution explicitly omits MongoDB _id — verified no leak in public/admin/mine responses."
+  ],
+  "updated_files": ["/app/backend/tests/test_brera_backend.py"],
+  "success_rate": {"backend": "100% (68/68)", "frontend": "100% on the explicit retest list"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! verified. Fresh TEST_contrib_<uuid>@example.com / Sekret123! contributors registered via API and via /register?role=contributor UI; plain TEST_plain_<uuid>@example.com users registered with as_contributor=false and confirmed they receive a 403 on POST /api/contributions and see the upgrade CTA on /contribute.",
+  "seed_data_creation": "Several TEST_contrib_* and TEST_plain_* users plus ~12 ephemeral contributions (mix of pending/approved/rejected/deleted). The owner_cannot_delete_approved test cleans up its admin-approved doc; other approved test contributions remain attached to seeded POIs but flagged with TEST content for easy cleanup.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression command: cd /app && set -a && . backend/.env && set +a && python -m pytest backend/tests/test_brera_backend.py -v. Contribution form testids: contribution-page, contribution-form, contribution-poi-select, contribution-type-{narrative|dialogue_prompt|fun_fact|photo_url}, contribution-title, contribution-content, contribution-submit. BottomNav testids: bottom-nav, nav-listen, nav-discoveries, nav-contribute (only for contributor/admin), nav-profile. The /listen page first-render for a brand-new contributor will show the language onboarding step and BottomNav is hidden during onboarding — to test BottomNav visibility for a contributor either complete onboarding via PATCH /api/me/profile {onboarded:true} or navigate to /contribute directly. ListenPage Virtual walk reveals three buttons (Auto-walk / Step forward / Drag pin) on click."
+}

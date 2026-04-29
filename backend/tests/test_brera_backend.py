@@ -643,3 +643,197 @@ class TestAdminPOIIter2:
             assert g["interest_tags"] == ["curios"]
         finally:
             admin_session.delete(f"{API}/pois/{pid}", timeout=10)
+
+
+
+# ---------------------- Module: Iteration 5 - Contributions ----------------------
+class TestContributions:
+    @pytest.fixture(scope="class")
+    def contributor_session(self):
+        email = f"TEST_contrib_{uuid.uuid4().hex[:8]}@example.com"
+        s = requests.Session()
+        r = s.post(f"{API}/auth/register",
+                   json={"email": email, "password": "Sekret123!", "name": "Contrib User",
+                         "as_contributor": True}, timeout=15)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["role"] == "contributor", f"expected contributor role, got {body.get('role')}"
+        s.email = email
+        return s
+
+    @pytest.fixture(scope="class")
+    def plain_user_session(self):
+        email = f"TEST_plain_{uuid.uuid4().hex[:8]}@example.com"
+        s = requests.Session()
+        r = s.post(f"{API}/auth/register",
+                   json={"email": email, "password": "Sekret123!", "name": "Plain User"},
+                   timeout=15)
+        assert r.status_code == 200
+        assert r.json()["role"] == "user"
+        return s
+
+    def test_register_as_contributor_role(self, contributor_session):
+        r = contributor_session.get(f"{API}/auth/me", timeout=10)
+        assert r.status_code == 200
+        assert r.json()["role"] == "contributor"
+
+    def test_plain_user_cannot_post_contribution(self, plain_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        r = plain_user_session.post(f"{API}/contributions", json={
+            "poi_id": pois[0]["id"], "type": "narrative",
+            "content": "I am a plain user trying to contribute.",
+        }, timeout=10)
+        assert r.status_code == 403
+
+    def test_contributor_creates_pending(self, contributor_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[0]["id"]
+        r = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pid, "type": "narrative", "title": "TEST_n",
+            "content": "Walking past, I noticed the iron gate creak in afternoon wind.",
+        }, timeout=10)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["status"] == "pending"
+        assert body["poi_id"] == pid
+        assert body["type"] == "narrative"
+        assert "id" in body
+        return body["id"]
+
+    def test_admin_creates_auto_approved(self, admin_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[1]["id"]
+        r = admin_session.post(f"{API}/contributions", json={
+            "poi_id": pid, "type": "fun_fact",
+            "content": "Admin-curated fact about this place.",
+        }, timeout=10)
+        assert r.status_code == 200
+        assert r.json()["status"] == "approved"
+
+    def test_contributions_mine_returns_with_poi(self, contributor_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pois[2]["id"], "type": "dialogue_prompt",
+            "content": "What would you whisper to a 240-year-old tree?",
+        }, timeout=10)
+        r = contributor_session.get(f"{API}/contributions/mine", timeout=10)
+        assert r.status_code == 200
+        data = r.json()
+        assert isinstance(data, list) and len(data) >= 1
+        for c in data:
+            assert "poi" in c
+            assert c["poi"] is None or "name" in c["poi"]
+            assert "_id" not in c
+
+    def test_admin_list_filtered(self, admin_session):
+        r = admin_session.get(f"{API}/contributions?status=pending", timeout=10)
+        assert r.status_code == 200
+        for c in r.json():
+            assert c["status"] == "pending"
+
+    def test_admin_list_unknown_status_400(self, admin_session):
+        r = admin_session.get(f"{API}/contributions?status=foo", timeout=10)
+        assert r.status_code == 400
+
+    def test_plain_user_cannot_list_all(self, plain_user_session):
+        r = plain_user_session.get(f"{API}/contributions", timeout=10)
+        assert r.status_code == 403
+
+    def test_unauth_cannot_list_all(self):
+        r = requests.get(f"{API}/contributions", timeout=10)
+        assert r.status_code == 401
+
+    def test_moderation_approve_flow(self, contributor_session, admin_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[3]["id"]
+        c = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pid, "type": "narrative", "content": "A short whisper to be approved."
+        }, timeout=10).json()
+        cid = c["id"]
+        r = admin_session.patch(f"{API}/contributions/{cid}/moderate",
+                                json={"status": "approved", "note": "looks good"}, timeout=10)
+        assert r.status_code == 200
+        assert r.json()["status"] == "approved"
+        # Public POI contributions should now include it
+        public = requests.get(f"{API}/pois/{pid}/contributions", timeout=10)
+        assert public.status_code == 200
+        ids = [x["id"] for x in public.json()]
+        assert cid in ids
+
+    def test_moderation_reject_flow(self, contributor_session, admin_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[4]["id"]
+        c = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pid, "type": "fun_fact", "content": "spam content to reject"
+        }, timeout=10).json()
+        cid = c["id"]
+        r = admin_session.patch(f"{API}/contributions/{cid}/moderate",
+                                json={"status": "rejected"}, timeout=10)
+        assert r.status_code == 200
+        assert r.json()["status"] == "rejected"
+        public = requests.get(f"{API}/pois/{pid}/contributions", timeout=10).json()
+        assert all(x["id"] != cid for x in public)
+
+    def test_plain_user_cannot_moderate(self, contributor_session, plain_user_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        c = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pois[5]["id"], "type": "narrative", "content": "another whisper"
+        }, timeout=10).json()
+        r = plain_user_session.patch(f"{API}/contributions/{c['id']}/moderate",
+                                     json={"status": "approved"}, timeout=10)
+        assert r.status_code == 403
+
+    def test_public_poi_contributions_only_approved(self, contributor_session, admin_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        pid = pois[6]["id"]
+        # 2 pending + 1 approved
+        pending = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pid, "type": "narrative", "content": "still pending"
+        }, timeout=10).json()
+        approved = admin_session.post(f"{API}/contributions", json={
+            "poi_id": pid, "type": "narrative", "content": "auto approved"
+        }, timeout=10).json()
+        public = requests.get(f"{API}/pois/{pid}/contributions", timeout=10).json()
+        ids = {c["id"] for c in public}
+        assert approved["id"] in ids
+        assert pending["id"] not in ids
+        for c in public:
+            assert c["status"] == "approved"
+
+    def test_owner_can_delete_pending(self, contributor_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        c = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pois[7]["id"], "type": "fun_fact", "content": "to be deleted by owner"
+        }, timeout=10).json()
+        r = contributor_session.delete(f"{API}/contributions/{c['id']}", timeout=10)
+        assert r.status_code == 200
+
+    def test_owner_cannot_delete_approved(self, contributor_session, admin_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        c = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pois[8]["id"], "type": "narrative", "content": "will be approved"
+        }, timeout=10).json()
+        admin_session.patch(f"{API}/contributions/{c['id']}/moderate",
+                            json={"status": "approved"}, timeout=10)
+        r = contributor_session.delete(f"{API}/contributions/{c['id']}", timeout=10)
+        assert r.status_code == 403
+        # Admin can though
+        r2 = admin_session.delete(f"{API}/contributions/{c['id']}", timeout=10)
+        assert r2.status_code == 200
+
+    def test_create_unknown_poi_404(self, contributor_session):
+        r = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": "ghost-poi", "type": "narrative", "content": "nope"
+        }, timeout=10)
+        assert r.status_code == 404
+
+    def test_invalid_type_422(self, contributor_session):
+        pois = requests.get(f"{API}/pois", timeout=10).json()
+        r = contributor_session.post(f"{API}/contributions", json={
+            "poi_id": pois[0]["id"], "type": "graffiti", "content": "x"
+        }, timeout=10)
+        assert r.status_code == 422
+
+    def test_public_poi_contributions_unknown_404(self):
+        r = requests.get(f"{API}/pois/nope/contributions", timeout=10)
+        assert r.status_code == 404

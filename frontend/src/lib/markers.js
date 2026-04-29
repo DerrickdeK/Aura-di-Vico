@@ -27,3 +27,18 @@ export function userIcon() {
     iconAnchor: [11, 11],
   });
 }
+
+// Anonymous "aura" dot used on the public landing map.
+// Three concentric rings ripple outward to evoke the city's pulse.
+export function auraIcon(seed = 0) {
+  return L.divIcon({
+    className: "aura-marker",
+    html: `<div class="aura-dot" style="animation-delay:${(seed % 5) * 0.4}s">
+        <span class="aura-ring"></span>
+        <span class="aura-ring aura-ring-2"></span>
+        <span class="aura-ring aura-ring-3"></span>
+      </div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
+}

@@ -168,3 +168,38 @@ body {
   }
 }
 
+/* Landing page — anonymous "aura" dots over the Brera map */
+.aura-marker {
+  background: transparent;
+  border: none;
+}
+.aura-dot {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  border: 2px solid var(--bg);
+  box-shadow: 0 2px 6px rgba(26,26,24,0.25);
+}
+.aura-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--terracotta);
+  opacity: 0;
+  animation: auraPulse 3.6s ease-out infinite;
+  pointer-events: none;
+}
+.aura-ring-2 { animation-delay: 1.2s; }
+.aura-ring-3 { animation-delay: 2.4s; }
+@keyframes auraPulse {
+  0%   { transform: scale(0.45); opacity: 0.55; }
+  80%  { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aura-ring { animation: none; }
+}
+
+
