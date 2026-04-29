@@ -60,6 +60,12 @@ function ContributionForm({ pois, onSubmitted }) {
   };
 
   const typeMeta = TYPES.find((t) => t.key === type);
+  const PLACEHOLDERS = {
+    photo_url:       "https://…",
+    dialogue_prompt: "What would you ask this place if it could answer?",
+    narrative:       "Write a few lines visitors should hear…",
+    fun_fact:        "Write a few lines visitors should hear…",
+  };
 
   return (
     <form
@@ -133,13 +139,7 @@ function ContributionForm({ pois, onSubmitted }) {
           required
           minLength={2}
           maxLength={4000}
-          placeholder={
-            type === "photo_url"
-              ? "https://…"
-              : type === "dialogue_prompt"
-              ? "What would you ask this place if it could answer?"
-              : "Write a few lines visitors should hear…"
-          }
+          placeholder={PLACEHOLDERS[type]}
           data-testid="contribution-content"
         />
         <p className="text-xs text-[var(--text-tertiary)] mt-1">{content.length}/4000</p>

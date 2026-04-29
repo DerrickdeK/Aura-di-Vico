@@ -107,6 +107,10 @@ export default function ListenPage() {
 
   const headlineSighting = sightings[0] || null;
 
+  let silenceKey = "silenceFix";
+  if (position) silenceKey = "silenceCity";
+  else if (geoError) silenceKey = "silenceGeoOff";
+
   return (
     <div className="min-h-screen pb-28 px-5 pt-12 max-w-xl mx-auto" data-testid="listen-page">
       <header className="text-center">
@@ -146,11 +150,7 @@ export default function ListenPage() {
               animate={SILENCE_ANIMATE}
               data-testid="silence-message"
             >
-              {position
-                ? t(language, "silenceCity")
-                : (geoError
-                  ? t(language, "silenceGeoOff")
-                  : t(language, "silenceFix"))}
+              {t(language, silenceKey)}
             </motion.p>
           )}
         </AnimatePresence>

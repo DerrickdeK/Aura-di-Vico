@@ -31,6 +31,12 @@ export default function RegisterPage() {
     }
   };
 
+  const submitLabel = (() => {
+    if (loading) return "Creating…";
+    if (asContributor) return "Become a contributor";
+    return "Create account";
+  })();
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center px-6 pb-24" data-testid="register-page">
       <div className="w-full max-w-md">
@@ -99,7 +105,7 @@ export default function RegisterPage() {
             </p>
           )}
           <button type="submit" className="btn-primary w-full" disabled={loading} data-testid="register-submit">
-            {loading ? "Creating…" : asContributor ? "Become a contributor" : "Create account"}
+            {submitLabel}
           </button>
         </form>
         <p className="text-center mt-6 text-sm text-[var(--text-secondary)]">

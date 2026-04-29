@@ -31,6 +31,17 @@ const ZONE_COLOR = {
   found:  "#BD5745",
 };
 
+// Hoisted so the array literal isn't recreated each render.
+const CARDINAL_OFFSET = { middle: -6, end: -12, start: 0 };
+function buildCardinals(r, size) {
+  return [
+    { label: "N", x: r,        y: 8,        anchor: "middle" },
+    { label: "S", x: r,        y: size - 8, anchor: "middle" },
+    { label: "E", x: size - 8, y: r + 4,    anchor: "end" },
+    { label: "W", x: 8,        y: r + 4,    anchor: "start" },
+  ];
+}
+
 /**
  * Atmospheric "compass" canvas. The user sits in the middle, breathing.
  * POIs that are sensing the user appear as glowing motes around the ring,
@@ -83,18 +94,13 @@ export default function ListeningCompass({
       ))}
 
       {/* Cardinal labels */}
-      {[
-        { label: "N", x: r, y: 8, anchor: "middle" },
-        { label: "S", x: r, y: size - 8, anchor: "middle" },
-        { label: "E", x: size - 8, y: r + 4, anchor: "end" },
-        { label: "W", x: 8, y: r + 4, anchor: "start" },
-      ].map((c) => (
+      {buildCardinals(r, size).map((c) => (
         <span
           key={c.label}
           className="absolute eyebrow"
           style={{
             top: c.y - 8,
-            left: c.anchor === "middle" ? c.x - 6 : c.anchor === "end" ? c.x - 12 : c.x,
+            left: c.x + CARDINAL_OFFSET[c.anchor],
             color: "rgba(138,135,122,0.7)",
             fontSize: "0.65rem",
           }}

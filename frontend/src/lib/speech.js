@@ -32,5 +32,5 @@ export function speak(text, { lang = "en", rate = 0.95, volume = 0.85 } = {}) {
 }
 
 export function stopSpeaking() {
-  try { window.speechSynthesis?.cancel(); } catch { /* no-op */ }
+  try { window.speechSynthesis?.cancel(); } catch (err) { devWarn("stopSpeaking() failed:", err); }
 }
