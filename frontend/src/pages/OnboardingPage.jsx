@@ -13,6 +13,9 @@ import {
 } from "../lib/options";
 import { registerServiceWorker, requestNotificationPermission } from "../lib/notifications";
 
+const WIZARD_INITIAL = { opacity: 0, y: 12 };
+const WIZARD_ANIMATE = { opacity: 1, y: 0 };
+
 function StepDots({ current, total }) {
   return (
     <div className="flex items-center gap-1.5 justify-center mb-6">
@@ -176,8 +179,8 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-10 pb-32" data-testid="onboarding-page">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={WIZARD_INITIAL}
+        animate={WIZARD_ANIMATE}
         className="w-full max-w-md"
       >
         <StepDots current={step} total={steps.length} />

@@ -489,53 +489,54 @@ async def list_visits(user: dict = Depends(get_current_user)):
 # ------------------------------------------------------------------------------------
 # Profile + Discoveries (the "city talks" experience)
 # ------------------------------------------------------------------------------------
-@api_router.patch("/me/profile", response_model=UserPublic)
-async def update_profile(payload: ProfileIn, user: dict = Depends(get_current_user)):
-    update = {}
+def _apply_list_fields(payload: "ProfileIn", update: dict):
+    """Validate + stage the list-of-tags fields onto `update`."""
+    pairs = [
+        ("interests",              payload.interests,              INTEREST_TAGS),
+        ("companions",             payload.companions,             COMPANION_OPTIONS),
+        ("accessibility",          payload.accessibility,          ACCESSIBILITY_OPTIONS),
+        ("response_formats",       payload.response_formats,       RESPONSE_FORMATS),
+        ("contribution_interests", payload.contribution_interests, CONTRIBUTION_OPTIONS),
+    ]
+    for field, values, allowed in pairs:
+        if values is not None:
+            _validate_subset(values, allowed, field)
+            update[field] = values
 
-    # List-of-tags fields
-    if payload.interests is not None:
-        _validate_subset(payload.interests, INTEREST_TAGS, "interests")
-        update["interests"] = payload.interests
-    if payload.companions is not None:
-        _validate_subset(payload.companions, COMPANION_OPTIONS, "companions")
-        update["companions"] = payload.companions
-    if payload.accessibility is not None:
-        _validate_subset(payload.accessibility, ACCESSIBILITY_OPTIONS, "accessibility")
-        update["accessibility"] = payload.accessibility
-    if payload.response_formats is not None:
-        _validate_subset(payload.response_formats, RESPONSE_FORMATS, "response_formats")
-        update["response_formats"] = payload.response_formats
-    if payload.contribution_interests is not None:
-        _validate_subset(payload.contribution_interests, CONTRIBUTION_OPTIONS, "contribution_interests")
-        update["contribution_interests"] = payload.contribution_interests
 
-    # Single-value enum fields (None/empty allowed = blank)
+def _apply_enum_fields(payload: "ProfileIn", update: dict):
+    """Validate + stage the single-value enum fields onto `update`."""
     if payload.language is not None:
         if payload.language not in SUPPORTED_LANGS:
             raise HTTPException(status_code=400, detail=f"Unsupported language: {payload.language}")
         update["language"] = payload.language
-    if payload.relationship_mode is not None:
-        _validate_value(payload.relationship_mode, RELATIONSHIP_MODES, "relationship_mode")
-        update["relationship_mode"] = payload.relationship_mode
-    if payload.status is not None:
-        _validate_value(payload.status, STATUS_OPTIONS, "status")
-        update["status"] = payload.status or None
-    if payload.gender is not None:
-        _validate_value(payload.gender, GENDER_OPTIONS, "gender")
-        update["gender"] = payload.gender or None
-    if payload.profession is not None:
-        _validate_value(payload.profession, PROFESSION_OPTIONS, "profession")
-        update["profession"] = payload.profession or None
+    pairs = [
+        ("relationship_mode", payload.relationship_mode, RELATIONSHIP_MODES),
+        ("status",            payload.status,            STATUS_OPTIONS),
+        ("gender",            payload.gender,            GENDER_OPTIONS),
+        ("profession",        payload.profession,        PROFESSION_OPTIONS),
+    ]
+    for field, value, allowed in pairs:
+        if value is not None:
+            _validate_value(value, allowed, field)
+            update[field] = value or None
     if payload.profession_other is not None:
         update["profession_other"] = (payload.profession_other or "").strip() or None
 
-    # Booleans
+
+def _apply_bool_fields(payload: "ProfileIn", update: dict):
     if payload.notifications_enabled is not None:
         update["notifications_enabled"] = bool(payload.notifications_enabled)
     if payload.onboarded is not None:
         update["onboarded"] = bool(payload.onboarded)
 
+
+@api_router.patch("/me/profile", response_model=UserPublic)
+async def update_profile(payload: ProfileIn, user: dict = Depends(get_current_user)):
+    update: dict = {}
+    _apply_list_fields(payload, update)
+    _apply_enum_fields(payload, update)
+    _apply_bool_fields(payload, update)
     if update:
         await db.users.update_one({"id": user["id"]}, {"$set": update})
     fresh = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})

@@ -17,6 +17,10 @@ import { t, getOpeningLine } from "../lib/i18n";
 
 const BRERA_CENTER = { latitude: 45.4719, longitude: 9.1881 };
 
+// Module-level animation constants (avoid recreating per render).
+const SILENCE_INITIAL = { opacity: 0 };
+const SILENCE_ANIMATE = { opacity: 1 };
+
 /** A scripted walk through Brera that visits a few POIs in sequence — used
  * when the device has no real GPS so the experience can be demoed indoors. */
 const GHOST_WALK = [
@@ -168,8 +172,8 @@ export default function ListenPage() {
             <motion.p
               key="silence"
               className="font-serif italic text-[var(--text-tertiary)] text-center max-w-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={SILENCE_INITIAL}
+              animate={SILENCE_ANIMATE}
               data-testid="silence-message"
             >
               {position

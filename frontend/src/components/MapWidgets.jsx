@@ -3,6 +3,13 @@ import { Marker, Circle, useMap } from "react-leaflet";
 import { Crosshair } from "lucide-react";
 import { poiIcon, userIcon } from "../lib/markers";
 
+const IN_RANGE_CIRCLE_OPTIONS = {
+  color: "#C98A3C",
+  fillColor: "#C98A3C",
+  fillOpacity: 0.08,
+  weight: 1,
+};
+
 /** Recenters the map onto the user once, the first time we get a fix. */
 export function FlyToUser({ position }) {
   const map = useMap();
@@ -68,12 +75,7 @@ export function POIMarkers({ pois, nearest, visitedIds, onSelect }) {
           <Circle
             center={[p.latitude, p.longitude]}
             radius={p.trigger_radius_m ?? 60}
-            pathOptions={{
-              color: "#C98A3C",
-              fillColor: "#C98A3C",
-              fillOpacity: 0.08,
-              weight: 1,
-            }}
+            pathOptions={IN_RANGE_CIRCLE_OPTIONS}
           />
         )}
       </React.Fragment>
