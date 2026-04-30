@@ -12,6 +12,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import ContributePage from "./pages/ContributePage";
 import AdminContributionsPage from "./pages/AdminContributionsPage";
+import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordPages";
 import "./App.css";
 
 function ListenGate() {
@@ -30,6 +31,8 @@ function Shell() {
         <Route path="/listen" element={<ListenGate />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/discoveries" element={<DiscoveriesPage />} />
         <Route path="/profile" element={<ProfilePage />} />

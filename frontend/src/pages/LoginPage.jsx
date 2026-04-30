@@ -68,6 +68,11 @@ export default function LoginPage() {
           <button type="submit" className="btn-primary w-full" disabled={loading} data-testid="login-submit">
             {loading ? t(lang, "auth.signingIn") : t(lang, "auth.signIn")}
           </button>
+          <p className="text-center text-xs text-[var(--text-tertiary)]">
+            <Link to="/forgot-password" className="hover:text-[var(--terracotta)]" data-testid="login-forgot-link">
+              {lang === "it" ? "Password smarrita?" : "Forgot password?"}
+            </Link>
+          </p>
         </form>
         <p className="text-center mt-6 text-sm text-[var(--text-secondary)]">
           {t(lang, "auth.newHere")}{" "}

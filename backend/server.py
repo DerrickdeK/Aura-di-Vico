@@ -18,6 +18,8 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
+from mailer import send_email, password_reset_email, contribution_moderated_email
+
 
 # ------------------------------------------------------------------------------------
 # DB & app setup
@@ -386,7 +388,12 @@ async def forgot_password(payload: ForgotIn):
             "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
             "created_at": datetime.now(timezone.utc),
         })
-        logger.info(f"[PASSWORD RESET LINK] /reset-password?token={token}")
+        frontend_url = (os.environ.get("FRONTEND_URL") or "").rstrip("/")
+        reset_url = f"{frontend_url}/reset-password?token={token}"
+        logger.info(f"[PASSWORD RESET LINK] {reset_url}")
+        lang = user.get("language") or "it"
+        subject, html = password_reset_email(reset_url, lang)
+        await send_email(user["email"], subject, html)
     return {"ok": True}
 
 @api_router.post("/auth/reset-password")
@@ -397,6 +404,9 @@ async def reset_password(payload: ResetIn):
     expires_at = rec["expires_at"]
     if isinstance(expires_at, str):
         expires_at = datetime.fromisoformat(expires_at)
+    # MongoDB strips tzinfo — add UTC back so comparison works.
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Token expired")
     await db.users.update_one({"id": rec["user_id"]}, {"$set": {"password_hash": hash_password(payload.password)}})
@@ -720,6 +730,20 @@ async def moderate_contribution(
         }},
     )
     fresh = await db.contributions.find_one({"id": contribution_id}, {"_id": 0})
+    # Best-effort email notification to the contributor. Must not fail the
+    # request if the user was deleted or email can't be sent.
+    try:
+        contributor = await db.users.find_one({"id": fresh["user_id"]}, {"_id": 0})
+        poi = await db.pois.find_one({"id": fresh["poi_id"]}, {"_id": 0})
+        if contributor and poi:
+            lang = contributor.get("language") or "it"
+            subject, html = contribution_moderated_email(
+                contributor.get("name", ""), fresh["status"], poi.get("name", ""),
+                fresh.get("moderation_note"), lang,
+            )
+            await send_email(contributor["email"], subject, html)
+    except Exception as err:
+        logger.warning("Moderation email skipped: %s", err)
     return _serialize_contribution(fresh)
 
 
