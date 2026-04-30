@@ -52,7 +52,7 @@ export default function LandmarkMap({
         <Marker
           key={l.id}
           position={[l.latitude, l.longitude]}
-          icon={landmarkIcon(i + 1, l.id === activeLandmarkId)}
+          icon={landmarkIcon(i + 1, l.image, l.id === activeLandmarkId)}
           eventHandlers={{ click: () => onSelectLandmark?.(l.id) }}
         />
       ))}

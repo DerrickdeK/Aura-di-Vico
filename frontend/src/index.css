@@ -202,33 +202,55 @@ body {
   .aura-ring { animation: none; }
 }
 
-/* Famous landmark pins on the landing map — numbered terracotta drops */
+/* Famous landmark pins on the landing map — tiny square photo tiles */
 .landmark-marker { background: transparent; border: 0; }
-.landmark-pin {
-  width: 32px; height: 38px;
-  background: var(--terracotta);
-  border: 2px solid var(--surface);
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  box-shadow: 0 2px 6px rgba(26,26,24,0.35), 0 0 0 4px rgba(189,87,69,0.15);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+.landmark-photo {
+  position: relative;
+  width: 56px; height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 3px solid var(--surface);
+  box-shadow: 0 3px 10px rgba(26,26,24,0.35), 0 0 0 2px var(--terracotta);
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.landmark-pin > span {
-  display: inline-block;
-  transform: rotate(45deg);
+.landmark-photo > img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.landmark-photo-num {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--terracotta);
   color: var(--inverse);
   font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 1;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
-.landmark-pin-active,
-.landmark-pin:hover {
+.landmark-photo-tail {
+  position: absolute;
+  bottom: -7px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px; height: 10px;
+  background: var(--surface);
+  border-right: 2px solid var(--terracotta);
+  border-bottom: 2px solid var(--terracotta);
+}
+.landmark-photo-active,
+.landmark-photo:hover {
+  transform: scale(1.15) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26,26,24,0.45), 0 0 0 3px var(--warm-ochre);
+}
+.landmark-photo-active .landmark-photo-num,
+.landmark-photo:hover .landmark-photo-num {
   background: var(--warm-ochre);
-  transform: rotate(-45deg) scale(1.18);
-  box-shadow: 0 4px 12px rgba(26,26,24,0.45), 0 0 0 6px rgba(201,138,60,0.25);
 }
 
 

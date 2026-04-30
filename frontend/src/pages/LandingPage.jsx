@@ -13,41 +13,44 @@ import LandmarkThumbs from "../components/LandmarkThumbs";
 
 // Five well-known Brera anchors. NOT in the POI database — these are public
 // landmarks meant to orient newcomers before the secret whispers begin.
+// Images come from Wikimedia Commons via the wsrv.nl free caching proxy
+// (keeps Wikimedia happy about hotlinking + guarantees fast CORS-friendly delivery).
+const IMG_PROXY = "https://wsrv.nl/?w=600&h=600&fit=cover&output=jpg&url=";
 const LANDMARKS = [
   {
     id: "accademia",
     name: { en: "Accademia di Belle Arti di Brera", it: "Accademia di Belle Arti di Brera" },
     note: { en: "Italy's most storied art school, founded 1776.", it: "La più storica accademia d'arte d'Italia, fondata nel 1776." },
     latitude: 45.4720, longitude: 9.1879,
-    image: "https://images.unsplash.com/photo-1577083552431-6e5fd01988a5?w=800",
+    image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/d/db/Milano_brera_cortile.jpg/600px-Milano_brera_cortile.jpg",
   },
   {
     id: "pinacoteca",
     name: { en: "Pinacoteca di Brera", it: "Pinacoteca di Brera" },
     note: { en: "Raphael, Mantegna and Caravaggio under one ceiling.", it: "Raffaello, Mantegna e Caravaggio sotto lo stesso soffitto." },
     latitude: 45.4720, longitude: 9.1881,
-    image: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=800",
+    image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg/600px-Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg",
   },
   {
     id: "cusani",
     name: { en: "Palazzo Cusani", it: "Palazzo Cusani" },
     note: { en: "Two facades, two architects, one quiet quarrel.", it: "Due facciate, due architetti, un litigio in pietra." },
     latitude: 45.4729, longitude: 9.1888,
-    image: "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=800",
+    image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/1/11/Palazzo_Cusani_Milan_2.jpg/600px-Palazzo_Cusani_Milan_2.jpg",
   },
   {
     id: "orsini",
     name: { en: "Palazzo Orsini", it: "Palazzo Orsini" },
     note: { en: "Versace's HQ since 1980 — frescoed ceilings still intact.", it: "Sede Versace dal 1980 — soffitti affrescati ancora intatti." },
     latitude: 45.4719, longitude: 9.1909,
-    image: "https://images.unsplash.com/photo-1595877244574-e90ce41ce089?w=800",
+    image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/3/31/Palazzo_Orsini_MI.jpg/600px-Palazzo_Orsini_MI.jpg",
   },
   {
     id: "scala",
     name: { en: "Teatro alla Scala", it: "Teatro alla Scala" },
     note: { en: "The opera house that crowns the southern edge of Brera.", it: "Il teatro d'opera che corona il bordo sud di Brera." },
     latitude: 45.4671, longitude: 9.1894,
-    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800",
+    image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/0/04/Milano_-_Teatro_alla_Scala_3924.jpg/600px-Milano_-_Teatro_alla_Scala_3924.jpg",
   },
 ];
 
