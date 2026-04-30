@@ -114,7 +114,7 @@ export default function ListenPage() {
   return (
     <div className="min-h-screen pb-28 px-5 pt-12 max-w-xl mx-auto" data-testid="listen-page">
       <header className="text-center">
-        <p className="eyebrow">Brera · Milano {virtualOn && "· virtual walk"}</p>
+        <p className="eyebrow">Brera · Milano {virtualOn && t(language, "listen.virtualBadge")}</p>
         <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-none">
           {t(language, "listeningTitle")}
         </h1>
@@ -175,7 +175,7 @@ export default function ListenPage() {
             aria-label="Toggle audio whispers"
           >
             {audioOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-            <span>{audioOn ? "Whispers on" : "Whispers off"}</span>
+            <span>{audioOn ? t(language, "listen.whispersOn") : t(language, "listen.whispersOff")}</span>
           </button>
           <span className="w-px h-4 bg-[var(--border)]" />
           <button
@@ -187,7 +187,7 @@ export default function ListenPage() {
             title="Walk Brera virtually (no GPS needed)"
           >
             <Footprints size={14} />
-            <span>{virtualOn ? "Virtual on" : "Virtual walk"}</span>
+            <span>{virtualOn ? t(language, "listen.virtualOn") : t(language, "listen.virtualWalk")}</span>
           </button>
         </div>
       </div>

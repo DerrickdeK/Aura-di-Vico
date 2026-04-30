@@ -1,14 +1,16 @@
 import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { Footprints, MousePointer2, Play, Pause, ChevronRight, X } from "lucide-react";
+import { Footprints, MousePointer2, Play, ChevronRight, X } from "lucide-react";
 import { userIcon } from "../lib/markers";
+import useLocale from "../hooks/useLocale";
+import { t } from "../lib/i18n";
 
 const BRERA_CENTER = [45.4719, 9.1881];
 
-const MODES = [
-  { key: "auto", label: "Auto-walk", icon: Play, desc: "Brera walks you on a curated route." },
-  { key: "step", label: "Step forward", icon: ChevronRight, desc: "Tap to take one step at a time." },
-  { key: "drag", label: "Drag pin", icon: MousePointer2, desc: "Drag yourself anywhere on the map." },
+const MODE_KEYS = [
+  { key: "auto", icon: Play },
+  { key: "step", icon: ChevronRight },
+  { key: "drag", icon: MousePointer2 },
 ];
 
 function DragMarker({ position, onDrag }) {
@@ -46,7 +48,14 @@ export default function VirtualNavPanel({
   position,
   onSetDragPosition,
 }) {
+  const { lang } = useLocale();
   if (!enabled) return null;
+
+  const modeLabel = (k) => ({
+    auto: t(lang, "listen.modeAuto"),
+    step: t(lang, "listen.modeStep"),
+    drag: t(lang, "listen.modeDrag"),
+  }[k]);
 
   return (
     <div
@@ -55,19 +64,19 @@ export default function VirtualNavPanel({
     >
       <div className="pointer-events-auto w-full max-w-md bg-[var(--surface)]/95 backdrop-blur border border-[var(--border)] rounded-2xl p-3 shadow-xl">
         <div className="flex items-center justify-between mb-2">
-          <p className="eyebrow">Virtual walk</p>
+          <p className="eyebrow">{t(lang, "listen.virtualWalkLabel")}</p>
           <button
             onClick={onClose}
             className="text-xs text-[var(--text-tertiary)] inline-flex items-center gap-1 hover:text-[var(--terracotta)]"
             data-testid="virtual-nav-close"
             aria-label="Stop virtual walk"
           >
-            <X size={12} /> stop
+            <X size={12} /> {t(lang, "listen.virtualStop")}
           </button>
         </div>
 
         <div className="grid grid-cols-3 gap-1.5 mb-2">
-          {MODES.map((m) => {
+          {MODE_KEYS.map((m) => {
             const Icon = m.icon;
             const active = mode === m.key;
             return (
@@ -82,7 +91,7 @@ export default function VirtualNavPanel({
                 data-testid={`virtual-mode-${m.key}`}
               >
                 <Icon size={14} strokeWidth={1.6} />
-                <span>{m.label}</span>
+                <span>{modeLabel(m.key)}</span>
               </button>
             );
           })}
@@ -90,7 +99,7 @@ export default function VirtualNavPanel({
 
         {mode === "auto" && (
           <p className="text-xs text-[var(--text-tertiary)] italic px-1 py-2 flex items-center gap-1.5">
-            <Footprints size={12} /> Walking automatically through Brera. Listen.
+            <Footprints size={12} /> {t(lang, "listen.autoHint")}
           </p>
         )}
 
@@ -100,7 +109,7 @@ export default function VirtualNavPanel({
             className="btn-primary w-full inline-flex items-center justify-center gap-2"
             data-testid="virtual-step-btn"
           >
-            <ChevronRight size={16} /> Take one step
+            <ChevronRight size={16} /> {t(lang, "listen.stepBtn")}
           </button>
         )}
 
@@ -123,7 +132,7 @@ export default function VirtualNavPanel({
               <MapClickToMove onMove={onSetDragPosition} />
             </MapContainer>
             <p className="text-[10px] text-[var(--text-tertiary)] px-2 py-1 bg-[var(--bg)]">
-              Drag the pin (or tap the map) to teleport yourself in Brera.
+              {t(lang, "listen.dragHint")}
             </p>
           </div>
         )}

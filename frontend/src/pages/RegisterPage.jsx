@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api, formatApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import useLocale from "../hooks/useLocale";
+import { t } from "../lib/i18n";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function RegisterPage() {
   const { refresh } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { lang } = useLocale();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +26,8 @@ export default function RegisterPage() {
       await api.post("/auth/register", {
         email, password, name, as_contributor: asContributor,
       });
+      // Apply the user's chosen UI language to the freshly-created account.
+      try { await api.patch("/me/profile", { language: lang }); } catch { /* non-fatal */ }
       await refresh();
       setLoading(false);
       navigate(asContributor ? "/contribute" : "/");
@@ -32,26 +38,27 @@ export default function RegisterPage() {
   };
 
   const submitLabel = (() => {
-    if (loading) return "Creating…";
-    if (asContributor) return "Become a contributor";
-    return "Create account";
+    if (loading) return t(lang, "auth.creating");
+    if (asContributor) return t(lang, "auth.becomeContrib");
+    return t(lang, "auth.createAccount");
   })();
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-6 pb-24" data-testid="register-page">
+    <div className="min-h-screen w-full flex items-center justify-center px-6 pb-24 relative" data-testid="register-page">
+      <div className="absolute top-5 right-5"><LanguageSwitcher /></div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <p className="eyebrow">Begin wandering</p>
-          <h1 className="font-serif text-5xl mt-2 leading-none">Create an account</h1>
+          <p className="eyebrow">{t(lang, "auth.beginWandering")}</p>
+          <h1 className="font-serif text-5xl mt-2 leading-none">{t(lang, "auth.createAccount")}</h1>
           <p className="mt-3 text-[var(--text-secondary)]">
             {asContributor
-              ? "Curate Brera with your students. Your contributions go through admin review."
-              : "Save the courtyards, cafés, and oddities you discover."}
+              ? t(lang, "auth.registerContribText")
+              : t(lang, "auth.registerWandererText")}
           </p>
         </div>
         <form onSubmit={submit} className="space-y-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6">
           <div>
-            <label className="eyebrow block mb-2">Your name</label>
+            <label className="eyebrow block mb-2">{t(lang, "auth.yourName")}</label>
             <input
               required
               className="input-field"
@@ -61,7 +68,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="eyebrow block mb-2">Email</label>
+            <label className="eyebrow block mb-2">{t(lang, "auth.email")}</label>
             <input
               type="email"
               required
@@ -72,7 +79,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="eyebrow block mb-2">Password</label>
+            <label className="eyebrow block mb-2">{t(lang, "auth.password")}</label>
             <input
               type="password"
               required
@@ -82,7 +89,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               data-testid="register-password"
             />
-            <p className="text-xs mt-1 text-[var(--text-tertiary)]">At least 6 characters.</p>
+            <p className="text-xs mt-1 text-[var(--text-tertiary)]">{t(lang, "auth.passwordHint")}</p>
           </div>
 
           <label className="flex items-start gap-3 pt-1 cursor-pointer">
@@ -94,8 +101,9 @@ export default function RegisterPage() {
               data-testid="register-contributor-toggle"
             />
             <span className="text-sm text-[var(--text-secondary)]">
-              I'd like to <strong className="text-[var(--text-primary)]">contribute</strong> narratives, fun facts, or
-              dialogue prompts to Brera. (Each contribution is moderated.)
+              {t(lang, "auth.contribCheckbox1")}{" "}
+              <strong className="text-[var(--text-primary)]">{t(lang, "auth.contribCheckbox2")}</strong>{" "}
+              {t(lang, "auth.contribCheckbox3")}
             </span>
           </label>
 
@@ -109,9 +117,9 @@ export default function RegisterPage() {
           </button>
         </form>
         <p className="text-center mt-6 text-sm text-[var(--text-secondary)]">
-          Already have one?{" "}
+          {t(lang, "auth.alreadyAccount")}{" "}
           <Link to="/login" className="text-[var(--terracotta)] font-medium" data-testid="register-go-login">
-            Sign in
+            {t(lang, "auth.signIn")}
           </Link>
         </p>
       </div>

@@ -3,15 +3,14 @@ import { Navigate, Link } from "react-router-dom";
 import { Check, X as XIcon, Trash2 } from "lucide-react";
 import { api, formatApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import useLocale from "../hooks/useLocale";
+import { t } from "../lib/i18n";
 import { StatusBadge } from "./ContributePage";
 
-const TABS = [
-  { key: "pending",  label: "Pending" },
-  { key: "approved", label: "Approved" },
-  { key: "rejected", label: "Rejected" },
-];
+const TAB_KEYS = ["pending", "approved", "rejected"];
 
 function ModerationCard({ c, onApprove, onReject, onDelete }) {
+  const { lang } = useLocale();
   const [note, setNote] = useState("");
   return (
     <li
@@ -21,16 +20,19 @@ function ModerationCard({ c, onApprove, onReject, onDelete }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-widest text-[var(--text-tertiary)]">
-            {c.type.replace("_", " ")} · {c.poi?.name || "Unknown POI"}
+            {t(lang, `contribute.types.${c.type}`)} · {c.poi?.name || "—"}
           </p>
           <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
-            By {c.user_name || "anonymous"} · {new Date(c.created_at).toLocaleString()}
+            {t(lang, "moderation.authorLine", {
+              name: c.user_name || "anonymous",
+              date: new Date(c.created_at).toLocaleString(),
+            })}
           </p>
           {c.title && <p className="font-serif text-lg mt-2">{c.title}</p>}
           <p className="text-sm text-[var(--text-secondary)] mt-1 whitespace-pre-line">{c.content}</p>
           {c.moderation_note && (
             <p className="text-xs italic mt-2 text-[var(--text-tertiary)]">
-              Previous note: {c.moderation_note}
+              {t(lang, "moderation.previousNote", { note: c.moderation_note })}
             </p>
           )}
         </div>
@@ -42,7 +44,7 @@ function ModerationCard({ c, onApprove, onReject, onDelete }) {
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Optional note to the contributor"
+            placeholder={t(lang, "moderation.notePlaceholder")}
             className="input-field text-sm flex-1 min-w-[200px]"
             data-testid={`moderation-note-${c.id}`}
           />
@@ -51,14 +53,14 @@ function ModerationCard({ c, onApprove, onReject, onDelete }) {
             className="btn-primary inline-flex items-center gap-1 text-sm"
             data-testid={`moderation-approve-${c.id}`}
           >
-            <Check size={14} /> Approve
+            <Check size={14} /> {t(lang, "moderation.approve")}
           </button>
           <button
             onClick={() => onReject(c.id, note)}
             className="btn-ghost inline-flex items-center gap-1 text-sm"
             data-testid={`moderation-reject-${c.id}`}
           >
-            <XIcon size={14} /> Reject
+            <XIcon size={14} /> {t(lang, "moderation.reject")}
           </button>
         </div>
       )}
@@ -69,7 +71,7 @@ function ModerationCard({ c, onApprove, onReject, onDelete }) {
           className="text-xs text-[var(--text-tertiary)] inline-flex items-center gap-1 hover:text-[var(--terracotta)]"
           data-testid={`moderation-delete-${c.id}`}
         >
-          <Trash2 size={12} /> delete permanently
+          <Trash2 size={12} /> {t(lang, "moderation.delete")}
         </button>
       </div>
     </li>
@@ -78,6 +80,7 @@ function ModerationCard({ c, onApprove, onReject, onDelete }) {
 
 export default function AdminContributionsPage() {
   const { user } = useAuth();
+  const { lang } = useLocale();
   const isAdmin = user && user !== false && user.role === "admin";
   const [tab, setTab] = useState("pending");
   const [items, setItems] = useState([]);
@@ -104,7 +107,7 @@ export default function AdminContributionsPage() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen px-5 pt-12 pb-32 max-w-md mx-auto text-center">
-        <p className="eyebrow">Restricted</p>
+        <p className="eyebrow">{t(lang, "contribute.gateRestricted")}</p>
         <h1 className="font-serif text-4xl mt-2">Admins only</h1>
         <Link to="/" className="btn-primary inline-block mt-6">Home</Link>
       </div>
@@ -121,7 +124,7 @@ export default function AdminContributionsPage() {
   };
 
   const remove = async (id) => {
-    if (!window.confirm("Delete this contribution permanently?")) return;
+    if (!window.confirm(t(lang, "moderation.deleteConfirm"))) return;
     try {
       await api.delete(`/contributions/${id}`);
       reload();
@@ -134,34 +137,34 @@ export default function AdminContributionsPage() {
     <div className="min-h-screen px-5 pt-10 pb-32 max-w-3xl mx-auto" data-testid="admin-contributions-page">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <p className="eyebrow">Admin</p>
-          <h1 className="font-serif text-5xl mt-2 leading-none">Moderation queue</h1>
+          <p className="eyebrow">{t(lang, "moderation.eyebrow")}</p>
+          <h1 className="font-serif text-5xl mt-2 leading-none">{t(lang, "moderation.title")}</h1>
         </div>
-        <Link to="/admin" className="btn-ghost text-sm">← POI admin</Link>
+        <Link to="/admin" className="btn-ghost text-sm">{t(lang, "moderation.backToPoi")}</Link>
       </div>
 
       <div className="mt-6 flex gap-2 border-b border-[var(--border)]">
-        {TABS.map((t) => (
+        {TAB_KEYS.map((key) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={key}
+            onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm transition-colors ${
-              tab === t.key
+              tab === key
                 ? "text-[var(--terracotta)] border-b-2 border-[var(--terracotta)] -mb-px"
                 : "text-[var(--text-secondary)]"
             }`}
-            data-testid={`moderation-tab-${t.key}`}
+            data-testid={`moderation-tab-${key}`}
           >
-            {t.label}
+            {t(lang, `moderation.tab${key.charAt(0).toUpperCase() + key.slice(1)}`)}
           </button>
         ))}
       </div>
 
       <div className="mt-6">
-        {loading && <p className="text-[var(--text-tertiary)]">Loading…</p>}
+        {loading && <p className="text-[var(--text-tertiary)]">…</p>}
         {!loading && items.length === 0 && (
           <p className="text-[var(--text-secondary)]" data-testid="moderation-empty">
-            Nothing in this bucket yet.
+            {t(lang, "moderation.empty")}
           </p>
         )}
         <ul className="space-y-3">

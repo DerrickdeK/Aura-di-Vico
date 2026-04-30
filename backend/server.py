@@ -317,7 +317,7 @@ async def register(payload: RegisterIn, response: Response):
         "id": user_id, "email": email, "name": payload.name,
         "password_hash": hash_password(payload.password),
         "role": role, "favorites": [],
-        "interests": [], "language": "en", "onboarded": False,
+        "interests": [], "language": "it", "onboarded": False,
         "notifications_enabled": False,
         "relationship_mode": "anonymous",
         "status": None, "gender": None,

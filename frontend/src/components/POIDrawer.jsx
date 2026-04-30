@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, MapPin, Clock, Sparkles, BookOpen, MessageCircle, Image as ImageIcon } from "lucide-react";
 import { api } from "../lib/api";
 import { devWarn } from "../lib/log";
+import useLocale from "../hooks/useLocale";
+import { t } from "../lib/i18n";
 
 const TYPE_ICONS = {
   narrative: BookOpen,
@@ -50,6 +52,7 @@ const DRAWER_TRANSITION = { type: "spring", damping: 28, stiffness: 260 };
 
 export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, isAuthed }) {
   const [contributions, setContributions] = useState([]);
+  const { lang } = useLocale();
 
   useEffect(() => {
     if (!poi) {
@@ -144,10 +147,10 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
               {contributions.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-[var(--border)]" data-testid="poi-drawer-contributions">
                   <p className="font-serif text-xl text-[var(--text-primary)] leading-snug">
-                    Brera through other walkers
+                    {t(lang, "contribute.drawerTitle")}
                   </p>
                   <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                    {contributions.length} contribution{contributions.length === 1 ? "" : "s"} from the curator community.
+                    {t(lang, contributions.length === 1 ? "contribute.drawerCount" : "contribute.drawerCountPlural", { n: contributions.length })}
                   </p>
                   <div className="mt-3 space-y-3">
                     {contributions.map((c) => <ContributionItem key={c.id} c={c} />)}
