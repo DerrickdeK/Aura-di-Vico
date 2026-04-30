@@ -1,22 +1,61 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { motion } from "framer-motion";
 import { Ear, Footprints, Sparkles, ArrowRight, ShieldCheck, PenLine } from "lucide-react";
 
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { auraIcon } from "../lib/markers";
 import useLocale from "../hooks/useLocale";
 import { t } from "../lib/i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import LandmarkMap from "../components/LandmarkMap";
+import LandmarkThumbs from "../components/LandmarkThumbs";
 
-const BRERA_CENTER = [45.4719, 9.1881];
+// Five well-known Brera anchors. NOT in the POI database — these are public
+// landmarks meant to orient newcomers before the secret whispers begin.
+const LANDMARKS = [
+  {
+    id: "accademia",
+    name: { en: "Accademia di Belle Arti di Brera", it: "Accademia di Belle Arti di Brera" },
+    note: { en: "Italy's most storied art school, founded 1776.", it: "La più storica accademia d'arte d'Italia, fondata nel 1776." },
+    latitude: 45.4720, longitude: 9.1879,
+    image: "https://images.unsplash.com/photo-1577083552431-6e5fd01988a5?w=800",
+  },
+  {
+    id: "pinacoteca",
+    name: { en: "Pinacoteca di Brera", it: "Pinacoteca di Brera" },
+    note: { en: "Raphael, Mantegna and Caravaggio under one ceiling.", it: "Raffaello, Mantegna e Caravaggio sotto lo stesso soffitto." },
+    latitude: 45.4720, longitude: 9.1881,
+    image: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=800",
+  },
+  {
+    id: "cusani",
+    name: { en: "Palazzo Cusani", it: "Palazzo Cusani" },
+    note: { en: "Two facades, two architects, one quiet quarrel.", it: "Due facciate, due architetti, un litigio in pietra." },
+    latitude: 45.4729, longitude: 9.1888,
+    image: "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=800",
+  },
+  {
+    id: "orsini",
+    name: { en: "Palazzo Orsini", it: "Palazzo Orsini" },
+    note: { en: "Versace's HQ since 1980 — frescoed ceilings still intact.", it: "Sede Versace dal 1980 — soffitti affrescati ancora intatti." },
+    latitude: 45.4719, longitude: 9.1909,
+    image: "https://images.unsplash.com/photo-1595877244574-e90ce41ce089?w=800",
+  },
+  {
+    id: "scala",
+    name: { en: "Teatro alla Scala", it: "Teatro alla Scala" },
+    note: { en: "The opera house that crowns the southern edge of Brera.", it: "Il teatro d'opera che corona il bordo sud di Brera." },
+    latitude: 45.4671, longitude: 9.1894,
+    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800",
+  },
+];
 
 export default function LandingPage() {
   const { user } = useAuth();
   const { lang } = useLocale();
   const [pois, setPois] = useState([]);
+  const [activeLandmark, setActiveLandmark] = useState(null);
   const isAuthed = !!user && user !== false;
   const isAdmin = isAuthed && user.role === "admin";
 
@@ -58,16 +97,16 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      {/* Hero */}
-      <section className="px-5 sm:px-10 mt-10 sm:mt-16 max-w-5xl mx-auto">
+      {/* Hero — compact text intro */}
+      <section className="px-5 sm:px-10 mt-8 sm:mt-12 max-w-5xl mx-auto">
         <p className="eyebrow">{t(lang, "landing.eyebrow")}</p>
-        <h1 className="font-serif text-5xl sm:text-7xl mt-3 leading-[0.95] max-w-3xl">
+        <h1 className="font-serif text-4xl sm:text-6xl mt-3 leading-[0.98] max-w-3xl">
           {t(lang, "landing.heroPart1")} <em className="text-[var(--terracotta)] not-italic">{t(lang, "landing.heroPart2")}</em>
         </h1>
-        <p className="mt-5 text-lg text-[var(--text-secondary)] max-w-2xl leading-relaxed">
+        <p className="mt-4 text-base sm:text-lg text-[var(--text-secondary)] max-w-2xl leading-relaxed">
           {t(lang, "landing.heroIntro")}
         </p>
-        <div className="mt-7 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap gap-3">
           {!isAuthed && (
             <Link to="/register" className="btn-primary inline-flex items-center gap-2" data-testid="landing-begin">
               <Ear size={16} /> {t(lang, "landing.begin")}
@@ -83,12 +122,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Map preview */}
-      <section className="px-5 sm:px-10 mt-12 max-w-6xl mx-auto">
-        <div className="flex items-end justify-between mb-3">
+      {/* Larger map + landmark thumbnails */}
+      <section className="px-5 sm:px-10 mt-10 max-w-6xl mx-auto">
+        <div className="flex items-end justify-between mb-3 flex-wrap gap-2">
           <div>
             <p className="eyebrow">{t(lang, "landing.shape")}</p>
-            <h2 className="font-serif text-3xl mt-1">
+            <h2 className="font-serif text-2xl sm:text-3xl mt-1">
               {pois.length > 0
                 ? t(lang, "landing.pulsing", { count: pois.length })
                 : t(lang, "landing.breraIs")}
@@ -99,28 +138,33 @@ export default function LandingPage() {
           </p>
         </div>
         <div className="rounded-3xl overflow-hidden border border-[var(--border)] shadow-md">
-          <MapContainer
-            center={BRERA_CENTER}
-            zoom={16}
-            scrollWheelZoom={false}
-            zoomControl={false}
-            className="h-[420px] w-full"
-            style={{ height: 420, width: "100%" }}
-            data-testid="landing-map"
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
-            {pois.map((p, i) => (
-              <Marker
-                key={p.id}
-                position={[p.latitude, p.longitude]}
-                icon={auraIcon(i)}
-              />
-            ))}
-          </MapContainer>
+          <LandmarkMap
+            pois={pois}
+            landmarks={LANDMARKS}
+            activeLandmarkId={activeLandmark}
+            onSelectLandmark={setActiveLandmark}
+            height={560}
+          />
         </div>
+
+        <div className="mt-7 flex items-end justify-between flex-wrap gap-2">
+          <div>
+            <p className="eyebrow">{t(lang, "landing.famousLandmarksEyebrow")}</p>
+            <h3 className="font-serif text-xl sm:text-2xl mt-1">
+              {t(lang, "landing.famousLandmarksTitle")}
+            </h3>
+          </div>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            {t(lang, "landing.famousLandmarksHint")}
+          </p>
+        </div>
+
+        <LandmarkThumbs
+          landmarks={LANDMARKS}
+          activeId={activeLandmark}
+          onSelect={setActiveLandmark}
+          lang={lang}
+        />
       </section>
 
       {/* How it works */}

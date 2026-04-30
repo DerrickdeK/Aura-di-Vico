@@ -48,6 +48,9 @@ const STRINGS = {
       contributorText: "Help Brera find its many voices. Add narratives, fun facts, and dialogue prompts that the city will whisper to future walkers. Each entry is reviewed before going live.",
       contributorCta: "Become a contributor",
       adminLink: "Admin",
+      famousLandmarksEyebrow: "Familiar landmarks",
+      famousLandmarksTitle: "Anchor yourself, then let the rest whisper.",
+      famousLandmarksHint: "Tap a card to fly the map to it.",
     },
 
     auth: {
@@ -326,6 +329,9 @@ const STRINGS = {
       contributorText: "Aiuta Brera a trovare le sue molte voci. Aggiungi racconti, curiosità e domande di dialogo che la città sussurrerà ai prossimi camminatori. Ogni contributo è rivisto prima di andare in onda.",
       contributorCta: "Diventa contributore",
       adminLink: "Admin",
+      famousLandmarksEyebrow: "Luoghi che già conosci",
+      famousLandmarksTitle: "Orientati con questi, poi lascia che il resto ti sussurri.",
+      famousLandmarksHint: "Tocca una scheda per spostare la mappa.",
     },
 
     auth: {

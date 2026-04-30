@@ -42,3 +42,17 @@ export function auraIcon(seed = 0) {
     iconAnchor: [7, 7],
   });
 }
+
+// A named, well-known landmark (Pinacoteca, La Scala…). Visually distinct
+// from the anonymous aura dots — has a numbered terracotta pin so visitors
+// can match it to its thumbnail card.
+export function landmarkIcon(number, active = false) {
+  return L.divIcon({
+    className: "landmark-marker",
+    html: `<div class="landmark-pin${active ? " landmark-pin-active" : ""}">
+        <span>${number}</span>
+      </div>`,
+    iconSize: [32, 38],
+    iconAnchor: [16, 36],
+  });
+}
