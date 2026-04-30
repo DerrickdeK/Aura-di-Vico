@@ -1155,18 +1155,17 @@ async def seed_pois_if_empty() -> int:
     return len(docs)
 
 
-async def seed_admin():
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@brera.app").lower()
-    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+async def _upsert_admin(admin_email: str, admin_password: str, display_name: str):
+    """Idempotently seed a single admin account. No-op if the email exists."""
     existing = await db.users.find_one({"email": admin_email})
     if existing is None:
         await db.users.insert_one({
             "id": str(uuid.uuid4()),
-            "email": admin_email, "name": "Brera Admin",
+            "email": admin_email, "name": display_name,
             "password_hash": hash_password(admin_password),
             "role": "admin", "favorites": [],
             "interests": list(INTEREST_TAGS),
-            "language": "en",
+            "language": "it",
             "onboarded": True,
             "notifications_enabled": False,
             "relationship_mode": "personal",
@@ -1178,32 +1177,49 @@ async def seed_admin():
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
         logger.info(f"Seeded admin: {admin_email}")
-    else:
-        # Ensure existing admin has the new profile fields without overwriting custom values.
-        defaults = {}
-        if "interests" not in existing or any(t not in INTEREST_TAGS for t in existing.get("interests", [])):
-            defaults["interests"] = list(INTEREST_TAGS)
-        if "language" not in existing:
-            defaults["language"] = "en"
-        if "onboarded" not in existing:
-            defaults["onboarded"] = True
-        if "notifications_enabled" not in existing:
-            defaults["notifications_enabled"] = False
-        if "relationship_mode" not in existing:
-            defaults["relationship_mode"] = "personal"
-        if "response_formats" not in existing:
-            defaults["response_formats"] = ["writing"]
-        for f in ("companions", "accessibility", "contribution_interests"):
-            if f not in existing:
-                defaults[f] = []
-        if defaults:
-            await db.users.update_one({"email": admin_email}, {"$set": defaults})
-        if not verify_password(admin_password, existing["password_hash"]):
-            await db.users.update_one(
-                {"email": admin_email},
-                {"$set": {"password_hash": hash_password(admin_password), "role": "admin"}},
-            )
-            logger.info(f"Updated admin password for: {admin_email}")
+        return
+
+    # Ensure existing admin has the new profile fields without overwriting custom values.
+    defaults = {}
+    if "interests" not in existing or any(t not in INTEREST_TAGS for t in existing.get("interests", [])):
+        defaults["interests"] = list(INTEREST_TAGS)
+    if "language" not in existing:
+        defaults["language"] = "en"
+    if "onboarded" not in existing:
+        defaults["onboarded"] = True
+    if "notifications_enabled" not in existing:
+        defaults["notifications_enabled"] = False
+    if "relationship_mode" not in existing:
+        defaults["relationship_mode"] = "personal"
+    if "response_formats" not in existing:
+        defaults["response_formats"] = ["writing"]
+    for f in ("companions", "accessibility", "contribution_interests"):
+        if f not in existing:
+            defaults[f] = []
+    if defaults:
+        await db.users.update_one({"email": admin_email}, {"$set": defaults})
+    # Rotate the stored password hash if the env-configured password has changed.
+    if not verify_password(admin_password, existing["password_hash"]):
+        await db.users.update_one(
+            {"email": admin_email},
+            {"$set": {"password_hash": hash_password(admin_password), "role": "admin"}},
+        )
+        logger.info(f"Updated admin password for: {admin_email}")
+
+
+async def seed_admin():
+    # Primary admin (required)
+    await _upsert_admin(
+        os.environ.get("ADMIN_EMAIL", "admin@brera.app").lower(),
+        os.environ.get("ADMIN_PASSWORD", "admin123"),
+        "Brera Admin",
+    )
+    # Optional co-admin — lets the lead curator delegate without sharing the
+    # main password. Skipped silently if env vars aren't set.
+    co_email = (os.environ.get("CO_ADMIN_EMAIL") or "").strip().lower()
+    co_password = os.environ.get("CO_ADMIN_PASSWORD") or ""
+    if co_email and co_password:
+        await _upsert_admin(co_email, co_password, "Brera Co-Admin")
 
 
 @app.on_event("startup")
