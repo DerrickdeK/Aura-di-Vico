@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import { devWarn } from "../lib/log";
 import useLocale from "../hooks/useLocale";
 import { t } from "../lib/i18n";
+import POIChatPanel, { POIChatLauncher } from "./POIChatPanel";
 
 const TYPE_ICONS = {
   narrative: BookOpen,
@@ -52,9 +53,11 @@ const DRAWER_TRANSITION = { type: "spring", damping: 28, stiffness: 260 };
 
 export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, isAuthed }) {
   const [contributions, setContributions] = useState([]);
+  const [chatOpen, setChatOpen] = useState(false);
   const { lang } = useLocale();
 
   useEffect(() => {
+    setChatOpen(false);  // collapse the chat each time the drawer opens with a new POI
     if (!poi) {
       setContributions([]);
       return;
@@ -142,7 +145,12 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
                 <p className="mt-2 text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
                   {poi.long_description}
                 </p>
+                {!chatOpen && <POIChatLauncher onOpen={() => setChatOpen(true)} />}
               </div>
+
+              {chatOpen && (
+                <POIChatPanel poi={poi} onClose={() => setChatOpen(false)} />
+              )}
 
               {contributions.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-[var(--border)]" data-testid="poi-drawer-contributions">

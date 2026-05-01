@@ -19,6 +19,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 from mailer import send_email, password_reset_email, contribution_moderated_email
+from poi_chat import reply as poi_chat_reply
 
 
 # ------------------------------------------------------------------------------------
@@ -769,6 +770,57 @@ async def list_poi_contributions(poi_id: str):
         {"poi_id": poi_id, "status": "approved"}, {"_id": 0}
     ).sort("created_at", -1).to_list(500)
     return [_serialize_contribution(d) for d in docs]
+
+
+# ------------------------------------------------------------------------------------
+# POI-as-character chat (Claude Sonnet 4.5)
+# ------------------------------------------------------------------------------------
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=2000)
+
+class ChatIn(BaseModel):
+    message: str = Field(min_length=1, max_length=1000)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=20)
+    language: Optional[str] = None  # falls back to authed user language or "it"
+
+
+@api_router.post("/pois/{poi_id}/chat")
+async def chat_with_poi(
+    poi_id: str,
+    payload: ChatIn,
+    request: Request,
+):
+    poi = await db.pois.find_one({"id": poi_id}, {"_id": 0})
+    if not poi:
+        raise HTTPException(status_code=404, detail="POI not found")
+
+    # Approved contributions enrich the system prompt — student voices
+    # literally shape what the place says next.
+    contribs = await db.contributions.find(
+        {"poi_id": poi_id, "status": "approved"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+
+    # User context (optional — anonymous visitors are welcome to chat)
+    current_user = None
+    try:
+        token = request.cookies.get("access_token")
+        if token:
+            data = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+            current_user = await db.users.find_one({"id": data.get("sub")}, {"_id": 0})
+    except Exception:
+        current_user = None
+
+    lang = (payload.language or (current_user or {}).get("language") or "it").lower()
+    if lang not in SUPPORTED_LANGS:
+        lang = "it"
+
+    history = [t.dict() for t in payload.history]
+    text = await poi_chat_reply(
+        poi=poi, contribs=contribs, user=current_user,
+        history=history, message=payload.message, lang=lang,
+    )
+    return {"reply": text, "lang": lang}
 
 
 
