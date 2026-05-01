@@ -44,12 +44,6 @@ export default function ListenPage() {
   const [virtualOn, setVirtualOn] = useState(searchParams.get("virtual") === "1");
   const [virtualMode, setVirtualMode] = useState("auto"); // "auto" | "step" | "drag"
 
-  const { position: virtualPosition, stepForward, setDragPosition } = useVirtualPosition({
-    enabled: virtualOn,
-    mode: virtualMode,
-  });
-  const position = virtualOn ? virtualPosition : realPosition;
-
   const language = user?.language || "en";
   const interests = user?.interests || [];
   const responseFormats = user?.response_formats || ["writing"];
@@ -57,6 +51,13 @@ export default function ListenPage() {
   const notif = user?.notifications_enabled || false;
 
   const filteredPois = useMemo(() => filterByThemes(pois, interests), [pois, interests]);
+
+  const { position: virtualPosition, stepForward, setDragPosition } = useVirtualPosition({
+    enabled: virtualOn,
+    mode: virtualMode,
+    pois: filteredPois,
+  });
+  const position = virtualOn ? virtualPosition : realPosition;
 
   useEffect(() => {
     api.get("/pois").then(({ data }) => setPois(data)).catch(() => setPois([]));
