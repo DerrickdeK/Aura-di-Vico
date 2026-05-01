@@ -10,17 +10,30 @@ import { t } from "../lib/i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import LandmarkMap from "../components/LandmarkMap";
 import LandmarkThumbs from "../components/LandmarkThumbs";
+import LandmarkDetail from "../components/LandmarkDetail";
 
 // Five well-known Brera anchors. NOT in the POI database — these are public
 // landmarks meant to orient newcomers before the secret whispers begin.
 // Images come from Wikimedia Commons via the wsrv.nl free caching proxy
 // (keeps Wikimedia happy about hotlinking + guarantees fast CORS-friendly delivery).
+//
+// Each landmark also carries a short "voice" (a first-person line spoken by the
+// place itself) — used in the inline detail panel to teach new users the core
+// idea: places here speak to YOU.
 const IMG_PROXY = "https://wsrv.nl/?w=600&h=600&fit=cover&output=jpg&url=";
 const LANDMARKS = [
   {
     id: "accademia",
     name: { en: "Accademia di Belle Arti di Brera", it: "Accademia di Belle Arti di Brera" },
     note: { en: "Italy's most storied art school, founded 1776.", it: "La più storica accademia d'arte d'Italia, fondata nel 1776." },
+    intro: {
+      it: "Sotto i miei portici, generazioni di studenti hanno imparato a guardare. Ogni mattina alle otto, l'odore di trementina si mescola al caffè della latteria di fronte. Cammina lentamente — qui ho imparato a riconoscere i passi degli innamorati.",
+      en: "Generations of students have learned to see beneath my arcades. Every morning at eight, the scent of turpentine blends with coffee from the dairy across the way. Walk slowly — I've learned to recognise the footsteps of lovers here.",
+    },
+    voice: {
+      it: "Cammina sotto i miei portici. Ti dirò chi è passato di qui.",
+      en: "Walk beneath my arcades. I'll tell you who has passed through.",
+    },
     latitude: 45.4720, longitude: 9.1879,
     image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/d/db/Milano_brera_cortile.jpg/600px-Milano_brera_cortile.jpg",
   },
@@ -28,6 +41,14 @@ const LANDMARKS = [
     id: "pinacoteca",
     name: { en: "Pinacoteca di Brera", it: "Pinacoteca di Brera" },
     note: { en: "Raphael, Mantegna and Caravaggio under one ceiling.", it: "Raffaello, Mantegna e Caravaggio sotto lo stesso soffitto." },
+    intro: {
+      it: "Custodisco lo Sposalizio della Vergine di Raffaello, il Cristo morto di Mantegna, la Cena in Emmaus di Caravaggio. Ma il vero spettacolo è il cortile: in primavera la magnolia di Napoleone fiorisce sopra le tue spalle.",
+      en: "I keep Raphael's Marriage of the Virgin, Mantegna's Dead Christ, Caravaggio's Supper at Emmaus. But the real show is the courtyard: in spring, Napoleon's magnolia blooms above your shoulders.",
+    },
+    voice: {
+      it: "Ho conservato i loro silenzi. Vieni a sentirli.",
+      en: "I have kept their silences. Come and feel them.",
+    },
     latitude: 45.4720, longitude: 9.1881,
     image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg/600px-Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg",
   },
@@ -35,6 +56,14 @@ const LANDMARKS = [
     id: "cusani",
     name: { en: "Palazzo Cusani", it: "Palazzo Cusani" },
     note: { en: "Two facades, two architects, one quiet quarrel.", it: "Due facciate, due architetti, un litigio in pietra." },
+    intro: {
+      it: "Guardami da via Brera, poi gira l'angolo. Sembro un altro edificio, vero? È perché due architetti — Ruggeri nel '700, Piermarini un secolo dopo — non si sono mai messi d'accordo. Sono sede del Comando Militare dal 1860, ma ricordo ancora la festa per Maria Teresa d'Austria.",
+      en: "Look at me from Via Brera, then turn the corner. I look like a different building, don't I? Two architects — Ruggeri in the 1700s, Piermarini a century later — never agreed. I've housed the Military Command since 1860, but I still remember the ball for Maria Theresa of Austria.",
+    },
+    voice: {
+      it: "Ho due volti. Vieni a scoprire perché.",
+      en: "I wear two faces. Come and find out why.",
+    },
     latitude: 45.4729, longitude: 9.1888,
     image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/1/11/Palazzo_Cusani_Milan_2.jpg/600px-Palazzo_Cusani_Milan_2.jpg",
   },
@@ -42,6 +71,14 @@ const LANDMARKS = [
     id: "orsini",
     name: { en: "Palazzo Orsini", it: "Palazzo Orsini" },
     note: { en: "Versace's HQ since 1980 — frescoed ceilings still intact.", it: "Sede Versace dal 1980 — soffitti affrescati ancora intatti." },
+    intro: {
+      it: "Da quasi cinquant'anni la maison Versace cuce i suoi sogni dietro i miei portoni. Sopra le sale dove Donatella sceglie i tessuti, i miei soffitti del Settecento mostrano ancora le loro divinità affrescate. Pochi sanno che dietro le persiane chiuse, una volta, abitava un'astronoma.",
+      en: "For nearly fifty years the Versace maison has stitched its dreams behind my doors. Above the rooms where Donatella picks fabrics, my eighteenth-century ceilings still show their frescoed gods. Few know that behind these closed shutters once lived a woman astronomer.",
+    },
+    voice: {
+      it: "Sotto le mode di oggi, conservo storie più antiche.",
+      en: "Beneath today's fashions, I keep older stories.",
+    },
     latitude: 45.4719, longitude: 9.1909,
     image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/3/31/Palazzo_Orsini_MI.jpg/600px-Palazzo_Orsini_MI.jpg",
   },
@@ -49,6 +86,14 @@ const LANDMARKS = [
     id: "scala",
     name: { en: "Teatro alla Scala", it: "Teatro alla Scala" },
     note: { en: "The opera house that crowns the southern edge of Brera.", it: "Il teatro d'opera che corona il bordo sud di Brera." },
+    intro: {
+      it: "Il 7 dicembre, Milano si veste per me. Sotto il mio palco hanno cantato Maria Callas e Luciano Pavarotti, e prima di loro Maria Malibran morta a 28 anni. Ma se passi alle sei del mattino, sentirai le donne delle pulizie cantare la loro versione della Traviata.",
+      en: "On 7 December, Milan dresses up for me. Beneath my stage Maria Callas and Luciano Pavarotti have sung — and before them Maria Malibran, who died at 28. But pass by at six in the morning and you'll hear the cleaning women sing their own version of La Traviata.",
+    },
+    voice: {
+      it: "Le mie note iniziano molto prima del sipario.",
+      en: "My notes begin long before the curtain.",
+    },
     latitude: 45.4671, longitude: 9.1894,
     image: IMG_PROXY + "upload.wikimedia.org/wikipedia/commons/thumb/0/04/Milano_-_Teatro_alla_Scala_3924.jpg/600px-Milano_-_Teatro_alla_Scala_3924.jpg",
   },
@@ -165,9 +210,21 @@ export default function LandingPage() {
         <LandmarkThumbs
           landmarks={LANDMARKS}
           activeId={activeLandmark}
-          onSelect={setActiveLandmark}
+          onSelect={(id) => setActiveLandmark((curr) => (curr === id ? null : id))}
           lang={lang}
         />
+
+        <LandmarkDetail
+          landmark={LANDMARKS.find((l) => l.id === activeLandmark)}
+          lang={lang}
+          onClose={() => setActiveLandmark(null)}
+        />
+
+        {/* Reciprocity line — discreet, italic. The two essential ideas:
+            (a) the place speaks; (b) walking here is a relationship. */}
+        <p className="mt-6 text-center text-[var(--text-tertiary)] italic font-serif max-w-2xl mx-auto leading-relaxed">
+          {t(lang, "landing.reciprocityLine")}
+        </p>
       </section>
 
       {/* How it works */}
@@ -229,6 +286,17 @@ export default function LandingPage() {
         </div>
         <p className="mt-10 text-xs text-[var(--text-tertiary)] tracking-widest uppercase">
           {t(lang, "landing.footerNote")}
+        </p>
+      </section>
+
+      {/* Reciprocity / weaving — the second core idea: voices intertwine */}
+      <section className="px-5 sm:px-10 mt-20 max-w-3xl mx-auto text-center" data-testid="landing-weaving">
+        <p className="eyebrow">{t(lang, "landing.weavingEyebrow")}</p>
+        <h2 className="font-serif text-3xl sm:text-4xl mt-2 leading-tight">
+          {t(lang, "landing.weavingTitle")}
+        </h2>
+        <p className="mt-4 text-[var(--text-secondary)] leading-relaxed max-w-xl mx-auto">
+          {t(lang, "landing.weavingBody")}
         </p>
       </section>
 
