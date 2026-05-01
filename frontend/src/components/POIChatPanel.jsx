@@ -37,7 +37,7 @@ const COPY = {
   },
 };
 
-export default function POIChatPanel({ poi, onClose }) {
+export default function POIChatPanel({ poi, onClose, endpoint }) {
   const { lang } = useLocale();
   const copy = COPY[lang] || COPY.en;
   const [messages, setMessages] = useState([]);   // {role, content}
@@ -46,7 +46,10 @@ export default function POIChatPanel({ poi, onClose }) {
   const [error, setError] = useState(null);
   const scrollerRef = useRef(null);
 
-  // Reset when POI changes
+  // Default endpoint = the POI chat API; can be overridden for landmarks.
+  const chatEndpoint = endpoint || `/pois/${poi?.id}/chat`;
+
+  // Reset when subject changes
   useEffect(() => {
     setMessages([]);
     setInput("");
@@ -71,7 +74,7 @@ export default function POIChatPanel({ poi, onClose }) {
     setInput("");
     setBusy(true);
     try {
-      const { data } = await api.post(`/pois/${poi.id}/chat`, {
+      const { data } = await api.post(chatEndpoint, {
         message: trimmed,
         history: messages,  // history = everything BEFORE this message
         language: lang,

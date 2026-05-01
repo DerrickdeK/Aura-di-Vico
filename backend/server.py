@@ -823,6 +823,144 @@ async def chat_with_poi(
     return {"reply": text, "lang": lang}
 
 
+# ------------------------------------------------------------------------------------
+# Landmark chat (well-known anchors on the landing page — open to anonymous visitors).
+# Each landmark is HARDCODED here so it can speak without being a stored POI.
+# Mirror of the frontend's LANDMARKS array in /pages/LandingPage.jsx.
+# ------------------------------------------------------------------------------------
+LANDMARK_DATA = {
+    "accademia": {
+        "id": "accademia",
+        "name": "Accademia di Belle Arti di Brera",
+        "address": "Via Brera 28, 20121 Milano",
+        "short_description": "Italy's most storied art school, founded 1776 by Maria Theresa of Austria.",
+        "long_description": (
+            "The Accademia shares Palazzo Brera with the Pinacoteca and the Orto Botanico. "
+            "Founded in 1776, it has trained generations of Italian painters, sculptors and "
+            "set designers — Hayez, Boccioni, Funi, Castiglioni among them. Students still "
+            "walk in and out at all hours, sketchbooks under their arms. The arcaded courtyard "
+            "is open to the public; the studios upstairs are not, but on warm days you can "
+            "smell the turpentine through the windows."
+        ),
+        "fun_fact": "Marina Abramović studied here briefly in the 1970s.",
+        "opening_line": {
+            "it": "Cammina sotto i miei portici. Ti dirò chi è passato di qui.",
+            "en": "Walk beneath my arcades. I'll tell you who has passed through.",
+        },
+    },
+    "pinacoteca": {
+        "id": "pinacoteca",
+        "name": "Pinacoteca di Brera",
+        "address": "Via Brera 28, 20121 Milano",
+        "short_description": "Raphael, Mantegna and Caravaggio under one ceiling — Milan's painting museum.",
+        "long_description": (
+            "Founded by Napoleon in 1809 to centralise the artworks confiscated from "
+            "suppressed religious orders, the Pinacoteca holds masterpieces including "
+            "Raphael's Marriage of the Virgin, Mantegna's Lamentation of Christ, and "
+            "Caravaggio's Supper at Emmaus. The neoclassical courtyard at the entrance "
+            "features Antonio Canova's monumental bronze of Napoleon as Mars the "
+            "Peacemaker, twice life-size. In spring the magnolia in the courtyard "
+            "blooms above visitors' shoulders."
+        ),
+        "fun_fact": "The Mantegna's Dead Christ uses radical foreshortening from a viewpoint near the feet.",
+        "opening_line": {
+            "it": "Ho conservato i loro silenzi. Vieni a sentirli.",
+            "en": "I have kept their silences. Come and feel them.",
+        },
+    },
+    "cusani": {
+        "id": "cusani",
+        "name": "Palazzo Cusani",
+        "address": "Via Brera 13, 20121 Milano",
+        "short_description": "An 18th-century palace with two different facades by two architects.",
+        "long_description": (
+            "Built in the early 1700s by Giovanni Ruggeri for the Cusani family. A century "
+            "later, when Maria Theresa of Austria visited, Giuseppe Piermarini was hired "
+            "to remodel the rear elevation in a more neoclassical style — but he never "
+            "harmonised it with Ruggeri's Baroque front. The result: two facades, two eras, "
+            "one quiet quarrel in stone. Since 1860 the palace has housed the Italian "
+            "Army's Northern Command, but the great staircase and ballrooms still survive."
+        ),
+        "fun_fact": "The two facades are sometimes used as an architecture-school example of how NOT to remodel.",
+        "opening_line": {
+            "it": "Ho due volti. Vieni a scoprire perché.",
+            "en": "I wear two faces. Come and find out why.",
+        },
+    },
+    "orsini": {
+        "id": "orsini",
+        "name": "Palazzo Orsini",
+        "address": "Via Borgonuovo 11, 20121 Milano",
+        "short_description": "Versace's headquarters since 1980 — frescoed 18th-century ceilings still intact.",
+        "long_description": (
+            "Built in the 16th century, redecorated in the 1700s with frescoed ceilings "
+            "depicting mythological scenes. Gianni Versace bought the palace in 1980 and "
+            "made it the headquarters of the Versace fashion house. Donatella Versace "
+            "still walks these halls. Few know that one wing was once inhabited by "
+            "Maria Gaetana Agnesi, the 18th-century mathematician and astronomer, before "
+            "she renounced worldly life and became a nun."
+        ),
+        "fun_fact": "The garden behind the palace is one of the largest private green spaces in central Milan.",
+        "opening_line": {
+            "it": "Sotto le mode di oggi, conservo storie più antiche.",
+            "en": "Beneath today's fashions, I keep older stories.",
+        },
+    },
+    "scala": {
+        "id": "scala",
+        "name": "Teatro alla Scala",
+        "address": "Via Filodrammatici 2, 20121 Milano",
+        "short_description": "The opera house that crowns the southern edge of Brera.",
+        "long_description": (
+            "Inaugurated 3 August 1778 with Antonio Salieri's Europa Riconosciuta, "
+            "designed by Giuseppe Piermarini on the site of the demolished church of "
+            "Santa Maria alla Scala. La Scala has hosted the world premieres of operas "
+            "by Verdi (Otello, Falstaff, Nabucco), Puccini (Madama Butterfly, Turandot), "
+            "and Bellini (Norma). Maria Callas redefined operatic acting from this stage "
+            "in the 1950s. The opening night each season — 7 December, the feast of "
+            "Sant'Ambrogio — is when Milan dresses itself for the year."
+        ),
+        "fun_fact": "Toscanini's baton is preserved in the museum on the left side of the lobby.",
+        "opening_line": {
+            "it": "Le mie note iniziano molto prima del sipario.",
+            "en": "My notes begin long before the curtain.",
+        },
+    },
+}
+
+
+@api_router.post("/landmarks/{landmark_id}/chat")
+async def chat_with_landmark(
+    landmark_id: str,
+    payload: ChatIn,
+    request: Request,
+):
+    landmark = LANDMARK_DATA.get(landmark_id)
+    if not landmark:
+        raise HTTPException(status_code=404, detail="Landmark not found")
+
+    # Optional auth context
+    current_user = None
+    try:
+        token = request.cookies.get("access_token")
+        if token:
+            data = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+            current_user = await db.users.find_one({"id": data.get("sub")}, {"_id": 0})
+    except Exception:
+        current_user = None
+
+    lang = (payload.language or (current_user or {}).get("language") or "it").lower()
+    if lang not in SUPPORTED_LANGS:
+        lang = "it"
+
+    history = [t.dict() for t in payload.history]
+    text = await poi_chat_reply(
+        poi=landmark, contribs=[], user=current_user,
+        history=history, message=payload.message, lang=lang,
+    )
+    return {"reply": text, "lang": lang}
+
+
 
 # ------------------------------------------------------------------------------------
 # Health
