@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../../lib/api";
+import POICoordPicker from "./POICoordPicker";
 
 const ALL_INTERESTS = [
   "local_legends", "curios", "art", "history",
@@ -72,6 +73,15 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
         <label className="eyebrow block mb-1">Address</label>
         <input className="input-field" required value={form.address}
           onChange={(e) => update({ address: e.target.value })} />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="eyebrow block mb-1">Pin on map</label>
+        <POICoordPicker
+          latitude={form.latitude}
+          longitude={form.longitude}
+          address={form.address}
+          onChange={(lat, lng) => update({ latitude: lat, longitude: lng })}
+        />
       </div>
       <div>
         <label className="eyebrow block mb-1">Latitude</label>
