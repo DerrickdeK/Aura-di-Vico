@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 from mailer import send_email, password_reset_email, contribution_moderated_email
 from poi_chat import reply as poi_chat_reply
+from safety import screen_contribution, VERDICT_BLOCK
 
 
 # ------------------------------------------------------------------------------------
@@ -215,7 +216,7 @@ class DiscoverIn(BaseModel):
 
 
 CONTRIBUTION_TYPES = ["narrative", "dialogue_prompt", "fun_fact", "photo_url"]
-CONTRIBUTION_STATUSES = ["pending", "approved", "rejected"]
+CONTRIBUTION_STATUSES = ["pending", "approved", "rejected", "auto_blocked"]
 
 
 class ContributionIn(BaseModel):
@@ -669,6 +670,21 @@ async def create_contribution(payload: ContributionIn, user: dict = Depends(get_
     if not poi:
         raise HTTPException(status_code=404, detail="POI not found")
     now_iso = datetime.now(timezone.utc).isoformat()
+
+    # ── Pre-moderation safety screen ──────────────────────────────────────
+    # Admin contributions skip the screen entirely (they're trusted).
+    # Photo URLs skip the LLM — we only check text payloads.
+    initial_status = "approved" if user.get("role") == "admin" else "pending"
+    safety_reason = None
+    if user.get("role") != "admin" and payload.type != "photo_url":
+        verdict = await screen_contribution(
+            kind=payload.type, title=payload.title, content=payload.content,
+            lang=user.get("language") or "it",
+        )
+        if verdict.get("verdict") == VERDICT_BLOCK:
+            initial_status = "auto_blocked"
+            safety_reason = verdict.get("reason")
+
     doc = {
         "id": str(uuid.uuid4()),
         "poi_id": payload.poi_id,
@@ -677,8 +693,8 @@ async def create_contribution(payload: ContributionIn, user: dict = Depends(get_
         "type": payload.type,
         "title": (payload.title or "").strip() or None,
         "content": payload.content.strip(),
-        "status": "approved" if user.get("role") == "admin" else "pending",
-        "moderation_note": None,
+        "status": initial_status,
+        "moderation_note": safety_reason,
         "created_at": now_iso,
         "updated_at": now_iso,
     }

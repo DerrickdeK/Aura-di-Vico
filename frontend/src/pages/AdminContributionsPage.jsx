@@ -7,7 +7,7 @@ import useLocale from "../hooks/useLocale";
 import { t } from "../lib/i18n";
 import { StatusBadge } from "./ContributePage";
 
-const TAB_KEYS = ["pending", "approved", "rejected"];
+const TAB_KEYS = ["pending", "auto_blocked", "approved", "rejected"];
 
 function ModerationCard({ c, onApprove, onReject, onDelete }) {
   const { lang } = useLocale();
@@ -143,21 +143,25 @@ export default function AdminContributionsPage() {
         <Link to="/admin" className="btn-ghost text-sm">{t(lang, "moderation.backToPoi")}</Link>
       </div>
 
-      <div className="mt-6 flex gap-2 border-b border-[var(--border)]">
-        {TAB_KEYS.map((key) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm transition-colors ${
-              tab === key
-                ? "text-[var(--terracotta)] border-b-2 border-[var(--terracotta)] -mb-px"
-                : "text-[var(--text-secondary)]"
-            }`}
-            data-testid={`moderation-tab-${key}`}
-          >
-            {t(lang, `moderation.tab${key.charAt(0).toUpperCase() + key.slice(1)}`)}
-          </button>
-        ))}
+      <div className="mt-6 flex gap-2 border-b border-[var(--border)] flex-wrap">
+        {TAB_KEYS.map((key) => {
+          // Map underscore_case to camelCase for the i18n key
+          const labelKey = "moderation.tab" + key.split("_").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join("");
+          return (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`px-4 py-2 text-sm transition-colors ${
+                tab === key
+                  ? "text-[var(--terracotta)] border-b-2 border-[var(--terracotta)] -mb-px"
+                  : "text-[var(--text-secondary)]"
+              }`}
+              data-testid={`moderation-tab-${key}`}
+            >
+              {t(lang, labelKey)}
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-6">

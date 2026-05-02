@@ -132,6 +132,7 @@ const STRINGS = {
         pending:  "Pending review",
         approved: "Live",
         rejected: "Not used",
+        auto_blocked: "Auto-blocked",
       },
     },
 
@@ -142,6 +143,7 @@ const STRINGS = {
       tabPending: "Pending",
       tabApproved: "Approved",
       tabRejected: "Rejected",
+      tabAutoBlocked: "Auto-blocked",
       empty: "Nothing in this bucket yet.",
       approve: "Approve",
       reject: "Reject",
@@ -417,6 +419,7 @@ const STRINGS = {
         pending:  "In attesa di revisione",
         approved: "Pubblicato",
         rejected: "Non usato",
+        auto_blocked: "Bloccato dal filtro",
       },
     },
 
@@ -427,6 +430,7 @@ const STRINGS = {
       tabPending: "In attesa",
       tabApproved: "Approvati",
       tabRejected: "Rifiutati",
+      tabAutoBlocked: "Bloccati dal filtro",
       empty: "Nessun contributo in questa categoria.",
       approve: "Approva",
       reject: "Rifiuta",

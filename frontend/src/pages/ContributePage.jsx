@@ -19,6 +19,7 @@ function StatusBadge({ status }) {
     pending:  "bg-[var(--warm-ochre)]/15 text-[var(--warm-ochre)] border-[var(--warm-ochre)]/40",
     approved: "bg-[var(--deep-green)]/15 text-[var(--deep-green)] border-[var(--deep-green)]/40",
     rejected: "bg-[var(--terracotta)]/15 text-[var(--terracotta)] border-[var(--terracotta)]/40",
+    auto_blocked: "bg-[var(--ink)]/15 text-[var(--ink)] border-[var(--ink)]/40",
   };
   return (
     <span
