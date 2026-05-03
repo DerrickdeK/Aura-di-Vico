@@ -13,6 +13,8 @@ import AdminPage from "./pages/AdminPage";
 import ContributePage from "./pages/ContributePage";
 import AdminContributionsPage from "./pages/AdminContributionsPage";
 import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordPages";
+import GiftComposerPage from "./pages/GiftComposerPage";
+import GiftRecipientPage from "./pages/GiftRecipientPage";
 import "./App.css";
 
 function ListenGate() {
@@ -39,6 +41,8 @@ function Shell() {
         <Route path="/contribute" element={<ContributePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/contributions" element={<AdminContributionsPage />} />
+        <Route path="/gift/new" element={<GiftComposerPage />} />
+        <Route path="/gift/:slug" element={<GiftRecipientPage />} />
       </Routes>
       <BottomNav />
     </>

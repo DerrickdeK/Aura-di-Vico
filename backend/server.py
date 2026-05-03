@@ -234,6 +234,20 @@ class ContributionModerateIn(BaseModel):
     note: Optional[str] = None
 
 
+# ── Itineraries (gifts) ──────────────────────────────────────────────────
+ITINERARY_MIN_POIS = 3
+ITINERARY_MAX_POIS = 8
+ITINERARY_MAX_DEDICATION = 1200
+
+
+class ItineraryIn(BaseModel):
+    sender_name: str = Field(min_length=1, max_length=80)
+    recipient_name: str = Field(min_length=1, max_length=80)
+    dedication: str = Field(min_length=1, max_length=ITINERARY_MAX_DEDICATION)
+    poi_ids: List[str] = Field(min_length=ITINERARY_MIN_POIS, max_length=ITINERARY_MAX_POIS)
+    language: Optional[str] = None  # 'it' | 'en' — defaults to sender language
+
+
 # ------------------------------------------------------------------------------------
 # Auth dependency
 # ------------------------------------------------------------------------------------
@@ -992,6 +1006,110 @@ async def chat_with_landmark(
 
 
 # ------------------------------------------------------------------------------------
+# Itineraries — gift a curated 3-8 POI walk to someone
+# ------------------------------------------------------------------------------------
+def _serialize_itinerary(it: dict, pois_by_id: Optional[dict] = None) -> dict:
+    out = {
+        "id": it["id"],
+        "slug": it["slug"],
+        "sender_name": it.get("sender_name", ""),
+        "sender_user_id": it.get("sender_user_id"),
+        "recipient_name": it.get("recipient_name", ""),
+        "dedication": it.get("dedication", ""),
+        "poi_ids": it.get("poi_ids", []),
+        "language": it.get("language", "it"),
+        "view_count": int(it.get("view_count", 0) or 0),
+        "created_at": it.get("created_at"),
+    }
+    if pois_by_id is not None:
+        # Surface the full POI objects in the public response so the recipient
+        # page can render the walk without a second round-trip.
+        out["pois"] = [pois_by_id[pid] for pid in out["poi_ids"] if pid in pois_by_id]
+    return out
+
+
+@api_router.post("/itineraries")
+async def create_itinerary(payload: ItineraryIn, user: dict = Depends(get_current_user)):
+    # De-duplicate poi_ids while keeping order, then validate they all exist.
+    seen, ordered = set(), []
+    for pid in payload.poi_ids:
+        if pid not in seen:
+            seen.add(pid)
+            ordered.append(pid)
+    if len(ordered) < ITINERARY_MIN_POIS:
+        raise HTTPException(status_code=400, detail=f"At least {ITINERARY_MIN_POIS} unique POIs required.")
+    found_count = await db.pois.count_documents({"id": {"$in": ordered}})
+    if found_count != len(ordered):
+        raise HTTPException(status_code=400, detail="One or more POIs no longer exist.")
+
+    lang = (payload.language or user.get("language") or "it").lower()
+    if lang not in SUPPORTED_LANGS:
+        lang = "it"
+
+    # Generate a short URL-safe slug; loop a few times if the rare collision happens.
+    slug = None
+    for _ in range(6):
+        candidate = secrets.token_urlsafe(6).rstrip("_-")[:8]
+        if not await db.itineraries.find_one({"slug": candidate}):
+            slug = candidate
+            break
+    if slug is None:
+        # Extremely unlikely with ~1e14 keyspace; fall back to a UUID prefix.
+        slug = uuid.uuid4().hex[:10]
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "slug": slug,
+        "sender_user_id": user["id"],
+        "sender_name": payload.sender_name.strip(),
+        "recipient_name": payload.recipient_name.strip(),
+        "dedication": payload.dedication.strip(),
+        "poi_ids": ordered,
+        "language": lang,
+        "view_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.itineraries.insert_one(doc)
+    return _serialize_itinerary(doc)
+
+
+@api_router.get("/itineraries/{slug}")
+async def get_itinerary(slug: str):
+    """Public. Increments view_count (best-effort) so the sender knows it was opened."""
+    it = await db.itineraries.find_one({"slug": slug}, {"_id": 0})
+    if not it:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+    pois = await db.pois.find({"id": {"$in": it.get("poi_ids", [])}}, {"_id": 0}).to_list(50)
+    pois_by_id = {p["id"]: p for p in pois}
+    # Best-effort view counter — never block the response.
+    try:
+        await db.itineraries.update_one({"slug": slug}, {"$inc": {"view_count": 1}})
+    except Exception as err:
+        logger.warning("itinerary view_count bump failed: %s", err)
+    return _serialize_itinerary(it, pois_by_id)
+
+
+@api_router.get("/me/itineraries")
+async def list_my_itineraries(user: dict = Depends(get_current_user)):
+    docs = await db.itineraries.find(
+        {"sender_user_id": user["id"]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return [_serialize_itinerary(d) for d in docs]
+
+
+@api_router.delete("/itineraries/{itinerary_id}")
+async def delete_itinerary(itinerary_id: str, user: dict = Depends(get_current_user)):
+    rec = await db.itineraries.find_one({"id": itinerary_id})
+    if not rec:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+    if rec.get("sender_user_id") != user["id"] and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not allowed")
+    await db.itineraries.delete_one({"id": itinerary_id})
+    return {"ok": True}
+
+
+
+# ------------------------------------------------------------------------------------
 # Health
 # ------------------------------------------------------------------------------------
 @api_router.get("/")
@@ -1454,6 +1572,9 @@ async def on_startup():
     await db.contributions.create_index([("poi_id", 1), ("status", 1)])
     await db.contributions.create_index([("user_id", 1), ("created_at", -1)])
     await db.contributions.create_index("id", unique=True)
+    await db.itineraries.create_index("slug", unique=True)
+    await db.itineraries.create_index([("sender_user_id", 1), ("created_at", -1)])
+    await db.itineraries.create_index("id", unique=True)
     await seed_admin()
     inserted = await seed_pois_if_empty()
     logger.info(f"Startup complete. POIs seeded: {inserted}")

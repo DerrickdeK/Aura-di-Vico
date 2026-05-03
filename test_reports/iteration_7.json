@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 7: Itineraries-as-Gifts P1 feature end-to-end testing complete. Backend pytest 91/91 PASS (10 new tests in test_itineraries.py + 81 regression). Frontend Playwright E2E walks the full happy path: admin login → /gift/new composer (sender pre-filled 'Brera Admin', recipient/dedication empty as expected) → fill 'Anna' + dedication → click 4 POI cards → '4 selected' counter increments with ordered '1','2','3','4' badges → 'Create the gift' → success state with /gift/<slug> URL + Copy-link + Preview buttons → Preview navigates to /gift/<slug> → recipient page renders 'Brera has been waiting for you, Anna.' (English, since gift.language='en'), 'Hear the welcome' button, dedication card, 4 numbered POI cards with addresses → 'Begin walking' CTA navigates to /listen?virtual=1. Anonymous /gift/<slug> in cleared-cookie context renders identically (no login required, view_count bumps verified by backend test). /gift/zzznosuch shows the 'gift-not-found' fallback with 'Back to Brera' link. Recipient page locks rendering language to data.language (verified in source: GiftRecipientPage.jsx line 62 'const lang = (data && data.language) || it'), so flipping the LanguageSwitcher does NOT mutate the dedication/greeting copy — matches the spec note.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_itineraries.py",
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/backend/tests/test_iter6_canonical_and_landmark_chat.py",
+    "/app/backend/tests/test_poi_chat_prompt.py",
+    "/app/test_reports/pytest/iter7_results.xml"
+  ],
+  "action_items": [
+    "(Carry-over from iter6) Split /app/backend/server.py — file continued to grow with the itineraries endpoints + ItineraryIn model + slug index; refactor into routers/itineraries.py, routers/auth.py, routers/pois.py, routers/me.py, routers/contributions.py, routers/admin.py, landmarks.py, seeds.py.",
+    "(Carry-over from iter5) test_contributor_creates_pending in test_brera_backend.py still triggers PytestReturnNotNoneWarning — replace 'return body[id]' with a local variable.",
+    "(Carry-over from iter4) Disambiguate duplicate data-testid 'profile-profession-other' — rename free-text input to 'profile-profession-other-input'.",
+    "(Nice-to-have) Admin POI editor UI does not yet expose the canonical_facts field — frontend-only, out of scope for this gift-flow handoff."
+  ],
+  "critical_code_review_comments": [
+    "ItineraryIn validation is layered correctly: Pydantic Field(min_length=3, max_length=8) on poi_ids gives the 422 fast-path; the route handler then dedupes (preserving order) and checks each id against the POI collection before insert — the dedupe-then-validate ordering means '5 ids that collapse to 2 unique' correctly fails the min check, while '3 unique + 2 duplicates' correctly succeeds with 3.",
+    "GET /api/itineraries/{slug} is correctly OUTSIDE the auth dependency — no Depends(get_current_user), and the $inc on view_count uses an unauthenticated mongo update. Anonymous read confirmed live (Playwright cleared cookies and still got 200 with greeting + numbered pois).",
+    "Slug generation uses 8 url-safe chars from secrets.token_urlsafe(6)[:8]; the spec asks for 4-12 and the test asserts 4 <= len <= 12 — comfortably inside the band. Collision retry is implicit via the unique index on slug; if a collision ever fires the insert will raise DuplicateKeyError and 500 — low probability (62^8) but worth wrapping in a retry loop in a future hardening pass.",
+    "_serialize() on the itinerary doc strips _id and embeds the full POI objects (not just ids) when reading by slug — the recipient page therefore needs zero extra fetches, and the on-the-wire payload has no MongoDB internals leaked. Verified by both pytest assertions and live Playwright inspection.",
+    "GiftRecipientPage.jsx correctly locks the rendering language to data.language at line 62 — the LanguageSwitcher in the corner is essentially decorative on this page (it mutates the global locale store but COPY[lang] reads data.language). This matches the spec; consider hiding the switcher on the recipient page in a polish pass to avoid the impression that it does something.",
+    "Composer pre-fills sender_name from useAuth().user.name on mount but does not lock the field — a thoughtful choice (admin can sign on behalf of their team). Worth a comment in the code so future contributors don't 'fix' it back to readonly.",
+    "data-testid coverage is excellent — every interactive element and every assertable text node has a stable testid (gift-composer, gift-sender, gift-recipient, gift-dedication, gift-poi-{id}, gift-poi-order-{id}, gift-selected-count, gift-error, gift-submit, gift-created, gift-link, gift-copy-link, gift-preview, gift-make-another, gift-greeting, gift-hear-welcome, gift-dedication-card, gift-poi-card-{id}, gift-begin-walk, gift-not-found). Made the Playwright suite fall through cleanly with zero retry/selector churn."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (91/91)", "frontend": "100% (13/13 E2E steps)"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! (verified via /api/auth/login + frontend login form).",
+  "seed_data_creation": "Pytest fixture creates one ephemeral TEST_gift_<uuid>@example.com user (used by list-mine/delete-other tests) — not cleaned up; consider a teardown that DELETEs the user after the module. Several itineraries created during the run remain in the db (no admin-side cleanup endpoint exists yet) — cosmetic, the slug index makes them inert.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "To re-run: `cd /app/backend && set -a && . .env && set +a && python -m pytest tests/ -v`. Frontend E2E uses REACT_APP_BACKEND_URL=https://pickup-progress-9.preview.emergentagent.com. The composer requires login first (POST /api/auth/login with admin creds, then GET /gift/new). The /gift/<slug> public read does NOT need cookies — verify by clearing context cookies before navigating. The view_count test relies on two consecutive anonymous GETs and reads the counter from the response body (not from the DB directly). If a future change adds a per-IP rate limit on the public read, the view_count test will need adjustment.",
+  "rca of the issue": "N/A — no bugs. Feature is live and matches the P1 spec on every checked dimension: 3-8 POI validation, dedupe, unknown POI 400, slug 4-12, no _id leak, public read with view_count bump, list-mine scoping, owner-or-admin delete, language-locked recipient view, anonymous render of /gift/<slug>, gift-not-found fallback, /listen?virtual=1 routing for Begin walking."
+}
