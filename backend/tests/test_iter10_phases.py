@@ -46,6 +46,11 @@ def admin_session():
     s = requests.Session()
     r = s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PW}, timeout=20)
     assert r.status_code == 200, f"admin login failed: {r.status_code} {r.text[:200]}"
+    # Some environments (localhost + HTTP) drop Secure cookies; fall back
+    # to an Authorization header so the session works in every test env.
+    token = s.cookies.get("access_token")
+    if token:
+        s.headers.update({"Authorization": f"Bearer {token}"})
     return s
 
 

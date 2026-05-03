@@ -271,6 +271,9 @@ function LandmarksTab({ draft, setDraft }) {
     setDraft((d) => ({
       ...d,
       landmarks: [...(d.landmarks || []), {
+        // `_uid` is a stable React key during this editing session. It's
+        // stripped by the save handler before the JSON hits the backend.
+        _uid: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `tmp-${Date.now()}-${Math.random()}`,
         id: `landmark-${(d.landmarks || []).length + 1}`,
         name: { it: "", en: "" }, note: { it: "", en: "" },
         intro: { it: "", en: "" }, voice: { it: "", en: "" },
@@ -297,7 +300,7 @@ function LandmarksTab({ draft, setDraft }) {
       <div className="space-y-3">
         {landmarks.map((lm, idx) => (
           <LandmarkCard
-            key={idx}
+            key={lm._uid || lm.id || `lm-${idx}`}
             lm={lm}
             onChange={(updater) => update(idx, updater)}
             onDelete={() => remove(idx)}
@@ -387,6 +390,13 @@ function CloneWizardModal({ onClose, onApply }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [draft, setDraft] = useState(null);
+
+  // Memoise the "Name A, Name B, …" preview so the expensive
+  // map/filter/join doesn't re-run on every unrelated keystroke render.
+  const landmarkNames = React.useMemo(
+    () => (draft?.landmarks || []).map((l) => l.name?.en).filter(Boolean).join(", "),
+    [draft]
+  );
 
   const submit = async (e) => {
     e.preventDefault();
@@ -506,7 +516,7 @@ function CloneWizardModal({ onClose, onApply }) {
               </div>
               <p className="mt-3 text-sm">
                 <strong>{draft.landmarks?.length || 0} landmarks:</strong>{" "}
-                {(draft.landmarks || []).map((l) => l.name?.en).filter(Boolean).join(", ")}
+                {landmarkNames}
               </p>
               <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                 Centre: {draft.map?.center?.lat?.toFixed(4)}, {draft.map?.center?.lng?.toFixed(4)}
@@ -549,9 +559,18 @@ export default function AdminAreaPage() {
 
   const reload = async () => {
     const { data } = await api.get("/admin/area-settings");
-    // Seed the draft with the effective config so the admin sees the
-    // current state (defaults + overrides) and can edit from there.
-    setDraft(data.effective);
+    // Tag each landmark with a stable client-side uid so React can track
+    // cards correctly across deletes/reorders. Stripped again in save().
+    const tagged = {
+      ...data.effective,
+      landmarks: (data.effective?.landmarks || []).map((lm) => ({
+        _uid: (typeof crypto !== "undefined" && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : `tmp-${Date.now()}-${Math.random()}`,
+        ...lm,
+      })),
+    };
+    setDraft(tagged);
     setEffective(data.effective);
     if (data.effective?.palette) {
       const root = document.documentElement;
@@ -575,13 +594,11 @@ export default function AdminAreaPage() {
   const save = async () => {
     setBusy(true); setError(null);
     try {
-      // Only send fields that differ from the bare JSON defaults — but the
-      // simplest correct behaviour is to send every top-level field on the
-      // draft. The backend shallow-merges them, so pushing values equal to
-      // defaults is a no-op. (Re-import if you want to wipe.)
+      // Strip client-only `_uid` tags before persisting.
+      const cleanLandmarks = (draft.landmarks || []).map(({ _uid, ...rest }) => rest);
       const { data } = await api.patch("/admin/area-settings", {
         brand: draft.brand, area: draft.area, city: draft.city, tagline: draft.tagline,
-        map: draft.map, palette: draft.palette, landmarks: draft.landmarks,
+        map: draft.map, palette: draft.palette, landmarks: cleanLandmarks,
       });
       setEffective(data.effective);
       setSavedAt(new Date());
