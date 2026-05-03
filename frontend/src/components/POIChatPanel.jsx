@@ -40,11 +40,13 @@ const COPY = {
 export default function POIChatPanel({ poi, onClose, endpoint }) {
   const { lang } = useLocale();
   const copy = COPY[lang] || COPY.en;
-  const [messages, setMessages] = useState([]);   // {role, content}
+  const [messages, setMessages] = useState([]);   // {id, role, content}
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const scrollerRef = useRef(null);
+  const msgIdRef = useRef(0);
+  const newMsgId = () => `m${++msgIdRef.current}`;
 
   // Default endpoint = the POI chat API; can be overridden for landmarks.
   const chatEndpoint = endpoint || `/pois/${poi?.id}/chat`;
@@ -69,17 +71,17 @@ export default function POIChatPanel({ poi, onClose, endpoint }) {
     const trimmed = (text || "").trim();
     if (!trimmed || busy) return;
     setError(null);
-    const nextHistory = [...messages, { role: "user", content: trimmed }];
+    const nextHistory = [...messages, { id: newMsgId(), role: "user", content: trimmed }];
     setMessages(nextHistory);
     setInput("");
     setBusy(true);
     try {
       const { data } = await api.post(chatEndpoint, {
         message: trimmed,
-        history: messages,  // history = everything BEFORE this message
+        history: messages.map(({ role, content }) => ({ role, content })),  // history = everything BEFORE this message; strip our local id
         language: lang,
       });
-      setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
+      setMessages((m) => [...m, { id: newMsgId(), role: "assistant", content: data.reply }]);
     } catch (err) {
       setError(formatApiError(err.response?.data?.detail) || err.message);
     } finally {
@@ -138,9 +140,9 @@ export default function POIChatPanel({ poi, onClose, endpoint }) {
         )}
 
         <AnimatePresence initial={false}>
-          {messages.map((m, i) => (
+          {messages.map((m) => (
             <motion.div
-              key={i}
+              key={m.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25 }}
