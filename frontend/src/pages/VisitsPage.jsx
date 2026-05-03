@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { History } from "lucide-react";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useArea, pickLocale } from "../lib/area";
+import useLocale from "../hooks/useLocale";
 
 function formatDate(iso) {
   try {
@@ -17,6 +19,9 @@ export default function VisitsPage() {
   const isAuthed = !!user && user !== false;
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const area = useArea();
+  const { lang: uiLang } = useLocale();
+  const areaLabel = pickLocale(area.area, uiLang) || "the area";
 
   useEffect(() => {
     if (!isAuthed) { setLoading(false); return; }
@@ -28,7 +33,7 @@ export default function VisitsPage() {
       <p className="eyebrow">Your wanderings</p>
       <h1 className="font-serif text-5xl mt-2 leading-none">Visits</h1>
       <p className="mt-3 text-[var(--text-secondary)]">
-        Brera spots you've physically reached.
+        {areaLabel} spots you've physically reached.
       </p>
 
       {!isAuthed && (

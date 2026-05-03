@@ -19,13 +19,19 @@ import {
 } from "./MapWidgets";
 import ProximityRadar from "./ProximityRadar";
 import POIDrawer from "./POIDrawer";
+import { useArea, pickLocale, getAreaCenter } from "../lib/area";
+import useLocale from "../hooks/useLocale";
 
-const BRERA_CENTER = [45.4719, 9.1881];
 const DEFAULT_ZOOM = 16;
 
 export default function MapView({ favorites, refreshFavorites }) {
   const { user } = useAuth();
   const isAuthed = !!user && user !== false;
+  const area = useArea();
+  const { lang } = useLocale();
+  const areaLabel = [pickLocale(area.area, lang), pickLocale(area.city, lang)]
+    .filter(Boolean)
+    .join(" · ");
 
   const { position, error: geoError } = useGeolocation();
   const [pois, setPois] = useState([]);
@@ -57,7 +63,10 @@ export default function MapView({ favorites, refreshFavorites }) {
     }
   };
 
-  const center = position ? [position.latitude, position.longitude] : BRERA_CENTER;
+  const areaCenter = getAreaCenter();
+  const center = position
+    ? [position.latitude, position.longitude]
+    : [areaCenter.latitude, areaCenter.longitude];
   const inRangePoi =
     nearest && poiState({ poi: nearest.poi, nearest, visitedIds }) === "inrange"
       ? nearest.poi
@@ -92,7 +101,7 @@ export default function MapView({ favorites, refreshFavorites }) {
       <div className="absolute top-0 left-0 right-0 z-[400] p-4 pointer-events-none">
         <div className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--surface)]/90 backdrop-blur border border-[var(--border)]">
           <MapPin size={14} strokeWidth={1.5} className="text-[var(--terracotta)]" />
-          <span className="eyebrow" data-testid="brera-label">Brera · Milano</span>
+          <span className="eyebrow" data-testid="brera-label">{areaLabel || "—"}</span>
         </div>
       </div>
 

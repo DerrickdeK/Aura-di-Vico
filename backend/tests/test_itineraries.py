@@ -11,7 +11,7 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://pickup-progress-9.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://brera-discovery.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@brera.app")
 ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]

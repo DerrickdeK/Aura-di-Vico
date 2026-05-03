@@ -5,36 +5,37 @@ import { Gift, Footprints, Sparkles, ArrowRight } from "lucide-react";
 import { api } from "../lib/api";
 import { speak, unlockSpeech } from "../lib/speech";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useArea, pickLocale } from "../lib/area";
 
 const COPY = {
   it: {
     eyebrow: "Un dono da {sender}",
-    awaiting: "Brera ti aspettava, {name}.",
+    awaiting: "{area} ti aspettava, {name}.",
     dedicationLabel: "La dedica",
     walkLabel: "La passeggiata che hanno scelto per te",
     walkSize: "{n} luoghi · da percorrere lentamente",
     poiOrdinal: "{i}/{n}",
     cta: "Comincia a camminare",
-    ctaHint: "Brera userà la posizione del tuo telefono per riconoscerti quando le passi vicino.",
+    ctaHint: "{area} userà la posizione del tuo telefono per riconoscerti quando le passi vicino.",
     welcomeHear: "Ascolta il benvenuto",
     notFoundTitle: "Dono non trovato",
     notFoundText: "Il link che hai aperto non esiste più, o è stato scritto male.",
-    backHome: "Torna a Brera",
+    backHome: "Torna a {area}",
     sentBy: "Inviato da {sender}",
   },
   en: {
     eyebrow: "A gift from {sender}",
-    awaiting: "Brera has been waiting for you, {name}.",
+    awaiting: "{area} has been waiting for you, {name}.",
     dedicationLabel: "Their dedication",
     walkLabel: "The walk they chose for you",
     walkSize: "{n} places · to be taken slowly",
     poiOrdinal: "{i}/{n}",
     cta: "Begin walking",
-    ctaHint: "Brera will use your phone's location to recognise you as you pass each place.",
+    ctaHint: "{area} will use your phone's location to recognise you as you pass each place.",
     welcomeHear: "Hear the welcome",
     notFoundTitle: "Gift not found",
     notFoundText: "The link you opened no longer exists, or was mistyped.",
-    backHome: "Back to Brera",
+    backHome: "Back to {area}",
     sentBy: "Sent by {sender}",
   },
 };
@@ -60,7 +61,16 @@ export default function GiftRecipientPage() {
 
   // Render Italian by default unless the gift was made in English.
   const lang = (data && data.language) || "it";
-  const copy = COPY[lang] || COPY.it;
+  const area = useArea();
+  const areaName = pickLocale(area.area, lang) || "the area";
+  const copy = (() => {
+    const src = COPY[lang] || COPY.it;
+    const out = {};
+    for (const [k, v] of Object.entries(src)) {
+      out[k] = typeof v === "string" ? v.replace(/\{area\}/g, areaName) : v;
+    }
+    return out;
+  })();
 
   if (error) {
     return (

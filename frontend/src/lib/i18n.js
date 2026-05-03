@@ -5,7 +5,7 @@
 const STRINGS = {
   en: {
     languageName: "English",
-    listeningTitle: "Brera is listening for you…",
+    listeningTitle: "{area} is listening for you…",
     listeningSubtitle: "Walk. Wait. The city will whisper when something wants to find you.",
     sensedTease: "Something is watching you, {distance} m {bearing}.",
     youreHere: "You're here.",
@@ -17,16 +17,16 @@ const STRINGS = {
     silenceGeoOff: "Location is off — try the virtual walk to feel how it works.",
 
     landing: {
-      eyebrow: "Milano · the bohemian quarter",
-      heroPart1: "In Brera, the hidden places",
+      eyebrow: "{city} · the bohemian quarter",
+      heroPart1: "In {area}, the hidden places",
       heroPart2: "whisper to you.",
       heroIntro: "A 240-year-old ginkgo behind a gate. A 1933 milk bar with twelve tables. Napoleon as a Roman god, twice life-size, in a courtyard most tourists walk past. You don't search for them — they will quietly reach for your wrist when you walk near.",
       begin: "Begin listening",
-      tryGhost: "Walk Brera virtually →",
+      tryGhost: "Walk {area} virtually →",
       giftCta: "Make this a gift →",
       shape: "The shape of a secret",
-      pulsing: "{count} places are pulsing in Brera right now — and speaking to you.",
-      breraIs: "Brera is here, and she speaks to you.",
+      pulsing: "{count} places are pulsing in {area} right now — and speaking to you.",
+      breraIs: "{area} is here, and she speaks to you.",
       hint: "(Names appear only when a place recognises you.)",
       reciprocityLine: "These places already speak. The whisper begins the moment you walk close enough — and continues, quietly, when you give them your own voice in return.",
       howTitle: "How the city talks",
@@ -40,27 +40,27 @@ const STRINGS = {
       foundLabel: "Found",
       foundRange: "≤ 25 m",
       foundText: "You arrive. The full story unfolds — its history, a fun fact, an image — and the whisper is yours to keep.",
-      footerCtaTitle: "Brera will tell you its story.",
+      footerCtaTitle: "{area} will tell you its story.",
       footerCtaTitle2: "But first — who are you?",
       footerCtaText: "Sign up takes thirty seconds. You can stay anonymous, choose a language, and pick the kind of stories the city should whisper to you about.",
       signIn: "Sign in",
       continueListening: "Continue listening",
-      footerNote: "A project on the streets of Milano · Made for slow walkers",
+      footerNote: "A project on the streets of {city} · Made for slow walkers",
       contributorTitle: "Are you a student or a curator?",
-      contributorText: "Help Brera find its many voices. Add narratives, fun facts, and dialogue prompts that the city will whisper to future walkers. Each entry is reviewed before going live.",
+      contributorText: "Help {area} find its many voices. Add narratives, fun facts, and dialogue prompts that the city will whisper to future walkers. Each entry is reviewed before going live.",
       contributorCta: "Become a contributor",
       adminLink: "Admin",
       famousLandmarksEyebrow: "Familiar landmarks",
       famousLandmarksTitle: "Anchor yourself, then let the rest whisper.",
       famousLandmarksHint: "Tap a card to fly the map and read its voice.",
       weavingEyebrow: "A shared memory",
-      weavingTitle: "Brera has been listening for centuries.",
+      weavingTitle: "{area} has been listening for centuries.",
       weavingBody: "Now, as you walk, tell her something too — a memory, a photograph, a question. The voices of residents, students and visitors weave into one living memory of this quarter.",
     },
 
     auth: {
       welcomeBack: "Welcome back",
-      welcomeBackEyebrow: "Brera · Milano",
+      welcomeBackEyebrow: "{area} · {city}",
       welcomeBackText: "Sign in to save discoveries and track your wanderings.",
       email: "Email",
       password: "Password",
@@ -72,10 +72,10 @@ const STRINGS = {
       beginWandering: "Begin wandering",
       yourName: "Your name",
       registerWandererText: "Save the courtyards, cafés, and oddities you discover.",
-      registerContribText: "Curate Brera with your students. Your contributions go through admin review.",
+      registerContribText: "Curate {area} with your students. Your contributions go through admin review.",
       contribCheckbox1: "I'd like to",
       contribCheckbox2: "contribute",
-      contribCheckbox3: "narratives, fun facts, or dialogue prompts to Brera. (Each contribution is moderated.)",
+      contribCheckbox3: "narratives, fun facts, or dialogue prompts to {area}. (Each contribution is moderated.)",
       creating: "Creating…",
       becomeContrib: "Become a contributor",
       alreadyAccount: "Already have one?",
@@ -92,10 +92,10 @@ const STRINGS = {
 
     contribute: {
       eyebrow: "Contribute",
-      title: "Give Brera a new voice",
+      title: "Give {area} a new voice",
       lead: "Add the narratives, fun facts, and dialogue prompts that the city will whisper to future walkers. Each contribution is reviewed by an admin before going live.",
       pickPoi: "Point of interest",
-      pickPoiPlaceholder: "— pick a place in Brera —",
+      pickPoiPlaceholder: "— pick a place in {area} —",
       typeLabel: "Type of contribution",
       titleLabel: "Title (optional)",
       titlePlaceholder: "e.g., Nonna's recipe for risotto al salto",
@@ -110,7 +110,7 @@ const STRINGS = {
       withdraw: "withdraw",
       withdrawConfirm: "Withdraw this contribution?",
       gateRestricted: "Curators only",
-      gateTitle: "Want to give Brera your voice?",
+      gateTitle: "Want to give {area} your voice?",
       gateText: "Contributions are reserved for invited students & curators. Sign up with the contributor option, or ask an admin to upgrade your account.",
       moderationOpen: "Open moderation queue →",
       types: {
@@ -126,7 +126,7 @@ const STRINGS = {
         photo_url_placeholder: "https://…",
         generic_placeholder: "Write a few lines visitors should hear…",
       },
-      drawerTitle: "Brera through other walkers",
+      drawerTitle: "{area} through other walkers",
       drawerCount: "{n} contribution from the curator community.",
       drawerCountPlural: "{n} contributions from the curator community.",
       status: {
@@ -166,30 +166,30 @@ const STRINGS = {
       modeAuto: "Auto-walk",
       modeStep: "Step forward",
       modeDrag: "Drag pin",
-      autoHint: "Walking automatically through Brera. Listen.",
+      autoHint: "Walking automatically through {area}. Listen.",
       stepBtn: "Take one step",
-      dragHint: "Drag the pin (or tap the map) to teleport yourself in Brera.",
+      dragHint: "Drag the pin (or tap the map) to teleport yourself in {area}.",
       virtualBadge: "· virtual walk",
     },
 
     onboarding: {
-      welcome: "Welcome to Brera",
+      welcome: "Welcome to {area}",
       step_language: "Choose your language",
       step_identity: "Who are we talking to?",
-      step_identity_hint: "Brera will adapt how it speaks to you. Skip anything you'd rather keep private.",
+      step_identity_hint: "{area} will adapt how it speaks to you. Skip anything you'd rather keep private.",
       step_personal: "A little about you",
       step_personal_hint: "All optional — leave blank what you don't wish to share.",
       step_preferences: "What would you like the city to whisper about?",
       step_preferences_hint: "Pick what calls to you. Leave blank for everything.",
       step_context: "How are you wandering today?",
-      step_context_hint: "This helps Brera shape the route and tone.",
+      step_context_hint: "This helps {area} shape the route and tone.",
       step_format: "How should the city respond?",
-      step_format_hint: "You can tick more than one. Choose nothing and Brera will only whisper in writing.",
+      step_format_hint: "You can tick more than one. Choose nothing and {area} will only whisper in writing.",
       step_contribute: "Would you like to give back?",
       step_contribute_hint: "Optional — say nothing if you'd rather just listen.",
-      relationship: "How would you like to be known to Brera?",
+      relationship: "How would you like to be known to {area}?",
       relationshipAnonymous: "Anonymous — keep it simple",
-      relationshipPersonal: "Personal — let Brera tailor its voice",
+      relationshipPersonal: "Personal — let {area} tailor its voice",
       themesTitle: "Themes",
       companionsTitle: "Going around",
       accessibilityTitle: "Pace & accessibility",
@@ -265,7 +265,7 @@ const STRINGS = {
     profile: {
       title: "Your profile",
       language: "Language",
-      relationship: "How Brera knows you",
+      relationship: "How {area} knows you",
       personalDetails: "Personal details",
       themes: "Themes",
       companions: "Going around",
@@ -293,7 +293,7 @@ const STRINGS = {
 
   it: {
     languageName: "Italiano",
-    listeningTitle: "Brera ti sta ascoltando…",
+    listeningTitle: "{area} ti sta ascoltando…",
     listeningSubtitle: "Cammina. Aspetta. La città sussurrerà quando qualcosa vorrà trovarti.",
     sensedTease: "Qualcosa ti sta osservando, a {distance} m verso {bearing}.",
     youreHere: "Sei qui.",
@@ -305,16 +305,16 @@ const STRINGS = {
     silenceGeoOff: "Posizione disattivata — prova la passeggiata virtuale per scoprire come funziona.",
 
     landing: {
-      eyebrow: "Milano · il quartiere bohémien",
-      heroPart1: "A Brera, i luoghi nascosti",
+      eyebrow: "{city} · il quartiere bohémien",
+      heroPart1: "A {area}, i luoghi nascosti",
       heroPart2: "ti sussurrano.",
       heroIntro: "Un ginkgo di 240 anni dietro un cancello. Una latteria del 1933 con dodici tavoli. Napoleone come dio romano, due volte a grandezza naturale, in un cortile davanti a cui quasi tutti passano. Non li devi cercare — saranno loro a sfiorarti il polso quando ci passerai vicino.",
       begin: "Inizia ad ascoltare",
-      tryGhost: "Cammina Brera virtualmente →",
+      tryGhost: "Cammina {area} virtualmente →",
       giftCta: "Trasformalo in un dono →",
       shape: "La forma di un segreto",
-      pulsing: "{count} luoghi stanno pulsando in Brera in questo momento — e ti parlano.",
-      breraIs: "Brera è qui, e ti parla.",
+      pulsing: "{count} luoghi stanno pulsando in {area} in questo momento — e ti parlano.",
+      breraIs: "{area} è qui, e ti parla.",
       hint: "(I nomi appaiono solo quando un luogo ti riconosce.)",
       reciprocityLine: "Questi luoghi parlano già. Il sussurro inizia quando ci passi abbastanza vicino — e continua, sottovoce, quando in cambio gli presti la tua voce.",
       howTitle: "Come parla la città",
@@ -328,27 +328,27 @@ const STRINGS = {
       foundLabel: "Trovato",
       foundRange: "≤ 25 m",
       foundText: "Sei arrivato. La storia si svela tutta — la sua memoria, una curiosità, un'immagine — e il sussurro resta tuo.",
-      footerCtaTitle: "Brera ti racconterà la sua storia.",
+      footerCtaTitle: "{area} ti racconterà la sua storia.",
       footerCtaTitle2: "Ma prima — chi sei?",
       footerCtaText: "Bastano trenta secondi. Puoi restare anonimo, scegliere la lingua, e indicare il tipo di storie che la città dovrebbe sussurrarti.",
       signIn: "Accedi",
       continueListening: "Continua ad ascoltare",
-      footerNote: "Un progetto sulle strade di Milano · Per chi cammina lento",
+      footerNote: "Un progetto sulle strade di {city} · Per chi cammina lento",
       contributorTitle: "Sei studente o curatore?",
-      contributorText: "Aiuta Brera a trovare le sue molte voci. Aggiungi racconti, curiosità e domande di dialogo che la città sussurrerà ai prossimi camminatori. Ogni contributo è rivisto prima di andare in onda.",
+      contributorText: "Aiuta {area} a trovare le sue molte voci. Aggiungi racconti, curiosità e domande di dialogo che la città sussurrerà ai prossimi camminatori. Ogni contributo è rivisto prima di andare in onda.",
       contributorCta: "Diventa contributore",
       adminLink: "Admin",
       famousLandmarksEyebrow: "Luoghi che già conosci",
       famousLandmarksTitle: "Orientati con questi, poi lascia che il resto ti sussurri.",
       famousLandmarksHint: "Tocca una scheda per spostare la mappa e ascoltare la sua voce.",
       weavingEyebrow: "Una memoria condivisa",
-      weavingTitle: "Brera ascolta da secoli.",
+      weavingTitle: "{area} ascolta da secoli.",
       weavingBody: "Ora, mentre cammini, raccontale anche tu qualcosa — un ricordo, una fotografia, una domanda. Le voci di residenti, studenti e visitatori si intrecciano in un'unica memoria viva di questo quartiere.",
     },
 
     auth: {
       welcomeBack: "Bentornato",
-      welcomeBackEyebrow: "Brera · Milano",
+      welcomeBackEyebrow: "{area} · {city}",
       welcomeBackText: "Accedi per salvare le scoperte e tracciare i tuoi vagabondaggi.",
       email: "Email",
       password: "Password",
@@ -360,10 +360,10 @@ const STRINGS = {
       beginWandering: "Inizia il tuo cammino",
       yourName: "Il tuo nome",
       registerWandererText: "Salva i cortili, i caffè e le stranezze che scopri.",
-      registerContribText: "Cura Brera con i tuoi studenti. I tuoi contributi passano per la revisione di un admin.",
+      registerContribText: "Cura {area} con i tuoi studenti. I tuoi contributi passano per la revisione di un admin.",
       contribCheckbox1: "Vorrei",
       contribCheckbox2: "contribuire",
-      contribCheckbox3: "racconti, curiosità e domande di dialogo per Brera. (Ogni contributo è moderato.)",
+      contribCheckbox3: "racconti, curiosità e domande di dialogo per {area}. (Ogni contributo è moderato.)",
       creating: "Creazione…",
       becomeContrib: "Diventa contributore",
       alreadyAccount: "Hai già un account?",
@@ -380,10 +380,10 @@ const STRINGS = {
 
     contribute: {
       eyebrow: "Contribuisci",
-      title: "Dai a Brera una nuova voce",
+      title: "Dai a {area} una nuova voce",
       lead: "Aggiungi i racconti, le curiosità e le domande di dialogo che la città sussurrerà ai prossimi camminatori. Ogni contributo è rivisto da un admin prima di essere pubblicato.",
       pickPoi: "Punto di interesse",
-      pickPoiPlaceholder: "— scegli un luogo a Brera —",
+      pickPoiPlaceholder: "— scegli un luogo a {area} —",
       typeLabel: "Tipo di contributo",
       titleLabel: "Titolo (facoltativo)",
       titlePlaceholder: "es., La ricetta del risotto al salto della nonna",
@@ -398,7 +398,7 @@ const STRINGS = {
       withdraw: "ritira",
       withdrawConfirm: "Ritirare questo contributo?",
       gateRestricted: "Solo curatori",
-      gateTitle: "Vuoi dare la tua voce a Brera?",
+      gateTitle: "Vuoi dare la tua voce a {area}?",
       gateText: "I contributi sono riservati a studenti e curatori invitati. Iscriviti con l'opzione contributore, o chiedi a un admin di promuovere il tuo account.",
       moderationOpen: "Apri la coda di moderazione →",
       types: {
@@ -414,7 +414,7 @@ const STRINGS = {
         photo_url_placeholder: "https://…",
         generic_placeholder: "Scrivi qualche riga che i visitatori dovrebbero ascoltare…",
       },
-      drawerTitle: "Brera attraverso altri camminatori",
+      drawerTitle: "{area} attraverso altri camminatori",
       drawerCount: "{n} contributo dalla comunità di curatori.",
       drawerCountPlural: "{n} contributi dalla comunità di curatori.",
       status: {
@@ -454,30 +454,30 @@ const STRINGS = {
       modeAuto: "Cammino auto",
       modeStep: "Un passo",
       modeDrag: "Trascina spillo",
-      autoHint: "Sto camminando automaticamente per Brera. Ascolta.",
+      autoHint: "Sto camminando automaticamente per {area}. Ascolta.",
       stepBtn: "Fai un passo",
-      dragHint: "Trascina lo spillo (o tocca la mappa) per spostarti in Brera.",
+      dragHint: "Trascina lo spillo (o tocca la mappa) per spostarti in {area}.",
       virtualBadge: "· cammino virtuale",
     },
 
     onboarding: {
-      welcome: "Benvenuto a Brera",
+      welcome: "Benvenuto a {area}",
       step_language: "Scegli la lingua",
       step_identity: "Con chi stiamo parlando?",
-      step_identity_hint: "Brera adatterà il modo in cui ti parla. Salta ciò che preferisci tenere per te.",
+      step_identity_hint: "{area} adatterà il modo in cui ti parla. Salta ciò che preferisci tenere per te.",
       step_personal: "Un po' su di te",
       step_personal_hint: "Tutto facoltativo — lascia in bianco ciò che non vuoi condividere.",
       step_preferences: "Di cosa dovrebbe sussurrarti la città?",
       step_preferences_hint: "Scegli ciò che ti chiama. Lascia in bianco per tutto.",
       step_context: "Come stai vagando oggi?",
-      step_context_hint: "Aiuta Brera a regolare percorso e tono.",
+      step_context_hint: "Aiuta {area} a regolare percorso e tono.",
       step_format: "Come dovrebbe risponderti la città?",
-      step_format_hint: "Puoi scegliere più di una. Senza nulla, Brera sussurrerà solo per iscritto.",
+      step_format_hint: "Puoi scegliere più di una. Senza nulla, {area} sussurrerà solo per iscritto.",
       step_contribute: "Vuoi contribuire?",
       step_contribute_hint: "Facoltativo — non dire nulla se preferisci solo ascoltare.",
-      relationship: "Come vuoi essere conosciuto da Brera?",
+      relationship: "Come vuoi essere conosciuto da {area}?",
       relationshipAnonymous: "Anonimo — facile e veloce",
-      relationshipPersonal: "Personale — lascia che Brera adatti la voce",
+      relationshipPersonal: "Personale — lascia che {area} adatti la voce",
       themesTitle: "Temi",
       companionsTitle: "In compagnia di",
       accessibilityTitle: "Ritmo e accessibilità",
@@ -553,7 +553,7 @@ const STRINGS = {
     profile: {
       title: "Il tuo profilo",
       language: "Lingua",
-      relationship: "Come Brera ti conosce",
+      relationship: "Come {area} ti conosce",
       personalDetails: "Dati personali",
       themes: "Temi",
       companions: "In compagnia di",
@@ -590,13 +590,34 @@ const STRINGS = {
 // audience is Italian-speaking students); add full translations later.
 const FALLBACK_BASE = STRINGS.it;
 
+// Defaults merged into every `t()` call so hardcoded strings can reference
+// the area/city/brand via `{area}`, `{city}`, `{brand}` placeholders without
+// the caller having to pass them each time. Populated at boot by AreaProvider.
+let AREA_DEFAULTS = { area: {}, city: {}, brand: {}, tagline: {} };
+
+export function setAreaDefaults(next) {
+  AREA_DEFAULTS = { ...AREA_DEFAULTS, ...(next || {}) };
+}
+
+function localisedDefault(map, lang) {
+  if (!map) return "";
+  return map[lang] || map.it || map.en || Object.values(map)[0] || "";
+}
+
 export function t(lang, path, params = {}) {
   const parts = path.split(".");
   const search = (root) => parts.reduce((acc, k) => (acc ? acc[k] : undefined), root);
   let value = search(STRINGS[lang]);
   if (value === undefined) value = search(FALLBACK_BASE);
   if (typeof value !== "string") return value || "";
-  return value.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? params[k] : `{${k}}`));
+  const merged = {
+    area: localisedDefault(AREA_DEFAULTS.area, lang),
+    city: localisedDefault(AREA_DEFAULTS.city, lang),
+    brand: localisedDefault(AREA_DEFAULTS.brand, lang),
+    tagline: localisedDefault(AREA_DEFAULTS.tagline, lang),
+    ...params,
+  };
+  return value.replace(/\{(\w+)\}/g, (_, k) => (merged[k] !== undefined ? merged[k] : `{${k}}`));
 }
 
 export function languageName(code) {

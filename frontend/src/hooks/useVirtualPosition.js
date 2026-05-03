@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { distanceMeters } from "../lib/geo";
+import { getAreaCenter } from "../lib/area";
 
-/** Default starting / fallback waypoint: heart of the Brera quarter. */
-const BRERA_CENTER = { latitude: 45.4720, longitude: 9.1881 };
+/** Default starting / fallback waypoint comes from /api/area (area.config.json). */
+const BRERA_CENTER = getAreaCenter();
 
 const STEP_MS = 350;
 const STEP_DELTA = 0.04;

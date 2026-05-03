@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
+import { AreaProvider } from "./lib/area";
 import BottomNav from "./components/BottomNav";
 import LandingPage from "./pages/LandingPage";
 import ListenPage from "./pages/ListenPage";
@@ -51,10 +52,12 @@ function Shell() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Shell />
-      </BrowserRouter>
-    </AuthProvider>
+    <AreaProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Shell />
+        </BrowserRouter>
+      </AuthProvider>
+    </AreaProvider>
   );
 }

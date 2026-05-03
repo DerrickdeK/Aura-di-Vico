@@ -6,10 +6,13 @@ import { devWarn } from "../lib/log";
 import { useAuth } from "../lib/auth";
 import POIRow from "../components/admin/POIRow";
 import POIForm from "../components/admin/POIForm";
+import { useArea, pickLocale, getAreaCenter } from "../lib/area";
+import useLocale from "../hooks/useLocale";
 
+const AREA_FALLBACK_CENTER = getAreaCenter();
 const EMPTY_POI = {
   name: "", short_description: "", long_description: "",
-  latitude: 45.4719, longitude: 9.1881,
+  latitude: AREA_FALLBACK_CENTER.latitude, longitude: AREA_FALLBACK_CENTER.longitude,
   address: "", category: "Hidden Gem",
   image_url: "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
   trigger_radius_m: 60, hours: "", fun_fact: "",
@@ -56,6 +59,9 @@ function ResetConfirm({ busy, onConfirm, onCancel }) {
 export default function AdminPage() {
   const { user } = useAuth();
   const isAdmin = user && user !== false && user.role === "admin";
+  const area = useArea();
+  const { lang: uiLang } = useLocale();
+  const areaLabel = pickLocale(area.area, uiLang) || "the area";
 
   const [pois, setPois] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -150,7 +156,7 @@ export default function AdminPage() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <p className="eyebrow">Admin</p>
-          <h1 className="font-serif text-5xl mt-2 leading-none">Curate Brera</h1>
+          <h1 className="font-serif text-5xl mt-2 leading-none">Curate {areaLabel}</h1>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button

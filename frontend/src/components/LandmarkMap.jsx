@@ -1,8 +1,14 @@
 import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { auraIcon, landmarkIcon } from "../lib/markers";
+import { getAreaCenter } from "../lib/area";
 
 const BRERA_CENTER = [45.4719, 9.1881];
+
+function resolveCenter() {
+  const c = getAreaCenter();
+  return [c.latitude, c.longitude];
+}
 
 function FlyTo({ target }) {
   const map = useMap();
@@ -29,7 +35,7 @@ export default function LandmarkMap({
 
   return (
     <MapContainer
-      center={BRERA_CENTER}
+      center={resolveCenter()}
       zoom={16}
       scrollWheelZoom={false}
       zoomControl={true}

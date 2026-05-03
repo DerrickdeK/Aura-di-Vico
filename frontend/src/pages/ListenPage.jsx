@@ -16,6 +16,8 @@ import VirtualNavPanel from "../components/VirtualNavPanel";
 import { unlockAudio } from "../lib/audio";
 import { speak, stopSpeaking, unlockSpeech } from "../lib/speech";
 import { t, getOpeningLine } from "../lib/i18n";
+import { useArea, pickLocale } from "../lib/area";
+import useLocale from "../hooks/useLocale";
 
 // Module-level animation constants (avoid recreating per render).
 const SILENCE_INITIAL = { opacity: 0 };
@@ -102,6 +104,12 @@ export default function ListenPage() {
     if (!audioOn) stopSpeaking();
   }, [audioOn]);
 
+  const { lang: uiLang } = useLocale();
+  const area = useArea();
+  const locationLabel = [pickLocale(area.area, uiLang), pickLocale(area.city, uiLang)]
+    .filter(Boolean)
+    .join(" · ");
+
   if (user === null) return <p className="p-10 text-[var(--text-tertiary)]">…</p>;
   if (user === false) return <Navigate to="/login" replace />;
   if (!user.onboarded) return <Navigate to="/onboarding" replace />;
@@ -115,7 +123,7 @@ export default function ListenPage() {
   return (
     <div className="min-h-screen pb-28 px-5 pt-12 max-w-xl mx-auto" data-testid="listen-page">
       <header className="text-center">
-        <p className="eyebrow">Brera · Milano {virtualOn && t(language, "listen.virtualBadge")}</p>
+        <p className="eyebrow">{locationLabel || "—"} {virtualOn && t(language, "listen.virtualBadge")}</p>
         <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-none">
           {t(language, "listeningTitle")}
         </h1>
@@ -185,7 +193,7 @@ export default function ListenPage() {
               virtualOn ? "bg-[var(--terracotta)] text-[var(--inverse)]" : ""
             }`}
             data-testid="virtual-walk-toggle"
-            title="Walk Brera virtually (no GPS needed)"
+            title={`Walk ${pickLocale(area.area, uiLang) || "the area"} virtually (no GPS needed)`}
           >
             <Footprints size={14} />
             <span>{virtualOn ? t(language, "listen.virtualOn") : t(language, "listen.virtualWalk")}</span>

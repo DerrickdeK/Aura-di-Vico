@@ -5,6 +5,7 @@ import { distanceMeters, bearingDeg, vibrate } from "../lib/geo";
 import { playChime, CHIMES } from "../lib/audio";
 import { showWhisperNotification } from "../lib/notifications";
 import { getOpeningLine } from "../lib/i18n";
+import { getAreaName } from "../lib/area";
 
 // Default zone radii — overridden by /api/config at runtime.
 const DEFAULT_ZONES = { sensed_radius_m: 200, called_radius_m: 80, found_radius_m: 25 };
@@ -107,7 +108,7 @@ export default function useCityWhispers({
         if (notifRef.current && (zone === "called" || zone === "found")) {
           const line = getOpeningLine(poi, languageRef.current);
           showWhisperNotification({
-            title: zone === "found" ? `You found ${poi.name}` : "Brera is calling",
+            title: zone === "found" ? `You found ${poi.name}` : `${getAreaName(languageRef.current) || "The city"} is calling`,
             body: zone === "found" ? "Open the whisper to read its story." : (line || poi.name),
             tag: `whisper-${poi.id}`,
           });

@@ -6,21 +6,22 @@ import { api, formatApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import useLocale from "../hooks/useLocale";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useArea, pickLocale } from "../lib/area";
 
 // Local copy — small, page-specific, kept here rather than i18n.js because
 // the gift flow is a contained sub-experience.
 const COPY = {
   it: {
     eyebrow: "Un dono",
-    title: "Regala una passeggiata a Brera",
-    lead: "Scegli da 3 a 8 luoghi, scrivi una dedica, e Brera li sussurrerà a chi ami quando aprirà il link.",
+    title: "Regala una passeggiata a {area}",
+    lead: "Scegli da 3 a 8 luoghi, scrivi una dedica, e {area} li sussurrerà a chi ami quando aprirà il link.",
     sectionRecipient: "A chi è destinato",
     senderName: "Il tuo nome",
     senderNamePh: "Marco",
     recipientName: "Nome di chi riceve",
     recipientNamePh: "Anna",
     sectionDedication: "La tua dedica",
-    dedicationPh: "Cara Anna, Brera ti aspettava. Fai il giro che ti suggerisco — è la mia mappa segreta del quartiere…",
+    dedicationPh: "Cara Anna, {area} ti aspettava. Fai il giro che ti suggerisco — è la mia mappa segreta del quartiere…",
     sectionPois: "Scegli i luoghi",
     poisHint: "Tocca i luoghi per aggiungerli al dono. Da 3 a 8.",
     selected: "{n} selezionati",
@@ -28,29 +29,29 @@ const COPY = {
     submit: "Crea il dono",
     submitting: "Sto preparando il dono…",
     successTitle: "Il dono è pronto",
-    successHint: "Condividi questo link con {name}. Lo apriranno e Brera comincerà a sussurrare per loro.",
+    successHint: "Condividi questo link con {name}. Lo apriranno e {area} comincerà a sussurrare per loro.",
     copyLink: "Copia link",
     linkCopied: "Link copiato",
     openAsRecipient: "Vedi come lo riceverà {name} →",
     makeAnother: "Crea un altro dono",
     needMore: "Aggiungi almeno {n} luoghi.",
     tooMany: "Massimo {n} luoghi per dono.",
-    backHome: "← Torna a Brera",
+    backHome: "← Torna a {area}",
     notLoggedTitle: "Accedi per creare un dono",
     notLoggedText: "I doni sono firmati con il tuo nome — devi essere registrato.",
     signIn: "Accedi",
   },
   en: {
     eyebrow: "A gift",
-    title: "Send someone a walk through Brera",
-    lead: "Pick 3 to 8 places, write a dedication, and Brera will whisper them to your loved one when they open the link.",
+    title: "Send someone a walk through {area}",
+    lead: "Pick 3 to 8 places, write a dedication, and {area} will whisper them to your loved one when they open the link.",
     sectionRecipient: "Who it's for",
     senderName: "Your name",
     senderNamePh: "Marco",
     recipientName: "Recipient's name",
     recipientNamePh: "Anna",
     sectionDedication: "Your dedication",
-    dedicationPh: "Dear Anna, Brera has been waiting for you. Take this loop — it's my secret map of the quarter…",
+    dedicationPh: "Dear Anna, {area} has been waiting for you. Take this loop — it's my secret map of the quarter…",
     sectionPois: "Pick the places",
     poisHint: "Tap places to add them to the gift. Between 3 and 8.",
     selected: "{n} selected",
@@ -58,14 +59,14 @@ const COPY = {
     submit: "Create the gift",
     submitting: "Preparing the gift…",
     successTitle: "Your gift is ready",
-    successHint: "Share this link with {name}. When they open it, Brera will start whispering for them.",
+    successHint: "Share this link with {name}. When they open it, {area} will start whispering for them.",
     copyLink: "Copy link",
     linkCopied: "Link copied",
     openAsRecipient: "Preview how {name} will receive it →",
     makeAnother: "Create another gift",
     needMore: "Pick at least {n} places.",
     tooMany: "Up to {n} places per gift.",
-    backHome: "← Back to Brera",
+    backHome: "← Back to {area}",
     notLoggedTitle: "Sign in to create a gift",
     notLoggedText: "Gifts carry your name — you'll need an account.",
     signIn: "Sign in",
@@ -77,6 +78,16 @@ const MAX_POIS = 8;
 
 function format(s, params) {
   return s.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? params[k] : `{${k}}`));
+}
+
+// Pre-interpolate the `{area}` placeholder across every string in a COPY dict
+// so the rest of the component can keep reading copy.foo verbatim.
+function bindArea(copy, areaName) {
+  const out = {};
+  for (const [k, v] of Object.entries(copy)) {
+    out[k] = typeof v === "string" ? v.replace(/\{area\}/g, areaName) : v;
+  }
+  return out;
 }
 
 function PoiPicker({ pois, selected, onToggle, fullText }) {
@@ -125,7 +136,9 @@ export default function GiftComposerPage() {
   const { user } = useAuth();
   const { lang } = useLocale();
   const navigate = useNavigate();
-  const copy = COPY[lang] || COPY.en;
+  const area = useArea();
+  const areaName = pickLocale(area.area, lang) || "the area";
+  const copy = bindArea(COPY[lang] || COPY.en, areaName);
 
   const [pois, setPois] = useState([]);
   const [senderName, setSenderName] = useState("");

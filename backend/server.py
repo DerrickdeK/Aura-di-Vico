@@ -23,6 +23,12 @@ from mailer import send_email, password_reset_email, contribution_moderated_emai
 from poi_chat import reply as poi_chat_reply
 from safety import screen_contribution, VERDICT_BLOCK
 from share_card import render_og_image, render_share_html
+from area_config import (
+    load_area as load_area_config,
+    pois_seed as area_pois_seed,
+    landmarks_dict as area_landmarks_dict,
+    public_area as area_public_payload,
+)
 
 
 # ------------------------------------------------------------------------------------
@@ -32,7 +38,7 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-app = FastAPI(title="Brera Discover API")
+app = FastAPI(title="Aura Discover API")
 api_router = APIRouter(prefix="/api")
 
 JWT_ALGORITHM = "HS256"
@@ -479,7 +485,7 @@ async def reset_pois(_: dict = Depends(require_admin)):
 
 @api_router.post("/pois/seed")
 async def reseed_pois(_: dict = Depends(require_admin)):
-    """Re-seed default Brera POIs (only inserts if collection is empty)."""
+    """Re-seed default POIs from area.config.json (only inserts if collection is empty)."""
     inserted = await seed_pois_if_empty()
     return {"ok": True, "inserted": inserted}
 
@@ -656,6 +662,14 @@ async def get_config():
             "found_radius_m": FOUND_RADIUS_M,
         },
     }
+
+
+@api_router.get("/area")
+async def get_area():
+    """Public area (city/campus) configuration: brand, palette, map center,
+    and the 5 landing-page landmarks. Everything a frontend needs to
+    re-skin this codebase for a new city lives here."""
+    return area_public_payload()
 
 
 # ------------------------------------------------------------------------------------
@@ -860,118 +874,10 @@ async def chat_with_poi(
 
 # ------------------------------------------------------------------------------------
 # Landmark chat (well-known anchors on the landing page — open to anonymous visitors).
-# Each landmark is HARDCODED here so it can speak without being a stored POI.
-# Mirror of the frontend's LANDMARKS array in /pages/LandingPage.jsx.
+# Landmarks are loaded from the area config so the same code serves any city.
 # ------------------------------------------------------------------------------------
-LANDMARK_DATA = {
-    "accademia": {
-        "id": "accademia",
-        "name": "Accademia di Belle Arti di Brera",
-        "address": "Via Brera 28, 20121 Milano",
-        "short_description": "Italy's most storied art school, founded 1776 by Maria Theresa of Austria.",
-        "long_description": (
-            "The Accademia shares Palazzo Brera with the Pinacoteca and the Orto Botanico. "
-            "Founded in 1776, it has trained generations of Italian painters, sculptors and "
-            "set designers — Hayez, Boccioni, Funi, Castiglioni among them. Students still "
-            "walk in and out at all hours, sketchbooks under their arms. The arcaded courtyard "
-            "is open to the public; the studios upstairs are not, but on warm days you can "
-            "smell the turpentine through the windows."
-        ),
-        "fun_fact": "Marina Abramović studied here briefly in the 1970s.",
-        "canonical_facts": [
-            "Founded in 1776 by Empress Maria Theresa of Austria.",
-            "Shares Palazzo Brera with the Pinacoteca and the Orto Botanico.",
-            "Notable alumni include Francesco Hayez, Umberto Boccioni and Achille Castiglioni.",
-        ],
-        "opening_line": {
-            "it": "Cammina sotto i miei portici. Ti dirò chi è passato di qui.",
-            "en": "Walk beneath my arcades. I'll tell you who has passed through.",
-        },
-    },
-    "pinacoteca": {
-        "id": "pinacoteca",
-        "name": "Pinacoteca di Brera",
-        "address": "Via Brera 28, 20121 Milano",
-        "short_description": "Raphael, Mantegna and Caravaggio under one ceiling — Milan's painting museum.",
-        "long_description": (
-            "Founded by Napoleon in 1809 to centralise the artworks confiscated from "
-            "suppressed religious orders, the Pinacoteca holds masterpieces including "
-            "Raphael's Marriage of the Virgin, Mantegna's Lamentation of Christ, and "
-            "Caravaggio's Supper at Emmaus. The neoclassical courtyard at the entrance "
-            "features Antonio Canova's monumental bronze of Napoleon as Mars the "
-            "Peacemaker, twice life-size. In spring the magnolia in the courtyard "
-            "blooms above visitors' shoulders."
-        ),
-        "fun_fact": "The Mantegna's Dead Christ uses radical foreshortening from a viewpoint near the feet.",
-        "canonical_facts": [
-            "Founded by Napoleon in 1809 to centralise art confiscated from suppressed religious orders.",
-            "Holds Raphael's Marriage of the Virgin, Mantegna's Lamentation, and Caravaggio's Supper at Emmaus.",
-            "Antonio Canova's bronze Napoleon as Mars the Peacemaker stands twice life-size in the courtyard.",
-        ],
-        "opening_line": {
-            "it": "Ho conservato i loro silenzi. Vieni a sentirli.",
-            "en": "I have kept their silences. Come and feel them.",
-        },
-    },
-    "cusani": {
-        "id": "cusani",
-        "name": "Palazzo Cusani",
-        "address": "Via Brera 13, 20121 Milano",
-        "short_description": "An 18th-century palace with two different facades by two architects.",
-        "long_description": (
-            "Built in the early 1700s by Giovanni Ruggeri for the Cusani family. A century "
-            "later, when Maria Theresa of Austria visited, Giuseppe Piermarini was hired "
-            "to remodel the rear elevation in a more neoclassical style — but he never "
-            "harmonised it with Ruggeri's Baroque front. The result: two facades, two eras, "
-            "one quiet quarrel in stone. Since 1860 the palace has housed the Italian "
-            "Army's Northern Command, but the great staircase and ballrooms still survive."
-        ),
-        "fun_fact": "The two facades are sometimes used as an architecture-school example of how NOT to remodel.",
-        "opening_line": {
-            "it": "Ho due volti. Vieni a scoprire perché.",
-            "en": "I wear two faces. Come and find out why.",
-        },
-    },
-    "orsini": {
-        "id": "orsini",
-        "name": "Palazzo Orsini",
-        "address": "Via Borgonuovo 11, 20121 Milano",
-        "short_description": "Versace's headquarters since 1980 — frescoed 18th-century ceilings still intact.",
-        "long_description": (
-            "Built in the 16th century, redecorated in the 1700s with frescoed ceilings "
-            "depicting mythological scenes. Gianni Versace bought the palace in 1980 and "
-            "made it the headquarters of the Versace fashion house. Donatella Versace "
-            "still walks these halls. Few know that one wing was once inhabited by "
-            "Maria Gaetana Agnesi, the 18th-century mathematician and astronomer, before "
-            "she renounced worldly life and became a nun."
-        ),
-        "fun_fact": "The garden behind the palace is one of the largest private green spaces in central Milan.",
-        "opening_line": {
-            "it": "Sotto le mode di oggi, conservo storie più antiche.",
-            "en": "Beneath today's fashions, I keep older stories.",
-        },
-    },
-    "scala": {
-        "id": "scala",
-        "name": "Teatro alla Scala",
-        "address": "Via Filodrammatici 2, 20121 Milano",
-        "short_description": "The opera house that crowns the southern edge of Brera.",
-        "long_description": (
-            "Inaugurated 3 August 1778 with Antonio Salieri's Europa Riconosciuta, "
-            "designed by Giuseppe Piermarini on the site of the demolished church of "
-            "Santa Maria alla Scala. La Scala has hosted the world premieres of operas "
-            "by Verdi (Otello, Falstaff, Nabucco), Puccini (Madama Butterfly, Turandot), "
-            "and Bellini (Norma). Maria Callas redefined operatic acting from this stage "
-            "in the 1950s. The opening night each season — 7 December, the feast of "
-            "Sant'Ambrogio — is when Milan dresses itself for the year."
-        ),
-        "fun_fact": "Toscanini's baton is preserved in the museum on the left side of the lobby.",
-        "opening_line": {
-            "it": "Le mie note iniziano molto prima del sipario.",
-            "en": "My notes begin long before the curtain.",
-        },
-    },
-}
+def _landmark_by_id(landmark_id: str) -> Optional[dict]:
+    return area_landmarks_dict().get(landmark_id)
 
 
 @api_router.post("/landmarks/{landmark_id}/chat")
@@ -980,7 +886,7 @@ async def chat_with_landmark(
     payload: ChatIn,
     request: Request,
 ):
-    landmark = LANDMARK_DATA.get(landmark_id)
+    landmark = _landmark_by_id(landmark_id)
     if not landmark:
         raise HTTPException(status_code=404, detail="Landmark not found")
 
@@ -1159,365 +1065,47 @@ async def og_image_itinerary(slug: str):
 # ------------------------------------------------------------------------------------
 @api_router.get("/")
 async def root():
-    return {"app": "Brera Discover", "ok": True}
+    cfg = load_area_config()
+    brand = cfg.get("brand", {}).get("en") or "Aura Discover"
+    return {"app": brand, "ok": True, "slug": cfg.get("slug")}
 
 
 # ------------------------------------------------------------------------------------
 # Startup: indexes, admin seed, POI seed
 # ------------------------------------------------------------------------------------
-BRERA_POI_SEED = [
-    {
-        "name": "Orto Botanico di Brera",
-        "short_description": "A secret 18th-century botanical garden tucked behind Palazzo Brera.",
-        "long_description": "Founded in 1774 by Maria Theresa of Austria, this hidden 5,000 sqm garden hosts ancient ginkgo trees, medicinal plants and a quiet pond. Few tourists know it exists.",
-        "latitude": 45.47284, "longitude": 9.18937,
-        "address": "Via Fratelli Gabba 10, 20121 Milano",
-        "category": "Hidden Garden",
-        "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-        "trigger_radius_m": 70,
-        "hours": "Mon–Fri 10:00–18:00",
-        "fun_fact": "Two of its ginkgo biloba trees are over 240 years old.",
-    },
-    {
-        "name": "Cortile della Pinacoteca",
-        "short_description": "The arcaded courtyard with Napoleon as a Roman god.",
-        "long_description": "Inside Palazzo Brera, this neoclassical courtyard hosts a striking bronze nude of Napoleon by Antonio Canova. Free to enter even without a museum ticket.",
-        "latitude": 45.47193, "longitude": 9.18785,
-        "address": "Via Brera 28, 20121 Milano",
-        "category": "Courtyard",
-        "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-        "trigger_radius_m": 50,
-        "hours": "Daily 09:00–19:00",
-        "fun_fact": "Canova depicted Napoleon idealised, twice life-size, holding a Nike.",
-    },
-    {
-        "name": "Fioraio Bianchi Caffè",
-        "short_description": "A Parisian-style florist that became a tiny bistrot.",
-        "long_description": "Half flower shop, half restaurant — Raimondo Bianchi's 1976 atelier still arranges blooms among marble tables and serves a beloved seasonal lunch.",
-        "latitude": 45.4742, "longitude": 9.1907,
-        "address": "Via Montebello 7, 20121 Milano",
-        "category": "Café & Workshop",
-        "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-        "trigger_radius_m": 40,
-        "hours": "Tue–Sat 12:00–23:00",
-        "fun_fact": "Many Milanese still order their wedding bouquets here.",
-    },
-    {
-        "name": "Cimitero di San Marco (vestiges)",
-        "short_description": "Traces of a medieval graveyard hidden beneath the church square.",
-        "long_description": "The piazza in front of San Marco church covers the former parish cemetery. Look for worn tombstones reused as paving stones near the side wall.",
-        "latitude": 45.4754, "longitude": 9.1892,
-        "address": "Piazza San Marco, 20121 Milano",
-        "category": "Historic Trace",
-        "image_url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df?w=1200",
-        "trigger_radius_m": 55,
-        "hours": "Always accessible",
-        "fun_fact": "Mozart performed inside San Marco at age 14, in 1770.",
-    },
-    {
-        "name": "Casa degli Atellani — Vigna di Leonardo",
-        "short_description": "Leonardo da Vinci's personal vineyard, replanted on the original soil.",
-        "long_description": "Just a few minutes from Brera, this Renaissance house preserves the vineyard gifted to Leonardo by Ludovico il Moro in 1498. The malvasia vines were genetically restored in 2015.",
-        "latitude": 45.4661, "longitude": 9.1715,
-        "address": "Corso Magenta 65, 20123 Milano",
-        "category": "Renaissance Garden",
-        "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-        "trigger_radius_m": 70,
-        "hours": "Daily 09:00–18:00 (ticketed)",
-        "fun_fact": "Leonardo mentioned the vineyard in his will of 1519.",
-    },
-    {
-        "name": "Libreria Bocca",
-        "short_description": "Italy's oldest bookshop, founded 1775.",
-        "long_description": "Hidden in Galleria Vittorio Emanuele but spiritually a Brera neighbour, Bocca has specialised in art, fine prints, and rare editions since the late 18th century.",
-        "latitude": 45.4659, "longitude": 9.1900,
-        "address": "Galleria Vittorio Emanuele II 12, 20121 Milano",
-        "category": "Historic Shop",
-        "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-        "trigger_radius_m": 35,
-        "hours": "Mon–Sat 10:00–19:30",
-        "fun_fact": "Futurist manifestos by Marinetti were printed and sold here.",
-    },
-    {
-        "name": "Vicolo dei Lavandai",
-        "short_description": "The last open-air laundry alley of Milan, on the Naviglio.",
-        "long_description": "Just south of Brera along the Naviglio Grande, this narrow lane preserves the 1700s wash-house where lavandai (male washermen) cleaned the city's laundry until the 1950s.",
-        "latitude": 45.4527, "longitude": 9.1736,
-        "address": "Vicolo dei Lavandai, 20143 Milano",
-        "category": "Historic Trace",
-        "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-        "trigger_radius_m": 35,
-        "hours": "Always accessible",
-        "fun_fact": "It was protected as a monument in 1982 to save it from demolition.",
-    },
-    {
-        "name": "Chiesa di San Carpoforo",
-        "short_description": "A deconsecrated 11th-century church now hosting Brera Academy exhibitions.",
-        "long_description": "One of the oldest churches in Milan, repurposed into an exhibition hall by the nearby Accademia di Belle Arti. Romanesque bones with contemporary art layered on top.",
-        "latitude": 45.4730, "longitude": 9.1872,
-        "address": "Via Marco Formentini 10, 20121 Milano",
-        "category": "Hidden Church",
-        "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-        "trigger_radius_m": 40,
-        "hours": "Wed–Sun 14:00–19:00 during exhibitions",
-        "fun_fact": "Originally founded around 1040 AD.",
-    },
-    {
-        "name": "Bar Jamaica",
-        "short_description": "The 1920s artists' bar where Brera bohemia was born.",
-        "long_description": "Hemingway, Lucio Fontana, Quasimodo and Ungaretti all drank here. The walls are still hung with original photographs of Brera's mid-century painters and poets.",
-        "latitude": 45.4738, "longitude": 9.1874,
-        "address": "Via Brera 32, 20121 Milano",
-        "category": "Historic Café",
-        "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-        "trigger_radius_m": 35,
-        "hours": "Daily 07:30–01:30",
-        "fun_fact": "It is the unofficial 'living room' of the Accademia di Belle Arti.",
-    },
-    {
-        "name": "Palazzo Cusani",
-        "short_description": "An 18th-century palace with two contrasting facades.",
-        "long_description": "Designed by Giovanni Ruggeri (1719) on Via Brera and by Piermarini on the back — it is the only Milanese palace whose two main fronts come from rival baroque/neoclassical architects.",
-        "latitude": 45.4729, "longitude": 9.1888,
-        "address": "Via Brera 15, 20121 Milano",
-        "category": "Hidden Palace",
-        "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-        "trigger_radius_m": 45,
-        "hours": "Open courtyard during army office hours",
-        "fun_fact": "Today it is the HQ of the Italian Army Northern Command.",
-    },
-    {
-        "name": "Pasticceria Marchesi 1824",
-        "short_description": "Milan's oldest patisserie, where Verdi bought his cassoeula.",
-        "long_description": "Founded in 1824 with original walnut counters and pastel boiserie. The almond panettoncini are baked from the same recipe used for nearly two centuries.",
-        "latitude": 45.4670, "longitude": 9.1841,
-        "address": "Via Santa Maria alla Porta 11A, 20123 Milano",
-        "category": "Historic Patisserie",
-        "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-        "trigger_radius_m": 30,
-        "hours": "Tue–Sun 07:30–20:00",
-        "fun_fact": "Now part of Prada — but the 1824 décor is preserved.",
-    },
-    {
-        "name": "Cortile della Magnolia",
-        "short_description": "A secret courtyard with a centuries-old magnolia tree.",
-        "long_description": "Step through an unassuming portone on Via dei Giardini and you'll find a peaceful private courtyard dominated by a vast flowering magnolia — an open secret among Brera locals.",
-        "latitude": 45.4736, "longitude": 9.1908,
-        "address": "Via dei Giardini 7, 20121 Milano",
-        "category": "Hidden Courtyard",
-        "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-        "trigger_radius_m": 35,
-        "hours": "Daytime, residential courtyard",
-        "fun_fact": "The magnolia blooms briefly in late March — a Brera ritual.",
-    },
-    {
-        "name": "Studio Museo Francesco Messina",
-        "short_description": "A sculptor's workshop turned museum inside a deconsecrated church.",
-        "long_description": "The 17th-century Chiesa di San Sisto houses 80 sculptures and 25 drawings by Francesco Messina, donated to the city in 1974. Almost always empty.",
-        "latitude": 45.4634, "longitude": 9.1812,
-        "address": "Via San Sisto 4A, 20123 Milano",
-        "category": "Hidden Museum",
-        "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-        "trigger_radius_m": 40,
-        "hours": "Tue–Sun 10:00–17:30",
-        "fun_fact": "The bronze horses outside RAI's Rome HQ are by Messina.",
-    },
-    {
-        "name": "Antica Barbieria Colla",
-        "short_description": "Italy's oldest barbershop, opened in 1904.",
-        "long_description": "Mahogany counters, original Belle Époque mirrors and a hand-mixed shaving cream called 'Crema 1904'. Booking weeks ahead is the norm for the wet shave.",
-        "latitude": 45.4666, "longitude": 9.1896,
-        "address": "Via Gerolamo Morone 3, 20121 Milano",
-        "category": "Historic Shop",
-        "image_url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df?w=1200",
-        "trigger_radius_m": 25,
-        "hours": "Tue–Sat 09:00–19:00",
-        "fun_fact": "Toscanini and Verdi were both Colla regulars.",
-    },
-    {
-        "name": "Casa Museo Boschi Di Stefano",
-        "short_description": "A 1930s apartment-museum stuffed with 300 Italian modernist masterpieces.",
-        "long_description": "An almost-secret museum in a Piero Portaluppi flat, displaying works by Fontana, de Chirico, Sironi, Morandi and Boccioni — collected by a single Milanese couple.",
-        "latitude": 45.4774, "longitude": 9.2042,
-        "address": "Via Giorgio Jan 15, 20129 Milano",
-        "category": "Hidden Museum",
-        "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-        "trigger_radius_m": 50,
-        "hours": "Tue–Sun 10:00–17:30 (free)",
-        "fun_fact": "Entry is completely free — a bequest condition.",
-    },
-    {
-        "name": "Latteria di San Marco",
-        "short_description": "A 12-table 1933 milk-bar, now serving Milanese home cooking.",
-        "long_description": "No reservations, no menu cards, just blackboard specials and risotto al salto. Run for decades by the Maggi family — a portrait of pre-aperitivo Brera.",
-        "latitude": 45.4754, "longitude": 9.1908,
-        "address": "Via San Marco 24, 20121 Milano",
-        "category": "Historic Trattoria",
-        "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-        "trigger_radius_m": 25,
-        "hours": "Mon–Fri 12:30–14:30, 19:30–22:30",
-        "fun_fact": "Cash only, capacity ~24 people.",
-    },
-    {
-        "name": "Chiostro dell'Umanitaria",
-        "short_description": "A Renaissance cloister hidden inside a working social institute.",
-        "long_description": "Two 15th-century cloisters with a peaceful well, often used for outdoor concerts. Walk straight in past the porter — almost no one realises it is open to the public.",
-        "latitude": 45.4609, "longitude": 9.1972,
-        "address": "Via San Barnaba 48, 20122 Milano",
-        "category": "Hidden Cloister",
-        "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-        "trigger_radius_m": 50,
-        "hours": "Mon–Fri 09:00–18:00",
-        "fun_fact": "Originally part of a 15th-century Franciscan convent.",
-    },
-    {
-        "name": "Via Bagnera",
-        "short_description": "Milan's narrowest street — and once its grisliest.",
-        "long_description": "A 2.5m-wide medieval alley between Via Nerino and Via Santa Marta. In 1861 it was the scene of Milan's first serial-killer case (Antonio Boggia).",
-        "latitude": 45.4626, "longitude": 9.1832,
-        "address": "Via Bagnera, 20123 Milano",
-        "category": "Historic Trace",
-        "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-        "trigger_radius_m": 25,
-        "hours": "Always accessible",
-        "fun_fact": "Boggia was the last person publicly executed in Milan.",
-    },
-]
-
-
-# Per-POI "voice" — opening line (the city's whisper) + interest tags.
-# Keyed by POI name so we don't have to edit every dict literal above.
-# `opening_line` is a {language_code: text} map. Add more languages later.
-POI_METADATA = {
-    "Orto Botanico di Brera": {
-        "interest_tags": ["sceneries", "history", "curios"],
-        "opening_line": {
-            "en": "Beyond this gate, a 240-year-old ginkgo is waiting for you to look up.",
-        },
-    },
-    "Cortile della Pinacoteca": {
-        "interest_tags": ["art", "architecture", "history"],
-        "opening_line": {
-            "en": "Step inside — Napoleon, twice life-size, has been waiting for you in bronze.",
-        },
-    },
-    "Fioraio Bianchi Caffè": {
-        "interest_tags": ["food", "curios"],
-        "opening_line": {
-            "en": "Smell that? It's roses, and lunch, served at marble tables since 1976.",
-        },
-    },
-    "Cimitero di San Marco (vestiges)": {
-        "interest_tags": ["local_legends", "history"],
-        "opening_line": {
-            "en": "Look down — the stones beneath your feet were once tombstones. Mozart played near here at fourteen.",
-        },
-    },
-    "Casa degli Atellani — Vigna di Leonardo": {
-        "interest_tags": ["history", "sceneries", "local_legends"],
-        "opening_line": {
-            "en": "Leonardo's vines are still thirsty. The same soil he sketched in 1498 is right behind you.",
-        },
-    },
-    "Libreria Bocca": {
-        "interest_tags": ["art", "history", "shopping"],
-        "opening_line": {
-            "en": "Pages from 1775 are turning, slowly. Marinetti's Futurist manifestos started right here.",
-        },
-    },
-    "Vicolo dei Lavandai": {
-        "interest_tags": ["local_legends", "history", "sceneries"],
-        "opening_line": {
-            "en": "The last open-air laundry of Milan still echoes with washermen of the 1700s.",
-        },
-    },
-    "Chiesa di San Carpoforo": {
-        "interest_tags": ["history", "architecture", "art"],
-        "opening_line": {
-            "en": "An eleventh-century church is hosting today's young artists. Romanesque stones, modern hands.",
-        },
-    },
-    "Bar Jamaica": {
-        "interest_tags": ["curios", "history", "food"],
-        "opening_line": {
-            "en": "Hemingway's table is empty, but the photographs on these walls are still watching.",
-        },
-    },
-    "Palazzo Cusani": {
-        "interest_tags": ["architecture", "history"],
-        "opening_line": {
-            "en": "Two facades, two architects, one quiet quarrel in stone since 1719.",
-        },
-    },
-    "Pasticceria Marchesi 1824": {
-        "interest_tags": ["food", "history", "curios"],
-        "opening_line": {
-            "en": "Walnut counters from 1824. Ask for the panettoncini — Verdi did.",
-        },
-    },
-    "Cortile della Magnolia": {
-        "interest_tags": ["sceneries", "architecture", "local_legends"],
-        "opening_line": {
-            "en": "A magnolia is blooming behind that unmarked door. Brera's open secret.",
-        },
-    },
-    "Studio Museo Francesco Messina": {
-        "interest_tags": ["art", "architecture", "history"],
-        "opening_line": {
-            "en": "A 17th-century church now holds 80 sculptures. You'll likely have it to yourself.",
-        },
-    },
-    "Antica Barbieria Colla": {
-        "interest_tags": ["curios", "shopping", "history"],
-        "opening_line": {
-            "en": "A wet shave from 1904 is being prepared. Toscanini knew this scent.",
-        },
-    },
-    "Casa Museo Boschi Di Stefano": {
-        "interest_tags": ["art", "history"],
-        "opening_line": {
-            "en": "Three hundred modernist masterpieces are quietly hung in someone's living room. Free, always.",
-        },
-    },
-    "Latteria di San Marco": {
-        "interest_tags": ["food", "curios"],
-        "opening_line": {
-            "en": "Twelve tables. No menu. The risotto al salto would like you to sit down.",
-        },
-    },
-    "Chiostro dell'Umanitaria": {
-        "interest_tags": ["architecture", "sceneries", "history"],
-        "opening_line": {
-            "en": "Two Renaissance cloisters are open behind a porter's desk. Walk in.",
-        },
-    },
-    "Via Bagnera": {
-        "interest_tags": ["local_legends", "history"],
-        "opening_line": {
-            "en": "Milan's narrowest alley would like you to know it once held the city's last public execution.",
-        },
-    },
-}
+# POI seeds + landing-page landmarks both live in /app/area.config.json
+# so the same codebase can be re-skinned for any city/campus. The
+# loader functions below read that config at call-time.
 
 
 def _enrich_seed(p: dict) -> dict:
-    meta = POI_METADATA.get(p["name"], {})
+    """Shape a config POI dict into the exact form stored in MongoDB."""
     return {
-        **p,
-        "interest_tags": meta.get("interest_tags", []),
-        "opening_line": meta.get("opening_line", {}),
+        "name": p["name"],
+        "short_description": p.get("short_description", ""),
+        "long_description": p.get("long_description", ""),
+        "latitude": p["latitude"],
+        "longitude": p["longitude"],
+        "address": p.get("address", ""),
+        "category": p.get("category", ""),
+        "image_url": p.get("image_url", ""),
+        "trigger_radius_m": int(p.get("trigger_radius_m", 60)),
+        "hours": p.get("hours"),
+        "fun_fact": p.get("fun_fact"),
+        "interest_tags": list(p.get("interest_tags", [])),
+        "opening_line": dict(p.get("opening_line", {})),
+        "canonical_facts": list(p.get("canonical_facts", [])),
     }
 
 
 async def seed_pois_if_empty() -> int:
-    """Insert default POIs only if the collection is empty.
-    Migrates stale documents (missing opening_line OR using the legacy
-    5-tag taxonomy) by wiping and reseeding."""
+    """Insert default POIs from the area config only if the collection is
+    empty. Migrates stale documents (missing opening_line OR using the
+    legacy 5-tag taxonomy) by wiping and reseeding."""
     LEGACY_TAGS = {"hidden_gardens", "historic_cafes", "hidden_courtyards",
                    "renaissance_traces", "artisan_workshops"}
     count = await db.pois.count_documents({})
     if count > 0:
-        # Detect stale schema or legacy tags and force a one-shot migration.
         stale = await db.pois.find_one({"opening_line": {"$exists": False}})
         legacy = await db.pois.find_one({"interest_tags": {"$in": list(LEGACY_TAGS)}})
         if stale is None and legacy is None:
@@ -1525,7 +1113,7 @@ async def seed_pois_if_empty() -> int:
         logger.info("Detected stale/legacy POIs; reseeding…")
         await db.pois.delete_many({})
     docs = []
-    for p in BRERA_POI_SEED:
+    for p in area_pois_seed():
         enriched = _enrich_seed(p)
         docs.append({
             "id": str(uuid.uuid4()),
@@ -1590,22 +1178,27 @@ async def _upsert_admin(admin_email: str, admin_password: str, display_name: str
 
 
 async def seed_admin():
+    area = load_area_config()
+    brand_en = (area.get("brand") or {}).get("en") or "Aura"
     # Primary admin (required)
     await _upsert_admin(
         os.environ.get("ADMIN_EMAIL", "admin@brera.app").lower(),
         os.environ.get("ADMIN_PASSWORD", "admin123"),
-        "Brera Admin",
+        f"{brand_en} Admin",
     )
     # Optional co-admin — lets the lead curator delegate without sharing the
     # main password. Skipped silently if env vars aren't set.
     co_email = (os.environ.get("CO_ADMIN_EMAIL") or "").strip().lower()
     co_password = os.environ.get("CO_ADMIN_PASSWORD") or ""
     if co_email and co_password:
-        await _upsert_admin(co_email, co_password, "Brera Co-Admin")
+        await _upsert_admin(co_email, co_password, f"{brand_en} Co-Admin")
 
 
 @app.on_event("startup")
 async def on_startup():
+    # Fail fast if area.config.json is missing or malformed.
+    area_cfg = load_area_config()
+    logger.info("Area template: %s", area_cfg.get("slug"))
     await db.users.create_index("email", unique=True)
     await db.users.create_index("id", unique=True)
     await db.pois.create_index("id", unique=True)

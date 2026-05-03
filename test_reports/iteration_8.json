@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 8: Templatisation refactor (Option A: /app/area.config.json + backend area_config.py loader + frontend AreaProvider) regression-tested end-to-end. Backend pytest 100/100 PASS (5 NEW test_area_config.py tests + 95 regression). Live /api/area returns slug=brera-milano, brand='Aura di Brera', area=Brera, city=Milano, 11 palette CSS vars (bg, surface, map-water, text-primary/secondary/tertiary, inverse, terracotta, deep-green, warm-ochre, border), 5 landmarks (accademia, pinacoteca, cusani, orsini, scala) — and correctly does NOT leak the POI seed array. /api/pois still returns 18 POIs. Frontend Playwright smoke confirms: (1) landing wordmark='Aura di Brera' rendered from /api/area, (2) :root CSS palette vars applied (--terracotta=#BD5745, --bg=#F7F4EB, --deep-green=#1E3A2F, --warm-ochre=#C98A3C, --border=#E3DEC8 — all matching area.config.json byte-for-byte), (3) map renders the 5 landmarks plus 18 POI clusters (23 marker DOM nodes total), (4) Admin page title resolves to 'Curate Brera' via pickLocale + i18n setAreaDefaults, (5) Gift composer headline 'Send someone a walk through Brera' and body copy 'Brera will whisper them to your loved one' — the {area} placeholder is correctly interpolated client-side, (6) /gift/new has zero .error/[class*=error] DOM nodes — the previously-fixed conditional-hook bug in ListenPage stays fixed (no React 'rendered fewer hooks' warnings in console). The behaviour-equivalent guarantee holds: every Brera-specific value previously hardcoded in server.py / i18n.js now flows through area.config.json with identical output.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_area_config.py",
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/backend/tests/test_itineraries.py",
+    "/app/backend/tests/test_iter6_canonical_and_landmark_chat.py",
+    "/app/backend/tests/test_poi_chat_prompt.py",
+    "/app/backend/tests/test_share_card.py",
+    "/app/test_reports/pytest/iter8_results.xml"
+  ],
+  "action_items": [
+    "(Carry-over from iter6/7) Split /app/backend/server.py — file continued to grow; refactor into routers/itineraries.py, routers/auth.py, routers/pois.py, routers/me.py, routers/contributions.py, routers/admin.py, landmarks.py, seeds.py.",
+    "(Carry-over) test_contributor_creates_pending in test_brera_backend.py still triggers PytestReturnNotNoneWarning — replace 'return body[id]' with a local variable.",
+    "(Carry-over) Disambiguate duplicate data-testid 'profile-profession-other' — rename free-text input to 'profile-profession-other-input'.",
+    "(Template polish, optional) Add a smoke test that boots the backend with AREA_CONFIG_PATH pointing at a different city JSON and verifies /api/area + GET /api/pois reflect that city. The unit test test_override_path_via_env covers the loader, but a full-stack live override verification would harden the multi-city promise.",
+    "(Template polish, optional) area_landmarks_dict() lookup is O(n) per /api/landmarks/{id}/chat call — fine for 5 landmarks, but if a city ever ships >50 landmarks consider caching a {id: landmark} dict at module import."
+  ],
+  "critical_code_review_comments": [
+    "area_config.py separation is clean: load_area() reads from AREA_CONFIG_PATH or defaults to /app/area.config.json; reload_area() is exposed for tests; public_area() correctly omits the 'pois' key so the public /api/area endpoint cannot exfiltrate the POI seed (verified in live curl + test_public_area_payload_shape). landmarks_dict() and pois_seed() return defensive copies via reload_area() each call — safe but mildly wasteful; cache-on-first-call would be a micro-optimisation.",
+    "Frontend AreaProvider fetches /api/area once on mount and applies palette via document.documentElement.style.setProperty for every key — verified at runtime: getComputedStyle(:root).getPropertyValue('--terracotta') === '#BD5745'. The provider wraps AuthProvider in App.js so every consumer (LandingPage, ListenPage, AdminPage, GiftComposer, GiftRecipient, VisitsPage) receives the area context.",
+    "i18n.js setAreaDefaults() merges {area}/{city}/{brand}/{tagline} into every t() call via interpolation — the bulk-replace of 53 hardcoded 'Brera'/'Milano' to placeholders is verified live by the gift composer headline and the admin title both rendering 'Brera' from the config rather than the literal string.",
+    "Behavioural no-op guarantee holds: 18 POIs (same count and same names as iter6/7), 5 landmarks (same ids: accademia/pinacoteca/cusani/orsini/scala), same palette values — the refactor is an extract-to-config with zero observable change to the Brera deployment. Multi-city consumers can swap AREA_CONFIG_PATH without touching code.",
+    "Test coverage for the loader (5 tests) covers default load shape, public_area shape and POI suppression, POIs/landmarks structure, and AREA_CONFIG_PATH env override with a temp Trastevere JSON — solid.",
+    "Minor: the public_area() palette is a flat dict of strings (good for direct CSS-var injection on the frontend); landmark.opening_line is the 'voice' map under the hood (en/it) used by the Claude chat prompt — naming asymmetry between 'voice' (in JSON) and 'opening_line' (in landmarks_dict output) could surprise a future contributor. A one-line comment in area_config.py would help."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (100/100)", "frontend": "100% (5/5 smoke checks)"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! — verified via /api/auth/login and the frontend login form.",
+  "seed_data_creation": "No new seed data — used existing 18 POIs and 5 landmarks loaded from /app/area.config.json on backend startup. The area_pois_seed() is idempotent (POST /api/pois/reset + /api/pois/seed are admin-only and re-read from area.config.json).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Full backend regression: cd /app/backend && set -a && . .env && set +a && python -m pytest tests/ -v. The 5 new tests live at /app/backend/tests/test_area_config.py and exercise the loader directly (no HTTP). To live-verify the multi-city override, set AREA_CONFIG_PATH=/path/to/other.json, sudo supervisorctl restart backend, then curl /api/area and confirm slug + brand reflect the override; remember to unset AREA_CONFIG_PATH and restart back. Frontend AreaProvider is at /app/frontend/src/lib/area.jsx — palette is applied via setProperty on document.documentElement so any new CSS var added to area.config.json will automatically be exposed as --<key> on :root with no frontend code change required.",
+  "rca of the issue": "N/A — no bugs. Templatisation is a clean extract-to-config refactor with full behavioural parity for Brera (verified by 100/100 pytest pass + live frontend smoke)."
+}
