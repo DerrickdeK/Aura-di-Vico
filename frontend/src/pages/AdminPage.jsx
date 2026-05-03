@@ -6,6 +6,7 @@ import { devWarn } from "../lib/log";
 import { useAuth } from "../lib/auth";
 import POIRow from "../components/admin/POIRow";
 import POIForm from "../components/admin/POIForm";
+import GiftStatsCard from "../components/admin/GiftStatsCard";
 import { useArea, pickLocale, getAreaCenter } from "../lib/area";
 import useLocale from "../hooks/useLocale";
 
@@ -211,6 +212,10 @@ export default function AdminPage() {
           onCancel={cancel}
         />
       )}
+
+      <div className="mt-8">
+        <GiftStatsCard />
+      </div>
 
       <div className="mt-8">
         {loading && <p className="text-[var(--text-tertiary)]">Loading…</p>}

@@ -40,6 +40,29 @@ function ContributionForm({ pois, onSubmitted }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await api.post("/uploads/image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      // Store the returned URL in the `content` field. Backend treats
+      // photo_url contributions as image URLs, so any URL works.
+      const API_URL = process.env.REACT_APP_BACKEND_URL || "";
+      setContent(API_URL + data.url);
+    } catch (err) {
+      setError(formatApiError(err.response?.data?.detail) || "Upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -119,6 +142,34 @@ function ContributionForm({ pois, onSubmitted }) {
         <label className="eyebrow block mb-2">
           {type === "photo_url" ? t(lang, "contribute.photoUrlLabel") : t(lang, "contribute.contentLabel")}
         </label>
+
+        {type === "photo_url" && (
+          <div className="mb-2">
+            <label className="btn-ghost inline-flex items-center gap-2 text-sm cursor-pointer" data-testid="contribution-upload-label">
+              <Image size={14} />
+              {uploading ? "Uploading…" : "Upload photo (JPEG/PNG/WebP ≤5 MB)"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleUpload}
+                disabled={uploading}
+                className="hidden"
+                data-testid="contribution-upload-input"
+              />
+            </label>
+            {content && (
+              <div className="mt-2">
+                <img
+                  src={content}
+                  alt="Preview"
+                  className="max-h-40 rounded-lg border border-[var(--border)]"
+                  data-testid="contribution-upload-preview"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         <textarea value={content} onChange={(e) => setContent(e.target.value)}
           className="input-field min-h-[120px]" required minLength={2} maxLength={4000}
           placeholder={placeholder} data-testid="contribution-content" />

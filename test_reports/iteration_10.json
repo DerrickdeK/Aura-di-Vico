@@ -1,0 +1,53 @@
+{
+  "summary": "Iteration 10 — Phases 1-4 (router refactor + admin gift-stats + image uploads + multi-tenant). Backend: full pytest suite 145 passed + 2 expected skips (was 127+2 baseline; +18 new tests in test_iter10_phases.py). All 4 feature areas verified end-to-end against the public preview URL. Frontend: GiftStatsCard renders correctly on /admin (Total=68, Views=40, sparkline SVGs, top-senders chips Marco·28/M·26/Admin·13/Brera Admin·1) and the photo_url upload flow is fully wired (file picker → POST /api/uploads/image → content textarea filled with backend URL → image preview shown via [data-testid=contribution-upload-preview]). Found and FIXED one CRITICAL frontend compile-blocker (wrong relative import in GiftStatsCard.jsx prevented the entire SPA from booting).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/uploads/{id}", "issue": "Application sets 'Cache-Control: public, max-age=31536000, immutable' (uploads.py:104) but the Cloudflare/ingress edge in the preview env strips and replaces it with 'no-store, no-cache, must-revalidate'. Same edge-rewrite affects /api/og-image and gift HTML. Likely an edge config — not an app bug. Worth verifying in production deployment that the immutable header reaches end users (helpful for browser/CDN caching of avatar/photo uploads)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "GiftStatsCard.jsx", "issue": "BLOCKER (FIXED by tester): wrong relative import path 'import { api } from \"../lib/api\"' from /app/frontend/src/components/admin/GiftStatsCard.jsx fails to resolve (file is at /app/frontend/src/lib/api.js, so the correct path is '../../lib/api'). With this broken, webpack's overlay 'Compiled with problems: Module not found …' covered the whole app and NO route was reachable. Patched in-place by tester; webpack recompiled successfully. Main agent: please double-check this hasn't been re-broken in any subsequent edit.", "selector": "import path", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/contribute (Photo URL type)", "issues": ["Stale hint copy 'A direct image URL (uploads coming soon).' is still rendered above the upload control even though uploads are now live and working. Update this microcopy to e.g. 'Upload a photo or paste a direct image URL.' so users don't ignore the new upload button."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter10_phases.py",
+    "/app/test_reports/pytest/iter10_results.xml"
+  ],
+  "action_items": [
+    "(Cosmetic) Replace stale ContributePage hint 'A direct image URL (uploads coming soon).' with copy that references the new upload button.",
+    "(Infra check) Confirm in production that the 'Cache-Control: public, max-age=31536000, immutable' header on GET /api/uploads/{id} actually reaches the browser — currently Cloudflare/ingress in the preview environment rewrites it to 'no-store, no-cache, must-revalidate' (also affects /api/og-image/* and gift page HTML).",
+    "(Carry-over) Split /app/backend/server.py — still ~1400+ lines after Phase 1 router refactor extracted gift-stats/uploads/tenants. POIs, contributions, itineraries, area-settings still inline; further extraction would help.",
+    "(Carry-over) test_contributor_creates_pending in test_brera_backend.py still has 'return body[id]' triggering PytestReturnNotNoneWarning."
+  ],
+  "critical_code_review_comments": [
+    "BUG (FIXED by tester): GiftStatsCard.jsx had import path '../lib/api' instead of '../../lib/api' — this is not picked up by lint (no path-resolution rule) and broke the entire SPA at build time. Add an ESLint rule eslint-plugin-import/no-unresolved to the frontend config, or at minimum CI sanity-check that 'yarn build' succeeds before merge.",
+    "routers/uploads.py validation order is correct: 415 (mimetype) is checked BEFORE reading bytes, then 413 (size) is checked AFTER read. For very large hostile uploads that's still bounded — Starlette's UploadFile.read() with default settings is fine, but if you want extra defence in depth, set FastAPI's max_request_size or a reverse-proxy body-size cap.",
+    "routers/uploads.py:64 stored_path = result.get('path', path) — if Emergent storage ever returns a path key that the GET endpoint can't read back, downloads will 502 silently. Consider asserting result['path'] is non-empty and matches what get_object expects, or log a warning if storage rewrites the path.",
+    "routers/admin_stats.py:54 — created_at is stored as ISO string in mongo, so the {'$gte': cutoff.isoformat()} string comparison works for ISO-8601 with timezone offsets but would break if a future writer stores a naive datetime (no tz). Worth a comment or, better, store created_at as BSON Date.",
+    "routers/admin_stats.py:64 — sparkline always returns exactly 30 days, which is what the UI expects. Good defensive default.",
+    "routers/tenants.py:31 — slug.lower().strip() before membership check is correct; same normalisation should be applied to query/header params in tenants.py resolver (verify it does — likely yes given the falls-back-to-default test passes).",
+    "Multi-tenant area-settings: the cleanup fixture in test_iter10_phases.py wipes BOTH brera-milano AND vico-equense override docs after each test — coexists cleanly with the autouse fixture in test_admin_area_settings.py (which only wipes the default tenant). Future tenant-aware tests should be explicit about which tenant they touch.",
+    "Frontend GiftStatsCard.jsx (assuming the path fix): inline SVG sparkline avoids a recharts dependency — good. Top-senders chips truncate sender_name visually but not the underlying value.",
+    "data-testid coverage on /contribute is excellent: contribution-type-photo_url, contribution-upload-input, contribution-upload-label, contribution-upload-preview, contribution-content all in place — robust against future regressions."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter10_phases.py (NEW — 18 tests covering gift-stats/uploads/tenants/multi-tenant admin)",
+    "/app/frontend/src/components/admin/GiftStatsCard.jsx (FIXED import path '../lib/api' → '../../lib/api')"
+  ],
+  "success_rate": {
+    "backend": "100% (145 passed, 2 expected skips out of 147 — full suite incl. 18 new iter10 tests)",
+    "frontend": "100% on the 3 critical flows tested (admin GiftStatsCard render with sparkline + top senders, /contribute photo_url upload end-to-end with content URL fill + image preview, login → admin nav). One BLOCKING compile bug found and fixed."
+  },
+  "test_credentials": "admin@brera.app / BreraAdmin2026! — verified",
+  "seed_data_creation": "Test uploads collection received 1 record (1×1 PNG) during the upload flow test — small, no cleanup needed. area_settings collection wiped after each multi-tenant admin test by autouse cleanup fixture. No regressions to seed POIs / itineraries.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run with `cd /app/backend && set -a && . .env && set +a && export REACT_APP_BACKEND_URL=https://brera-discovery.preview.emergentagent.com && python -m pytest tests/ -q` — total 145 passed + 2 skipped is the new baseline. The 2 skips are still the Brera-specific landmark-chat assertions that only run when AREA_CONFIG_PATH=/app/area.config.json (currently /app/configs/vico-equense.json). The 18 new tests in test_iter10_phases.py exercise: 2 gift-stats (anon-block + admin-shape), 4 uploads (anon/415/413/upload+fetch — the upload+fetch is auto-skipped with pytest.skip if Emergent storage returns 502 due to LLM-key budget exhaustion, so it's safe to leave in CI), 7 tenants (active+available, /tenant/{slug}/area, ?tenant= and X-Tenant-Slug header, atlantis fallback, default), 2 tenant-keyed admin settings (PATCH brera doesn't touch vico, DELETE only wipes one tenant), 3 regression smoke. Frontend: GiftStatsCard testid is 'admin-gift-stats'; upload trio is contribution-upload-input/label/preview; multi-tenant switching in the admin UI was NOT yet tested (no admin tenant-switcher visible — likely a future Phase 4b).",
+  "rca of the issue": "FIXED IN-FLIGHT: GiftStatsCard.jsx (new in this iteration) used relative import '../lib/api' but lives at /app/frontend/src/components/admin/, so it resolved to /app/frontend/src/components/lib/api which does not exist. Webpack therefore failed compilation with 'Module not found: ../lib/api' and rendered the dev-server's full-page error overlay over every route — login, /admin, /contribute were all unreachable from a browser. Other consumers of lib/api (e.g. pages/GiftComposerPage.jsx, pages/VisitsPage.jsx) live one directory shallower and correctly use '../lib/api'. Fix: changed the import in GiftStatsCard.jsx to '../../lib/api' (matching its deeper location). Recompile succeeded immediately; all subsequent UI tests passed with 0 console errors. Recommend adding eslint-plugin-import/no-unresolved (or running `yarn build` in CI) to catch this class of bug pre-merge."
+}

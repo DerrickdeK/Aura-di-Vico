@@ -18,7 +18,9 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 _DEFAULT_PATH = Path("/app/area.config.json")
+_TENANT_CONFIGS_DIR = Path("/app/configs")
 _cache: dict[str, Any] | None = None
+_tenant_cache: dict[str, dict[str, Any]] = {}
 
 
 def _resolve_path() -> Path:
@@ -29,6 +31,36 @@ def _resolve_path() -> Path:
             p = Path("/app") / p
         return p
     return _DEFAULT_PATH
+
+
+def _tenant_path(slug: str) -> Path:
+    """Resolve a tenant slug to a /app/configs/<slug>.json file. The
+    built-in 'brera-milano' slug maps back to the default path so the
+    multi-tenant router can treat it like any other tenant."""
+    if slug == "brera-milano":
+        return _DEFAULT_PATH
+    return _TENANT_CONFIGS_DIR / f"{slug}.json"
+
+
+def load_area_for(slug: str) -> dict:
+    """Read + cache a tenant-specific area config. Returns the
+    default-tenant config if the slug has no matching file."""
+    if slug in _tenant_cache:
+        return _tenant_cache[slug]
+    path = _tenant_path(slug)
+    if not path.exists():
+        # Fall back to the default config instead of 500ing
+        return load_area()
+    with path.open("r", encoding="utf-8") as f:
+        cfg = json.load(f)
+    _tenant_cache[slug] = cfg
+    log.info("Tenant config loaded: slug=%s (%s)", slug, path)
+    return cfg
+
+
+def reload_tenant(slug: str) -> dict:
+    _tenant_cache.pop(slug, None)
+    return load_area_for(slug)
 
 
 def load_area() -> dict:
@@ -80,10 +112,13 @@ def landmarks_dict() -> dict[str, dict]:
     return out
 
 
-def public_area() -> dict:
+def public_area(slug: str | None = None) -> dict:
     """Subset of the config returned by GET /api/area — no heavy seed
-    data, just what the frontend needs to render brand/map/landmarks."""
-    cfg = load_area()
+    data, just what the frontend needs to render brand/map/landmarks.
+
+    If ``slug`` is provided, returns that tenant's config; otherwise the
+    environment-resolved default."""
+    cfg = load_area_for(slug) if slug else load_area()
     return {
         "slug": cfg.get("slug"),
         "brand": cfg.get("brand", {}),
@@ -96,15 +131,16 @@ def public_area() -> dict:
     }
 
 
-def merged_area(overrides: dict | None = None) -> dict:
+def merged_area(overrides: dict | None = None, slug: str | None = None) -> dict:
     """Return the public-area payload with admin overrides layered on top.
 
     Keys that look like localised text maps (brand/area/city/tagline) and
     the flat palette dict are shallow-merged (override keys win, other
     keys pass through from the JSON). Map and landmarks are replaced
-    wholesale when provided.
+    wholesale when provided. Pass ``slug`` to resolve a tenant other than
+    the env-var default.
     """
-    base = public_area()
+    base = public_area(slug)
     if not overrides:
         return base
     out = dict(base)
@@ -123,11 +159,11 @@ def merged_area(overrides: dict | None = None) -> dict:
     return out
 
 
-def merged_landmarks_dict(overrides: dict | None = None) -> dict[str, dict]:
+def merged_landmarks_dict(overrides: dict | None = None, slug: str | None = None) -> dict[str, dict]:
     """Same shape as landmarks_dict() but respects admin overrides.
     Used by the landmark-chat endpoint so Claude speaks with the
     overridden persona if the admin has edited it."""
-    source = merged_area(overrides).get("landmarks", [])
+    source = merged_area(overrides, slug).get("landmarks", [])
     out: dict[str, dict] = {}
     for lm in source:
         lid = lm.get("id")

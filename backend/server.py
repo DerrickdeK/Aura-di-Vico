@@ -668,12 +668,18 @@ async def get_config():
 
 
 @api_router.get("/area")
-async def get_area():
+async def get_area(request: Request):
     """Public area (city/campus) configuration: brand, palette, map center,
     and the 5 landing-page landmarks. Admin overrides (if any) are layered
-    on top of the JSON file so changes made via /admin/area show up live."""
-    overrides = await _active_area_overrides()
-    return area_merged_payload(overrides)
+    on top of the JSON file so changes made via /admin/area show up live.
+
+    Multi-tenant: the active tenant is resolved from subdomain / header /
+    ?tenant= query param. Each tenant gets its own overrides document
+    (keyed on _id=`active:{slug}`)."""
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
+    overrides = await _active_area_overrides(slug)
+    return area_merged_payload(overrides, slug=slug)
 
 
 # ── Admin: edit the active area overrides (Option B — Polished Template) ─
@@ -690,51 +696,59 @@ class AreaPatchIn(BaseModel):
 
 
 @api_router.get("/admin/area-settings")
-async def admin_get_area_settings(_: dict = Depends(require_admin)):
+async def admin_get_area_settings(request: Request, _: dict = Depends(require_admin)):
     """Return raw overrides + the effective merged config, so the admin UI
     can distinguish defaults from customised values."""
-    overrides = await _active_area_overrides()
-    return {"overrides": overrides, "effective": area_merged_payload(overrides)}
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
+    overrides = await _active_area_overrides(slug)
+    return {"slug": slug, "overrides": overrides, "effective": area_merged_payload(overrides, slug=slug)}
 
 
 @api_router.patch("/admin/area-settings")
 async def admin_patch_area_settings(
     payload: AreaPatchIn,
+    request: Request,
     _: dict = Depends(require_admin),
 ):
     """Shallow-merge the payload into the active overrides document. Pass
     null/empty to clear an override and fall back to the JSON default."""
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
+    doc_id = f"active:{slug}"
     update = {k: v for k, v in payload.model_dump().items() if v is not None}
     if not update:
-        # No changes — just return the current state
-        overrides = await _active_area_overrides()
-        return {"overrides": overrides, "effective": area_merged_payload(overrides)}
+        overrides = await _active_area_overrides(slug)
+        return {"slug": slug, "overrides": overrides, "effective": area_merged_payload(overrides, slug=slug)}
     await db.area_settings.update_one(
-        {"_id": "active"},
-        {"$set": {**update, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        {"_id": doc_id},
+        {"$set": {**update, "tenant": slug, "updated_at": datetime.now(timezone.utc).isoformat()}},
         upsert=True,
     )
-    overrides = await _active_area_overrides()
-    return {"overrides": overrides, "effective": area_merged_payload(overrides)}
+    overrides = await _active_area_overrides(slug)
+    return {"slug": slug, "overrides": overrides, "effective": area_merged_payload(overrides, slug=slug)}
 
 
 @api_router.delete("/admin/area-settings")
-async def admin_reset_area_settings(_: dict = Depends(require_admin)):
-    """Wipe every override and fall back entirely to the JSON file."""
-    await db.area_settings.delete_many({})
-    return {"ok": True, "effective": area_merged_payload({})}
+async def admin_reset_area_settings(request: Request, _: dict = Depends(require_admin)):
+    """Wipe every override for the active tenant and fall back entirely to the JSON file."""
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
+    await db.area_settings.delete_many({"_id": f"active:{slug}"})
+    return {"ok": True, "slug": slug, "effective": area_merged_payload({}, slug=slug)}
 
 
 @api_router.get("/admin/area-export")
-async def admin_export_area(_: dict = Depends(require_admin)):
+async def admin_export_area(request: Request, _: dict = Depends(require_admin)):
     """Download the CURRENT effective config (JSON + overrides, deep merged)
     as a standalone file — paste into /app/area.config.json on any deploy
     to reproduce this city exactly."""
-    overrides = await _active_area_overrides()
-    effective = area_merged_payload(overrides)
-    # Effective payload omits the heavy POI seed; layer it back so the file
-    # is a complete, drop-in replacement for /app/area.config.json.
-    cfg = load_area_config()
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
+    overrides = await _active_area_overrides(slug)
+    effective = area_merged_payload(overrides, slug=slug)
+    from area_config import load_area_for
+    cfg = load_area_for(slug)
     out = {**effective, "pois": cfg.get("pois", [])}
     filename = f"area-{(out.get('slug') or 'export').replace('/', '-')}.json"
     return FastAPIResponse(
@@ -747,20 +761,27 @@ async def admin_export_area(_: dict = Depends(require_admin)):
 @api_router.post("/admin/area-import")
 async def admin_import_area(
     payload: dict,
+    request: Request,
     _: dict = Depends(require_admin),
 ):
     """Replace the overrides with the provided JSON. Accepts a full area
     config; stores everything except `pois` in overrides (POIs remain
     managed via the /pois CRUD + reset endpoints)."""
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
     allowed = {"slug", "brand", "area", "city", "tagline", "map", "palette", "landmarks"}
     update = {k: v for k, v in payload.items() if k in allowed and v is not None}
     if not update:
         raise HTTPException(status_code=400, detail="Import payload has no recognised keys.")
+    update["tenant"] = slug
     update["updated_at"] = datetime.now(timezone.utc).isoformat()
-    # Replace (not merge) so stale fields are cleared
-    await db.area_settings.replace_one({"_id": "active"}, {"_id": "active", **update}, upsert=True)
-    overrides = await _active_area_overrides()
-    return {"ok": True, "effective": area_merged_payload(overrides)}
+    await db.area_settings.replace_one(
+        {"_id": f"active:{slug}"},
+        {"_id": f"active:{slug}", **update},
+        upsert=True,
+    )
+    overrides = await _active_area_overrides(slug)
+    return {"ok": True, "slug": slug, "effective": area_merged_payload(overrides, slug=slug)}
 
 
 # ── Clone wizard (AI-assisted) ──────────────────────────────────────────
@@ -991,11 +1012,17 @@ async def chat_with_poi(
 # Landmark chat (well-known anchors on the landing page — open to anonymous visitors).
 # Landmarks are loaded from the area config so the same code serves any city.
 # ------------------------------------------------------------------------------------
-async def _active_area_overrides() -> dict:
-    """Load the single `active` document from the area_settings collection.
-    Returns {} if no admin overrides have been saved yet."""
-    doc = await db.area_settings.find_one({"_id": "active"}) or {}
-    # Mongo injects _id; drop it before use
+async def _active_area_overrides(slug: str | None = None) -> dict:
+    """Load the active area_settings document for a tenant. Returns {}
+    when no overrides exist yet. ``slug`` is the tenant slug; None means
+    the env-resolved default tenant."""
+    doc_id = f"active:{slug}" if slug else "active"
+    doc = await db.area_settings.find_one({"_id": doc_id})
+    if not doc and slug:
+        # Back-compat: legacy single-tenant docs used _id='active'
+        doc = await db.area_settings.find_one({"_id": "active"}) or {}
+    if not doc:
+        return {}
     doc.pop("_id", None)
     return doc
 
@@ -1004,10 +1031,10 @@ def _landmark_by_id(landmark_id: str) -> Optional[dict]:
     return area_landmarks_dict().get(landmark_id)
 
 
-async def _landmark_by_id_live(landmark_id: str) -> Optional[dict]:
+async def _landmark_by_id_live(landmark_id: str, slug: str | None = None) -> Optional[dict]:
     """Lookup honouring admin overrides (used by /api/landmarks/{id}/chat)."""
-    overrides = await _active_area_overrides()
-    return area_merged_landmarks(overrides).get(landmark_id)
+    overrides = await _active_area_overrides(slug)
+    return area_merged_landmarks(overrides, slug=slug).get(landmark_id)
 
 
 @api_router.post("/landmarks/{landmark_id}/chat")
@@ -1016,7 +1043,9 @@ async def chat_with_landmark(
     payload: ChatIn,
     request: Request,
 ):
-    landmark = await _landmark_by_id_live(landmark_id)
+    from tenants import resolve_tenant
+    slug = resolve_tenant(request)
+    landmark = await _landmark_by_id_live(landmark_id, slug=slug)
     if not landmark:
         raise HTTPException(status_code=404, detail="Landmark not found")
 
@@ -1357,6 +1386,15 @@ async def shutdown_db_client():
 # Wire router & CORS
 # ------------------------------------------------------------------------------------
 app.include_router(api_router)
+
+# New router submodules — the gradual migration target. Each lives in
+# /app/backend/routers/ and uses dependencies from /app/backend/deps.py.
+from routers.admin_stats import router as admin_stats_router  # noqa: E402
+from routers.uploads import router as uploads_router  # noqa: E402
+from routers.tenants import router as tenants_router  # noqa: E402
+app.include_router(admin_stats_router, prefix="/api")
+app.include_router(uploads_router, prefix="/api")
+app.include_router(tenants_router, prefix="/api")
 
 frontend_url = os.environ.get("FRONTEND_URL", "")
 allowed_origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
