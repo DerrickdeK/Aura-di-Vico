@@ -139,6 +139,8 @@ export default function LandingPage() {
             landmarks={landmarks}
             activeLandmarkId={activeLandmark}
             onSelectLandmark={setActiveLandmark}
+            center={area.map?.center}
+            zoom={area.map?.landing_zoom || 14}
             height={560}
           />
         </div>

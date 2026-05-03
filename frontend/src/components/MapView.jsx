@@ -64,9 +64,12 @@ export default function MapView({ favorites, refreshFavorites }) {
   };
 
   const areaCenter = getAreaCenter();
+  const areaMapCenter = area?.map?.center;
   const center = position
     ? [position.latitude, position.longitude]
-    : [areaCenter.latitude, areaCenter.longitude];
+    : (areaMapCenter && typeof areaMapCenter.lat === "number"
+        ? [areaMapCenter.lat, areaMapCenter.lng]
+        : [areaCenter.latitude, areaCenter.longitude]);
   const inRangePoi =
     nearest && poiState({ poi: nearest.poi, nearest, visitedIds }) === "inrange"
       ? nearest.poi
@@ -75,6 +78,7 @@ export default function MapView({ favorites, refreshFavorites }) {
   return (
     <div className="relative w-full h-full" data-testid="map-view">
       <MapContainer
+        key={`${center[0]}-${center[1]}`}
         center={center}
         zoom={DEFAULT_ZOOM}
         zoomControl={false}

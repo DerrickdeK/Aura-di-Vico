@@ -3,9 +3,8 @@ import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { auraIcon, landmarkIcon } from "../lib/markers";
 import { getAreaCenter } from "../lib/area";
 
-const BRERA_CENTER = [45.4719, 9.1881];
-
-function resolveCenter() {
+function resolveCenter(centerProp) {
+  if (centerProp && typeof centerProp.lat === "number") return [centerProp.lat, centerProp.lng];
   const c = getAreaCenter();
   return [c.latitude, c.longitude];
 }
@@ -28,15 +27,19 @@ export default function LandmarkMap({
   landmarks,
   activeLandmarkId,
   onSelectLandmark,
+  center,
+  zoom = 16,
   height = 540,
 }) {
   const active = landmarks.find((l) => l.id === activeLandmarkId);
   const target = active ? { lat: active.latitude, lng: active.longitude } : null;
+  const resolved = resolveCenter(center);
 
   return (
     <MapContainer
-      center={resolveCenter()}
-      zoom={16}
+      key={`${resolved[0]}-${resolved[1]}`}
+      center={resolved}
+      zoom={zoom}
       scrollWheelZoom={false}
       zoomControl={true}
       className="w-full"
@@ -66,5 +69,3 @@ export default function LandmarkMap({
     </MapContainer>
   );
 }
-
-export { BRERA_CENTER };
