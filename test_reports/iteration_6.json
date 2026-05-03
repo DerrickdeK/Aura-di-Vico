@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration 6 backend testing complete. 81/81 pytest PASS (was 68, added 5 new integration tests for iter6 + the 8 build_system_prompt unit tests already committed with this change). New assertions covered: (a) POST /api/landmarks/accademia/chat with 'In che anno sei stata fondata? E chi ti ha voluta?' returns an Italian reply that cites BOTH '1776' and 'Maria Teresa d'Austria' — confirming the canonical_facts block is reaching the Claude system prompt; (b) POST /api/landmarks/pinacoteca/chat with a hostile fictional premise 'In what year did Frida Kahlo paint here?' returns a graceful in-character decline (\"I've never felt Frida Kahlo's brush on my walls… she never worked here, as far as the stones remember… History doesn't tell me…\") with NO invented date in Kahlo's lifetime — the hierarchy-of-truth rule is working; (c) Admin POI CRUD round-trip: POST /api/pois with canonical_facts:['Founded 1774.','Free entry on Sundays.'] echoes the field, GET /api/pois/{id} returns it intact and does NOT leak _id, PUT /api/pois/{id} can replace it, omitting the field defaults to []. Full regression suite (auth, favourites, visits, discoveries, POI CRUD, contributions, brute-force lockout, profile validation, config taxonomy) still green — canonical_facts is additive and didn't regress any pre-existing path.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_poi_chat_prompt.py",
+    "/app/backend/tests/test_iter6_canonical_and_landmark_chat.py",
+    "/app/backend/tests/test_brera_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/iter6_results.xml"
+  ],
+  "action_items": [
+    "(Carry-over / not re-verified this iteration) Split /app/backend/server.py (>1400 lines — grew further with canonical_facts & landmark chat) into routers/auth.py, routers/pois.py, routers/me.py, routers/contributions.py, routers/admin.py, landmarks.py, seeds.py.",
+    "(Carry-over from iter 5) test_contributor_creates_pending still triggers PytestReturnNotNoneWarning — replace 'return body[\"id\"]' with a local variable.",
+    "(Carry-over from iter 4) Disambiguate duplicate data-testid 'profile-profession-other' — rename the free-text input to 'profile-profession-other-input'.",
+    "(Nice-to-have) Admin POI editor UI should expose a field to curate canonical_facts now that the API supports it — frontend-only task, not in scope for this backend-only handoff."
+  ],
+  "critical_code_review_comments": [
+    "build_system_prompt's layering is clean: core → canonical → crowd → user context → rules. Each helper is pure and returns empty string when its input is empty, so the sections cleanly vanish rather than leaving orphan headers.",
+    "_clamp() collapses whitespace then truncates with an ellipsis — safe against crowd contributions that inject multi-line walls of text; the 240-char per-entry clamp plus 8-entry cap bounds the system prompt to ~2KB of crowd prose, which keeps the token cost predictable and stops any single verbose student from dominating the character voice.",
+    "PERSONA_RULES_{IT,EN} both encode the new 'HIERARCHY OF TRUTH' rule explicitly and tell the model what to do when crowd memory contradicts canonical facts — the live Pinacoteca reply shows this actually works end-to-end against Claude Sonnet 4.5.",
+    "POIIn.canonical_facts: List[str] = Field(default_factory=list) — good default so existing clients posting without the field keep working. POI (inherits POIIn) automatically carries it into GET responses. No custom serialiser needed.",
+    "Landmark chat endpoint passes contribs=[] for landmarks (they aren't in the DB POI collection); canonical facts for landmarks live directly in LANDMARK_DATA and flow through build_system_prompt unchanged — consistent design.",
+    "poi_chat.reply() still handles missing EMERGENT_LLM_KEY and send_message exceptions with localised fallback strings — good resilience; no code change needed.",
+    "MAX_HISTORY=10 turns plus the 'pieces' concatenation approach (prior turns inlined into the latest UserMessage) is a pragmatic workaround for emergentintegrations not exposing history priming. Worth noting this does double-count tokens for long dialogues; fine for MVP.",
+    "No MongoDB _id leak in POI GET (test_create_poi_persists_canonical_facts asserts _id absent) — existing _serialize helper covers the new field automatically because it passes through the Pydantic model."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter6_canonical_and_landmark_chat.py (new)"
+  ],
+  "success_rate": {"backend": "100% (81/81)", "frontend": "not tested this iteration (scope: backend only)"},
+  "test_credentials": "admin@brera.app / BreraAdmin2026! verified via /api/auth/login.",
+  "seed_data_creation": "Two ephemeral TEST_CF_* POIs were created and deleted in finally-blocks inside the CRUD tests (no residual data). No new users created this iteration — admin_session fixture reuses the seeded admin.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run: `cd /app/backend && set -a && . .env && set +a && python -m pytest tests/ -v`. The iter6 tests load REACT_APP_BACKEND_URL from /app/frontend/.env (double load_dotenv), so no extra env priming is needed. The landmark chat tests hit real Claude Sonnet 4.5 via EMERGENT_LLM_KEY — expect ~10-12s for the two LLM-backed tests together, and be tolerant to minor phrasing drift: assertions only check for '1776' + 'Maria Teresa/Theresa' in the Italian reply, and for a decline marker + absence of a Kahlo-era year (1920-1950) in the Pinacoteca reply. If Claude's wording drifts too far in the future, adjust the `decline_markers` list rather than removing the test. The frontend TTS changes in /app/frontend/src/lib/speech.js are browser-only and were explicitly out of scope per the handoff note.",
+  "rca of the issue": "N/A — no bugs found; this iteration validates the 'smarter POI character' hardening (canonical facts + crowd cap + plurality rule). All three P0 backend behaviours requested in the review are live and grounded in green tests."
+}

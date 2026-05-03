@@ -14,7 +14,7 @@ import WhisperCard from "../components/WhisperCard";
 import POIDrawer from "../components/POIDrawer";
 import VirtualNavPanel from "../components/VirtualNavPanel";
 import { unlockAudio } from "../lib/audio";
-import { speak, stopSpeaking } from "../lib/speech";
+import { speak, stopSpeaking, unlockSpeech } from "../lib/speech";
 import { t, getOpeningLine } from "../lib/i18n";
 
 // Module-level animation constants (avoid recreating per render).
@@ -90,9 +90,9 @@ export default function ListenPage() {
   const nearest = sightings[0] || null;
   useGradientHaptic({ nearest, enabled: audioOn });
 
-  // First user gesture on page unlocks the AudioContext.
+  // First user gesture on page unlocks the AudioContext + Speech engine.
   useEffect(() => {
-    const onTouch = () => unlockAudio();
+    const onTouch = () => { unlockAudio(); unlockSpeech(); };
     window.addEventListener("pointerdown", onTouch, { once: true });
     return () => window.removeEventListener("pointerdown", onTouch);
   }, []);

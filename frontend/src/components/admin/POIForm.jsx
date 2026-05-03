@@ -48,6 +48,16 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
     update({ opening_line: { ...(form.opening_line || {}), [lang]: text } });
   };
 
+  // canonical_facts is a flat list of authoritative single-line statements.
+  // We edit them as a single textarea (one fact per line) for simplicity.
+  const canonicalText = Array.isArray(form.canonical_facts)
+    ? form.canonical_facts.join("\n")
+    : "";
+  const setCanonicalText = (text) => {
+    const lines = text.split("\n").map((s) => s.trim()).filter(Boolean);
+    update({ canonical_facts: lines });
+  };
+
   return (
     <form
       onSubmit={onSubmit}
@@ -122,6 +132,25 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
         <label className="eyebrow block mb-1">Fun fact (optional)</label>
         <input className="input-field" value={form.fun_fact || ""}
           onChange={(e) => update({ fun_fact: e.target.value })} />
+      </div>
+
+      <div className="sm:col-span-2">
+        <label className="eyebrow block mb-1">
+          Canonical facts (one per line — authoritative for AI dialogue)
+        </label>
+        <p className="text-xs text-[var(--text-tertiary)] mb-2">
+          These take precedence over crowd-sourced memories when the place
+          speaks. Use short sentences. Example: <em>Founded 1774 by Maria
+          Theresa of Austria.</em>
+        </p>
+        <textarea
+          className="input-field"
+          rows={4}
+          value={canonicalText}
+          onChange={(e) => setCanonicalText(e.target.value)}
+          data-testid="admin-form-canonical-facts"
+          placeholder={"Founded 1774 by Maria Theresa of Austria.\nTwo of its ginkgo biloba trees are over 240 years old.\nFree entry on the first Sunday of each month."}
+        />
       </div>
 
       <div className="sm:col-span-2">

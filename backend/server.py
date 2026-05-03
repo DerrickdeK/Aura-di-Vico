@@ -203,6 +203,9 @@ class POIIn(BaseModel):
     interest_tags: List[str] = Field(default_factory=list)
     # opening_line is a {language_code: text} map. Falls back to "en".
     opening_line: dict = Field(default_factory=dict)
+    # Curator-verified authoritative facts. Take precedence over crowd memory
+    # in the AI dialogue system prompt. Each entry is one short sentence.
+    canonical_facts: List[str] = Field(default_factory=list)
 
 class POI(POIIn):
     id: str
@@ -859,6 +862,11 @@ LANDMARK_DATA = {
             "smell the turpentine through the windows."
         ),
         "fun_fact": "Marina Abramović studied here briefly in the 1970s.",
+        "canonical_facts": [
+            "Founded in 1776 by Empress Maria Theresa of Austria.",
+            "Shares Palazzo Brera with the Pinacoteca and the Orto Botanico.",
+            "Notable alumni include Francesco Hayez, Umberto Boccioni and Achille Castiglioni.",
+        ],
         "opening_line": {
             "it": "Cammina sotto i miei portici. Ti dirò chi è passato di qui.",
             "en": "Walk beneath my arcades. I'll tell you who has passed through.",
@@ -879,6 +887,11 @@ LANDMARK_DATA = {
             "blooms above visitors' shoulders."
         ),
         "fun_fact": "The Mantegna's Dead Christ uses radical foreshortening from a viewpoint near the feet.",
+        "canonical_facts": [
+            "Founded by Napoleon in 1809 to centralise art confiscated from suppressed religious orders.",
+            "Holds Raphael's Marriage of the Virgin, Mantegna's Lamentation, and Caravaggio's Supper at Emmaus.",
+            "Antonio Canova's bronze Napoleon as Mars the Peacemaker stands twice life-size in the courtyard.",
+        ],
         "opening_line": {
             "it": "Ho conservato i loro silenzi. Vieni a sentirli.",
             "en": "I have kept their silences. Come and feel them.",

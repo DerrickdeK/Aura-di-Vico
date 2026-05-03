@@ -15,6 +15,7 @@ const EMPTY_POI = {
   trigger_radius_m: 60, hours: "", fun_fact: "",
   interest_tags: [],
   opening_line: { en: "" },
+  canonical_facts: [],
 };
 
 function NotAdmin() {
@@ -95,6 +96,7 @@ export default function AdminPage() {
       trigger_radius_m: parseInt(form.trigger_radius_m, 10) || 60,
       interest_tags: Array.isArray(form.interest_tags) ? form.interest_tags : [],
       opening_line: form.opening_line || {},
+      canonical_facts: Array.isArray(form.canonical_facts) ? form.canonical_facts : [],
     };
     try {
       if (editing === "new") await api.post("/pois", payload);
