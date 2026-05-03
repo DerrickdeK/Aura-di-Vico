@@ -15,12 +15,14 @@ from typing import List, Optional, Literal
 
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
 from starlette.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, Response as FastAPIResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 from mailer import send_email, password_reset_email, contribution_moderated_email
 from poi_chat import reply as poi_chat_reply
 from safety import screen_contribution, VERDICT_BLOCK
+from share_card import render_og_image, render_share_html
 
 
 # ------------------------------------------------------------------------------------
@@ -1106,6 +1108,49 @@ async def delete_itinerary(itinerary_id: str, user: dict = Depends(get_current_u
         raise HTTPException(status_code=403, detail="Not allowed")
     await db.itineraries.delete_one({"id": itinerary_id})
     return {"ok": True}
+
+
+# ── Sharing: OG-tagged HTML + per-gift PNG preview ───────────────────────
+def _backend_origin(request: Request) -> str:
+    """Best-effort URL for asset references inside the share HTML.
+    Honours the X-Forwarded-* headers added by the k8s ingress."""
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+    return f"{proto}://{host}"
+
+
+@api_router.get("/share/{slug}", response_class=HTMLResponse)
+async def share_itinerary(slug: str, request: Request):
+    """Public unfurl-friendly HTML: OG/Twitter meta tags + meta-refresh
+    redirect to the SPA's /gift/{slug} route. This is the URL recipients
+    actually share — bots see the preview, browsers get the real page."""
+    it = await db.itineraries.find_one({"slug": slug}, {"_id": 0})
+    if not it:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+    frontend = (os.environ.get("FRONTEND_URL") or _backend_origin(request)).rstrip("/")
+    og_image = f"{_backend_origin(request)}/api/og-image/itineraries/{slug}.png"
+    html = render_share_html(it, frontend_url=frontend, og_image_url=og_image)
+    # Cache for 1 hour at the edge — gift content doesn't change after creation.
+    return HTMLResponse(content=html, headers={"cache-control": "public, max-age=3600"})
+
+
+@api_router.get("/og-image/itineraries/{slug}.png")
+async def og_image_itinerary(slug: str):
+    """Per-gift 1200×630 PNG composed at request time."""
+    it = await db.itineraries.find_one({"slug": slug}, {"_id": 0})
+    if not it:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+    png = render_og_image(
+        sender=it.get("sender_name", "") or "",
+        recipient=it.get("recipient_name", "") or "",
+        poi_count=len(it.get("poi_ids", []) or []),
+        lang=(it.get("language") or "it").lower(),
+    )
+    return FastAPIResponse(
+        content=png,
+        media_type="image/png",
+        headers={"cache-control": "public, max-age=86400"},
+    )
 
 
 

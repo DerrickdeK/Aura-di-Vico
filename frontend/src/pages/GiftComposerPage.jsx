@@ -195,7 +195,8 @@ export default function GiftComposerPage() {
 
   const copyLink = async () => {
     if (!created) return;
-    const url = `${window.location.origin}/gift/${created.slug}`;
+    const backend = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+    const url = `${backend}/api/share/${created.slug}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -215,7 +216,12 @@ export default function GiftComposerPage() {
   };
 
   if (created) {
-    const url = `${window.location.origin}/gift/${created.slug}`;
+    // The shared URL is the backend /api/share/<slug> endpoint: it serves
+    // OG-tagged HTML so that pasting the link into WhatsApp / iMessage /
+    // Slack / email yields a personalised preview card. Real browsers
+    // are redirected to /gift/<slug> instantly via meta-refresh.
+    const backend = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+    const url = `${backend}/api/share/${created.slug}`;
     return (
       <div className="min-h-screen px-6 pt-12 pb-32 max-w-xl mx-auto" data-testid="gift-created">
         <div className="absolute top-5 right-5"><LanguageSwitcher /></div>

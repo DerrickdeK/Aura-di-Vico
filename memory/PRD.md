@@ -55,7 +55,8 @@ All chip groups allow zero selections (treated as "no preference"). Personal-mod
   - Recipient language locked to `gift.language` (sender's choice at creation), so an Italian gift always reads as Italian even if the recipient flips the global UI switch.
   - Backend: 4 endpoints (`POST /api/itineraries`, `GET /api/itineraries/{slug}`, `GET /api/me/itineraries`, `DELETE /api/itineraries/{id}`); validates 3–8 POI bounds, dedupes preserving order, rejects unknown POI ids, bumps `view_count` on each public read; unique slug index, owner-or-admin delete.
   - Frontend: landing-page CTA "Make this a gift →" surfaces the entry point for authed users.
-  - Tests: 10 new pytest cases in `test_itineraries.py` (auth required, dedupe, validation, public read + view bump, scoping, delete authz). Total backend 91/91 PASS. Frontend E2E green.
+  - **Open-Graph unfurl preview** (last polish before deploy): `GET /api/share/{slug}` returns OG/Twitter-tagged HTML + meta-refresh to `/gift/{slug}`; `GET /api/og-image/itineraries/{slug}.png` composes a personalised 1200×630 PNG at request time via Pillow ("Marco ha invitato Anna a camminare per Brera." in serif on a terracotta-accented cream card). The composer's "Copy link" now shares the `/api/share/<slug>` URL so WhatsApp / iMessage / Slack / email all render a beautiful preview card.
+  - Tests: 10 itinerary cases + 5 share-card cases. Total backend 95/95 PASS. Frontend E2E green.
 
 ## Test Credentials
 - **Admin**: admin@brera.app / BreraAdmin2026!
