@@ -49,6 +49,13 @@ All chip groups allow zero selections (treated as "no preference"). Personal-mod
 - **Iteration 7 (Feb 2026)** — Two P0 quality fixes after first student field test:
   - **Smarter native TTS** (`/app/frontend/src/lib/speech.js`): voice-quality scoring, espeak/festival rejected, premium engines (Apple "Enhanced/Premium", Microsoft "Natural/Online", Google network voices) preferred, BCP-47 language tags (en-US/it-IT), iOS unlock-on-tap (`unlockSpeech()`), slower fallback rate when no premium voice is found.
   - **AI dialogue hardening** (`/app/backend/poi_chat.py`): added admin-curated `canonical_facts` field on POI model — these take precedence over crowd memory in the system prompt. Crowd contributions now capped at 8 entries × 240 chars each (was 30 verbatim). New "HIERARCHY OF TRUTH" persona rule: when memories contradict, the AI says *"some say… others say…"* rather than picking one. Verified end-to-end against Claude Sonnet 4.5: hostile fictional questions ("when did Frida Kahlo paint here?") now decline gracefully without inventing dates. Admin POI editor exposes a per-line canonical-facts textarea. Backend 81/81 tests passing (added `test_poi_chat_prompt.py` + iter6 integration suite).
+- **Iteration 8 (Feb 2026)** — **Itineraries as Gifts** (P1) shipped end-to-end:
+  - Authenticated user composes a 3–8 POI walk + personal dedication (max 1200 chars) at `/gift/new`. Sender pre-filled from `useAuth().user.name`; POI grid lets you tap to add with ordered numeric badges; submit returns a short URL-safe slug (8 chars from `secrets.token_urlsafe`).
+  - Public `/gift/<slug>` page (no auth required) renders a serif-typographic hero ("Brera ti aspettava, [name].") + dedication card + numbered POI walk + "Begin walking" CTA → `/listen?virtual=1`. Optional native-TTS "Hear the welcome" button uses the new high-quality voice pipeline.
+  - Recipient language locked to `gift.language` (sender's choice at creation), so an Italian gift always reads as Italian even if the recipient flips the global UI switch.
+  - Backend: 4 endpoints (`POST /api/itineraries`, `GET /api/itineraries/{slug}`, `GET /api/me/itineraries`, `DELETE /api/itineraries/{id}`); validates 3–8 POI bounds, dedupes preserving order, rejects unknown POI ids, bumps `view_count` on each public read; unique slug index, owner-or-admin delete.
+  - Frontend: landing-page CTA "Make this a gift →" surfaces the entry point for authed users.
+  - Tests: 10 new pytest cases in `test_itineraries.py` (auth required, dedupe, validation, public read + view bump, scoping, delete authz). Total backend 91/91 PASS. Frontend E2E green.
 
 ## Test Credentials
 - **Admin**: admin@brera.app / BreraAdmin2026!
