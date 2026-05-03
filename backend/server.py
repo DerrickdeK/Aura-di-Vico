@@ -763,6 +763,30 @@ async def admin_import_area(
     return {"ok": True, "effective": area_merged_payload(overrides)}
 
 
+# ── Clone wizard (AI-assisted) ──────────────────────────────────────────
+class AreaCloneIn(BaseModel):
+    city_name: str = Field(..., min_length=2, max_length=120)
+    country:   Optional[str] = Field(None, max_length=80)
+    vibe:      Optional[str] = Field(None, max_length=280)
+
+
+@api_router.post("/admin/area-clone")
+async def admin_clone_area(
+    payload: AreaCloneIn,
+    _: dict = Depends(require_admin),
+):
+    """Ask Claude Sonnet 4.5 to generate a STARTER area.config.json for
+    the given city/neighbourhood. Returns the draft JSON only — does NOT
+    persist it. The admin reviews in the UI, then either downloads it or
+    saves via /api/admin/area-import."""
+    try:
+        from area_clone import suggest_area
+        draft = await suggest_area(payload.city_name, payload.country, payload.vibe)
+    except RuntimeError as err:
+        raise HTTPException(status_code=502, detail=str(err))
+    return {"ok": True, "draft": draft}
+
+
 # ------------------------------------------------------------------------------------
 # Contributions (student-curated narratives, dialogue prompts, fun-facts, photos)
 # ------------------------------------------------------------------------------------

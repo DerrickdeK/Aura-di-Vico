@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Save, RotateCcw, Download, Upload, Plus, Trash2, MapPin } from "lucide-react";
+import { Save, RotateCcw, Download, Upload, Plus, Trash2, MapPin, Wand2 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { api, formatApiError } from "../lib/api";
@@ -380,6 +380,161 @@ function NotAdmin() {
   );
 }
 
+function CloneWizardModal({ onClose, onApply }) {
+  const [cityName, setCityName] = useState("");
+  const [country, setCountry] = useState("");
+  const [vibe, setVibe] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [draft, setDraft] = useState(null);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true); setError(null); setDraft(null);
+    try {
+      const { data } = await api.post("/admin/area-clone", {
+        city_name: cityName.trim(),
+        country: country.trim() || null,
+        vibe: vibe.trim() || null,
+      });
+      setDraft(data.draft);
+    } catch (err) {
+      const msg = formatApiError(err?.response?.data?.detail) || err.message || "Clone failed";
+      setError(msg);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const download = () => {
+    if (!draft) return;
+    const blob = new Blob([JSON.stringify(draft, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `area-${draft.slug || "draft"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose} data-testid="area-clone-modal">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Wand2 size={18} className="text-[var(--terracotta)]" />
+          <h2 className="font-serif text-2xl">Clone to new city</h2>
+        </div>
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
+          Claude Sonnet 4.5 drafts a starter <code className="text-xs bg-[var(--bg)] px-1 rounded">area.config.json</code> for any neighbourhood — brand, palette, map center, and 4 well-known landmarks. You can edit every field afterwards. POIs are added separately in the main admin.
+        </p>
+
+        {!draft && (
+          <form onSubmit={submit} className="space-y-3">
+            <label className="block text-sm">
+              City or neighbourhood <span className="text-[var(--terracotta)]">*</span>
+              <input
+                type="text"
+                required
+                value={cityName}
+                onChange={(e) => setCityName(e.target.value)}
+                placeholder="e.g. Trastevere, or Oltrarno, or Belleville"
+                className="input-field mt-1 w-full"
+                data-testid="clone-input-city"
+                autoFocus
+              />
+            </label>
+            <label className="block text-sm">
+              Country <span className="text-[var(--text-tertiary)] text-xs">(optional)</span>
+              <input
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Italy, France, Japan…"
+                className="input-field mt-1 w-full"
+                data-testid="clone-input-country"
+              />
+            </label>
+            <label className="block text-sm">
+              Vibe hint <span className="text-[var(--text-tertiary)] text-xs">(optional)</span>
+              <input
+                type="text"
+                value={vibe}
+                onChange={(e) => setVibe(e.target.value)}
+                placeholder="bohemian nightlife · coastal fishermen · mountain monastic…"
+                className="input-field mt-1 w-full"
+                data-testid="clone-input-vibe"
+              />
+            </label>
+            {error && <p className="text-sm text-[var(--terracotta)]" data-testid="clone-error">{error}</p>}
+            <div className="flex gap-2 pt-2">
+              <button type="button" onClick={onClose} className="btn-ghost text-sm flex-1">Cancel</button>
+              <button
+                type="submit"
+                disabled={busy || cityName.trim().length < 2}
+                className="btn-primary inline-flex items-center justify-center gap-2 text-sm flex-1"
+                data-testid="clone-submit"
+              >
+                <Wand2 size={14} /> {busy ? "Drafting…" : "Draft with Claude"}
+              </button>
+            </div>
+            {busy && (
+              <p className="text-xs text-[var(--text-tertiary)] text-center pt-2">
+                This takes 20–40 seconds. Claude is choosing landmarks and a palette specific to this area.
+              </p>
+            )}
+          </form>
+        )}
+
+        {draft && (
+          <div className="space-y-3" data-testid="clone-preview">
+            <div className="rounded-2xl border border-[var(--border)] p-4 bg-[var(--bg)]">
+              <p className="eyebrow">Draft ready</p>
+              <h3 className="font-serif text-xl mt-1">{draft.brand?.en}</h3>
+              <p className="text-sm text-[var(--text-secondary)]">
+                {draft.area?.en} · {draft.city?.en} — {draft.tagline?.en}
+              </p>
+              <div className="mt-3 flex gap-2 items-center">
+                <span className="text-xs text-[var(--text-tertiary)]">Palette:</span>
+                {Object.entries(draft.palette || {}).slice(0, 11).map(([k, v]) => (
+                  <span key={k} title={`${k}: ${v}`}
+                    className="inline-block w-5 h-5 rounded border border-[var(--border)]"
+                    style={{ background: v }} />
+                ))}
+              </div>
+              <p className="mt-3 text-sm">
+                <strong>{draft.landmarks?.length || 0} landmarks:</strong>{" "}
+                {(draft.landmarks || []).map((l) => l.name?.en).filter(Boolean).join(", ")}
+              </p>
+              <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+                Centre: {draft.map?.center?.lat?.toFixed(4)}, {draft.map?.center?.lng?.toFixed(4)}
+              </p>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={download} className="btn-ghost text-sm inline-flex items-center gap-1" data-testid="clone-download">
+                <Download size={14} /> Download JSON
+              </button>
+              <button
+                onClick={() => onApply(draft)}
+                className="btn-primary text-sm inline-flex items-center gap-1 flex-1"
+                data-testid="clone-apply"
+              >
+                Apply as overrides (reversible)
+              </button>
+            </div>
+            <button onClick={() => setDraft(null)} className="btn-ghost text-sm w-full">
+              ← Draft another
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminAreaPage() {
   const { user } = useAuth();
   const area = useArea();
@@ -390,6 +545,7 @@ export default function AdminAreaPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [savedAt, setSavedAt] = useState(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const reload = async () => {
     const { data } = await api.get("/admin/area-settings");
@@ -449,6 +605,20 @@ export default function AdminAreaPage() {
     }
   };
 
+  const applyCloneDraft = async (draftJson) => {
+    setBusy(true); setError(null);
+    try {
+      await api.post("/admin/area-import", draftJson);
+      setWizardOpen(false);
+      await reload();
+      setSavedAt(new Date());
+    } catch (err) {
+      setError(formatApiError(err?.response?.data?.detail) || "Apply failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="min-h-screen px-5 pt-10 pb-32 max-w-4xl mx-auto" data-testid="admin-area-page">
       <div className="flex items-end justify-between gap-3 flex-wrap">
@@ -461,6 +631,14 @@ export default function AdminAreaPage() {
         </div>
         <div className="flex gap-2">
           <Link to="/admin" className="btn-ghost text-sm">← POIs</Link>
+          <button
+            onClick={() => setWizardOpen(true)}
+            className="btn-ghost text-sm inline-flex items-center gap-1"
+            data-testid="area-clone-wizard-btn"
+            title="AI-draft a starter config for a new city"
+          >
+            <Wand2 size={14} /> Clone to new city
+          </button>
           <button onClick={resetAll} className="btn-ghost text-sm inline-flex items-center gap-1" data-testid="area-reset-btn">
             <RotateCcw size={14} /> Reset
           </button>
@@ -469,6 +647,8 @@ export default function AdminAreaPage() {
           </button>
         </div>
       </div>
+
+      {wizardOpen && <CloneWizardModal onClose={() => setWizardOpen(false)} onApply={applyCloneDraft} />}
 
       {error && <p className="mt-3 text-sm text-[var(--terracotta)]" data-testid="area-error">{error}</p>}
       {savedAt && !error && (
