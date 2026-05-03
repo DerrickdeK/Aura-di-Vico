@@ -77,6 +77,16 @@ All chip groups allow zero selections (treated as "no preference"). Personal-mod
 - Test users: `TEST_<uuid>@example.com` / `Sekret123!`
 - **Contributor**: register via `/register?role=contributor` UI or `POST /api/auth/register` with `as_contributor:true`
 
+## Changelog
+
+- **Iteration 12 (Feb 2026)** — **Phases 1–4 shipped in one pass** (145/147 pytest PASS, 0 regressions):
+  - **Phase 1 — Router refactor (foothold):** New `/app/backend/routers/` package + `/app/backend/deps.py` with shared `db` / `get_current_user` / `require_admin`. New features now live as clean router modules; `server.py` stays untouched (zero regression risk). Full migration of legacy endpoints remains backlog.
+  - **Phase 2 — Admin gift-stats dashboard:** `GET /api/admin/gift-stats` returns `{total_gifts, total_views, last_30_days[30], top_senders[≤5], recent_gifts[≤5]}` via Mongo aggregation. Frontend `GiftStatsCard` on `/admin` with inline-SVG sparkline (no recharts) + top-senders chips. Live stats: 68 gifts, 40 views.
+  - **Phase 3 — First-class image uploads** (Emergent Object Storage): `POST /api/uploads/image` (authenticated, JPEG/PNG/WebP, ≤5 MB, returns `{id, url, size, content_type}`), `GET /api/uploads/{id}` (public, with `Cache-Control: immutable`), `GET /api/me/uploads`. Contribution form's `photo_url` type now shows a file picker → uploads → auto-fills the content field + shows an image preview. Paste-URL still works for backward compatibility. Validation: 415 on bad mimetype, 413 on oversize, 401 on anon.
+  - **Phase 4 — Multi-tenant (Option C):** One deployment, many cities. `/app/backend/tenants.py` resolves the active tenant from `X-Tenant-Slug` header → `?tenant=X` query param → first DNS label → `DEFAULT_TENANT_SLUG` env → `area.config.json` slug. `area_config.py` gains `load_area_for(slug)` / `public_area(slug)` / `merged_area(overrides, slug)`. `GET /api/area`, `/api/admin/area-settings[*]`, `/api/admin/area-export`, `/api/admin/area-import`, `/api/landmarks/{id}/chat` all tenant-aware. Overrides collection keyed by `_id="active:{slug}"` (tenant isolation). New `GET /api/tenant` → `{active, available, area}` + `GET /api/tenant/{slug}/area`. Currently serving **Vico Equense** (default) AND **Brera** (via `?tenant=brera-milano`) from the same pod.
+  - 26+ new tests (`test_iter10_phases.py`, `test_tenants.py`). Testing-agent auto-fixed a wrong-import compile-blocker in `GiftStatsCard.jsx` (`../lib/api` → `../../lib/api`).
+  - Cosmetic: updated the photo_url i18n hint (EN + IT) now that uploads are live.
+
 ## Backlog
 - **P0** — Wire the *Brera-as-narrator* intro story (700-word monologue I drafted) right after the language pick on first run; English & Italian written; other 5 languages fallback to English until students translate.
 - **P1** — AI-supported dialogue per POI (`response_formats.dialogue`): each POI becomes a character via Emergent LLM key (Claude/GPT) with a per-POI system prompt; seeded by approved `dialogue_prompt` contributions.
