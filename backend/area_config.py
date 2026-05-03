@@ -94,3 +94,53 @@ def public_area() -> dict:
         "palette": cfg.get("palette", {}),
         "landmarks": cfg.get("landmarks", []),
     }
+
+
+def merged_area(overrides: dict | None = None) -> dict:
+    """Return the public-area payload with admin overrides layered on top.
+
+    Keys that look like localised text maps (brand/area/city/tagline) and
+    the flat palette dict are shallow-merged (override keys win, other
+    keys pass through from the JSON). Map and landmarks are replaced
+    wholesale when provided.
+    """
+    base = public_area()
+    if not overrides:
+        return base
+    out = dict(base)
+    for k in ("slug",):
+        if k in overrides and overrides[k]:
+            out[k] = overrides[k]
+    for k in ("brand", "area", "city", "tagline"):
+        if k in overrides and isinstance(overrides[k], dict):
+            out[k] = {**base.get(k, {}), **overrides[k]}
+    if isinstance(overrides.get("map"), dict):
+        out["map"] = {**base.get("map", {}), **overrides["map"]}
+    if isinstance(overrides.get("palette"), dict):
+        out["palette"] = {**base.get("palette", {}), **overrides["palette"]}
+    if isinstance(overrides.get("landmarks"), list):
+        out["landmarks"] = overrides["landmarks"]
+    return out
+
+
+def merged_landmarks_dict(overrides: dict | None = None) -> dict[str, dict]:
+    """Same shape as landmarks_dict() but respects admin overrides.
+    Used by the landmark-chat endpoint so Claude speaks with the
+    overridden persona if the admin has edited it."""
+    source = merged_area(overrides).get("landmarks", [])
+    out: dict[str, dict] = {}
+    for lm in source:
+        lid = lm.get("id")
+        if not lid:
+            continue
+        out[lid] = {
+            "id": lid,
+            "name": (lm.get("name") or {}).get("en") or (lm.get("name") or {}).get("it") or lid,
+            "address": lm.get("address", ""),
+            "short_description": lm.get("short_description", ""),
+            "long_description": lm.get("long_description", ""),
+            "fun_fact": lm.get("fun_fact"),
+            "canonical_facts": lm.get("canonical_facts", []),
+            "opening_line": lm.get("voice", {}),
+        }
+    return out

@@ -37,6 +37,18 @@ def admin_session():
 
 
 # ---------------------- Landmark chat: canonical facts surface ----------------------
+# The Accademia/Pinacoteca landmarks are specific to the Brera JSON. If
+# the live server is pointing at a different city template, skip — this
+# is a Brera-specific assertion, not a template regression.
+_area = requests.get(f"{API}/area", timeout=10).json()
+_is_brera = _area.get("slug") == "brera-milano"
+pytestmark_brera_only = pytest.mark.skipif(
+    not _is_brera,
+    reason=f"Live area is {_area.get('slug')}; this test is Brera-specific.",
+)
+
+
+@pytestmark_brera_only
 class TestLandmarkChatCanonicalFacts:
     def test_accademia_it_mentions_canonical_year_and_founder(self):
         """Asks in Italian for the founding year — reply must cite 1776 and

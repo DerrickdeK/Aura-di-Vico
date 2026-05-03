@@ -134,15 +134,21 @@ export default function LandingPage() {
           </p>
         </div>
         <div className="rounded-3xl overflow-hidden border border-[var(--border)] shadow-md">
-          <LandmarkMap
-            pois={pois}
-            landmarks={landmarks}
-            activeLandmarkId={activeLandmark}
-            onSelectLandmark={setActiveLandmark}
-            center={area.map?.center}
-            zoom={area.map?.landing_zoom || 14}
-            height={560}
-          />
+          {area.ready ? (
+            <LandmarkMap
+              pois={pois}
+              landmarks={landmarks}
+              activeLandmarkId={activeLandmark}
+              onSelectLandmark={setActiveLandmark}
+              center={area.map?.center}
+              zoom={area.map?.landing_zoom || 14}
+              height={560}
+            />
+          ) : (
+            <div style={{ height: 560 }} className="flex items-center justify-center text-[var(--text-tertiary)] text-sm bg-[var(--map-water)]">
+              Loading map…
+            </div>
+          )}
         </div>
 
         {landmarks.length > 0 && (

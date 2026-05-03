@@ -5,6 +5,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 import os
+import json
 import logging
 import secrets
 import uuid
@@ -28,6 +29,8 @@ from area_config import (
     pois_seed as area_pois_seed,
     landmarks_dict as area_landmarks_dict,
     public_area as area_public_payload,
+    merged_area as area_merged_payload,
+    merged_landmarks_dict as area_merged_landmarks,
 )
 
 
@@ -667,9 +670,97 @@ async def get_config():
 @api_router.get("/area")
 async def get_area():
     """Public area (city/campus) configuration: brand, palette, map center,
-    and the 5 landing-page landmarks. Everything a frontend needs to
-    re-skin this codebase for a new city lives here."""
-    return area_public_payload()
+    and the 5 landing-page landmarks. Admin overrides (if any) are layered
+    on top of the JSON file so changes made via /admin/area show up live."""
+    overrides = await _active_area_overrides()
+    return area_merged_payload(overrides)
+
+
+# ── Admin: edit the active area overrides (Option B — Polished Template) ─
+class AreaPatchIn(BaseModel):
+    """Any subset of the area config. Omitted keys pass through from JSON."""
+    slug: Optional[str] = None
+    brand: Optional[dict] = None
+    area: Optional[dict] = None
+    city: Optional[dict] = None
+    tagline: Optional[dict] = None
+    map: Optional[dict] = None
+    palette: Optional[dict] = None
+    landmarks: Optional[List[dict]] = None
+
+
+@api_router.get("/admin/area-settings")
+async def admin_get_area_settings(_: dict = Depends(require_admin)):
+    """Return raw overrides + the effective merged config, so the admin UI
+    can distinguish defaults from customised values."""
+    overrides = await _active_area_overrides()
+    return {"overrides": overrides, "effective": area_merged_payload(overrides)}
+
+
+@api_router.patch("/admin/area-settings")
+async def admin_patch_area_settings(
+    payload: AreaPatchIn,
+    _: dict = Depends(require_admin),
+):
+    """Shallow-merge the payload into the active overrides document. Pass
+    null/empty to clear an override and fall back to the JSON default."""
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        # No changes — just return the current state
+        overrides = await _active_area_overrides()
+        return {"overrides": overrides, "effective": area_merged_payload(overrides)}
+    await db.area_settings.update_one(
+        {"_id": "active"},
+        {"$set": {**update, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    overrides = await _active_area_overrides()
+    return {"overrides": overrides, "effective": area_merged_payload(overrides)}
+
+
+@api_router.delete("/admin/area-settings")
+async def admin_reset_area_settings(_: dict = Depends(require_admin)):
+    """Wipe every override and fall back entirely to the JSON file."""
+    await db.area_settings.delete_many({})
+    return {"ok": True, "effective": area_merged_payload({})}
+
+
+@api_router.get("/admin/area-export")
+async def admin_export_area(_: dict = Depends(require_admin)):
+    """Download the CURRENT effective config (JSON + overrides, deep merged)
+    as a standalone file — paste into /app/area.config.json on any deploy
+    to reproduce this city exactly."""
+    overrides = await _active_area_overrides()
+    effective = area_merged_payload(overrides)
+    # Effective payload omits the heavy POI seed; layer it back so the file
+    # is a complete, drop-in replacement for /app/area.config.json.
+    cfg = load_area_config()
+    out = {**effective, "pois": cfg.get("pois", [])}
+    filename = f"area-{(out.get('slug') or 'export').replace('/', '-')}.json"
+    return FastAPIResponse(
+        content=json.dumps(out, ensure_ascii=False, indent=2),
+        media_type="application/json",
+        headers={"content-disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@api_router.post("/admin/area-import")
+async def admin_import_area(
+    payload: dict,
+    _: dict = Depends(require_admin),
+):
+    """Replace the overrides with the provided JSON. Accepts a full area
+    config; stores everything except `pois` in overrides (POIs remain
+    managed via the /pois CRUD + reset endpoints)."""
+    allowed = {"slug", "brand", "area", "city", "tagline", "map", "palette", "landmarks"}
+    update = {k: v for k, v in payload.items() if k in allowed and v is not None}
+    if not update:
+        raise HTTPException(status_code=400, detail="Import payload has no recognised keys.")
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    # Replace (not merge) so stale fields are cleared
+    await db.area_settings.replace_one({"_id": "active"}, {"_id": "active", **update}, upsert=True)
+    overrides = await _active_area_overrides()
+    return {"ok": True, "effective": area_merged_payload(overrides)}
 
 
 # ------------------------------------------------------------------------------------
@@ -876,8 +967,23 @@ async def chat_with_poi(
 # Landmark chat (well-known anchors on the landing page — open to anonymous visitors).
 # Landmarks are loaded from the area config so the same code serves any city.
 # ------------------------------------------------------------------------------------
+async def _active_area_overrides() -> dict:
+    """Load the single `active` document from the area_settings collection.
+    Returns {} if no admin overrides have been saved yet."""
+    doc = await db.area_settings.find_one({"_id": "active"}) or {}
+    # Mongo injects _id; drop it before use
+    doc.pop("_id", None)
+    return doc
+
+
 def _landmark_by_id(landmark_id: str) -> Optional[dict]:
     return area_landmarks_dict().get(landmark_id)
+
+
+async def _landmark_by_id_live(landmark_id: str) -> Optional[dict]:
+    """Lookup honouring admin overrides (used by /api/landmarks/{id}/chat)."""
+    overrides = await _active_area_overrides()
+    return area_merged_landmarks(overrides).get(landmark_id)
 
 
 @api_router.post("/landmarks/{landmark_id}/chat")
@@ -886,7 +992,7 @@ async def chat_with_landmark(
     payload: ChatIn,
     request: Request,
 ):
-    landmark = _landmark_by_id(landmark_id)
+    landmark = await _landmark_by_id_live(landmark_id)
     if not landmark:
         raise HTTPException(status_code=404, detail="Landmark not found")
 

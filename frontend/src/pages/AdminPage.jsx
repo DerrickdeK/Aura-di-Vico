@@ -159,6 +159,13 @@ export default function AdminPage() {
           <h1 className="font-serif text-5xl mt-2 leading-none">Curate {areaLabel}</h1>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Link
+            to="/admin/area"
+            className="btn-ghost inline-flex items-center gap-2"
+            data-testid="admin-area-link"
+          >
+            <Sparkles size={16} /> Area settings
+          </Link>
           <button
             onClick={startCreate}
             className="btn-primary inline-flex items-center gap-2"

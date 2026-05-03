@@ -9,6 +9,17 @@ import pytest
 from area_config import reload_area, load_area, pois_seed, landmarks_dict, public_area
 
 
+@pytest.fixture(autouse=True)
+def _pin_default_config(monkeypatch):
+    """These tests exercise the bundled Brera JSON regardless of which city
+    the live server is currently pointing at (via AREA_CONFIG_PATH)."""
+    monkeypatch.setenv("AREA_CONFIG_PATH", "/app/area.config.json")
+    reload_area()
+    yield
+    monkeypatch.delenv("AREA_CONFIG_PATH", raising=False)
+    reload_area()
+
+
 def test_default_config_loads():
     cfg = reload_area()
     assert cfg["slug"] == "brera-milano"
