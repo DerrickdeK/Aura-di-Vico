@@ -122,24 +122,83 @@ export function unlockSpeech() {
   }
 }
 
+// TTS engines stumble on smart quotes, em-dashes, ellipses and dense numerals.
+// Normalise the input string to plain ASCII punctuation + spelled-out numerals
+// for the most common cases, so even fallback voices don't lose their footing.
+function normalizeForTTS(text, langTag) {
+  if (!text) return "";
+  let out = String(text);
+  // Smart quotes / dashes / ellipses
+  out = out
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/[\u2013\u2014\u2015]/g, ", ")          // –, —, ― → comma+space (natural pause)
+    .replace(/\u2026/g, "...")
+    .replace(/\u00A0/g, " ");                          // non-breaking → regular space
+  // Collapse multiple punctuation marks
+  out = out.replace(/\s*,\s*,\s*/g, ", ");
+  // Strip stray asterisks / underscores that sometimes leak from markdown
+  out = out.replace(/[*_`]+/g, "");
+  // Spelled-out years for Italian — engines often stumble on 1320 / 1732 / 1875.
+  if (langTag.toLowerCase().startsWith("it")) {
+    out = out.replace(/\b1\s?(\d{3})\b/g, (m, p1) => {
+      const n = parseInt("1" + p1, 10);
+      // Cheap heuristic: only spell out 4-digit years between 1000 and 2099.
+      if (n >= 1000 && n <= 2099) return spellYearIT(n);
+      return m;
+    });
+  }
+  // Collapse runs of whitespace.
+  out = out.replace(/\s+/g, " ").trim();
+  return out;
+}
+
+function spellYearIT(n) {
+  // Spelt-out Italian for years 1000..2099 (plenty for our content).
+  const ones = ["", "uno", "due", "tre", "quattro", "cinque", "sei", "sette", "otto", "nove",
+                "dieci", "undici", "dodici", "tredici", "quattordici", "quindici", "sedici",
+                "diciassette", "diciotto", "diciannove"];
+  const tens = ["", "", "venti", "trenta", "quaranta", "cinquanta", "sessanta", "settanta", "ottanta", "novanta"];
+  function below100(x) {
+    if (x < 20) return ones[x];
+    const t = Math.floor(x/10), o = x % 10;
+    let s = tens[t];
+    if (o === 1 || o === 8) s = s.slice(0, -1);
+    return s + ones[o];
+  }
+  function below1000(x) {
+    if (x < 100) return below100(x);
+    const h = Math.floor(x/100), r = x % 100;
+    const hpart = h === 1 ? "cento" : ones[h] + "cento";
+    return r ? hpart + below100(r) : hpart;
+  }
+  const thousands = Math.floor(n/1000), rest = n % 1000;
+  const tpart = thousands === 1 ? "mille" : ones[thousands] + "mila";
+  return rest ? tpart + below1000(rest) : tpart;
+}
+
 export function speak(text, { lang = "en", rate, volume = 0.9, pitch = 1, onEnd, onError } = {}) {
   if (!isSpeechSupported() || !text) return;
   try {
     window.speechSynthesis.cancel();
-    const u = new window.SpeechSynthesisUtterance(text);
     // Use BCP-47 forms so engines pick the right phoneme set.
     const langTag = lang.toLowerCase().startsWith("it")
       ? "it-IT"
       : lang.toLowerCase().startsWith("en") ? "en-US" : lang;
+    const cleaned = normalizeForTTS(text, langTag);
+    const u = new window.SpeechSynthesisUtterance(cleaned);
     u.lang = langTag;
     const best = pickBestVoice(langTag);
     if (best) {
       u.voice = best;
       u.lang = best.lang || langTag;
     }
-    // Slow down a touch by default — these are whispers, not announcements.
-    // English benefits from extra slowness when fallback voices are used.
-    const defaultRate = best ? 0.92 : 0.85;
+    // Italian fallback voices struggle more than English ones — slow them down
+    // a touch further so the listener can keep up.
+    const isIT = langTag.startsWith("it");
+    const defaultRate = best
+      ? (isIT ? 0.88 : 0.92)
+      : (isIT ? 0.78 : 0.85);
     u.rate = typeof rate === "number" ? rate : defaultRate;
     u.volume = volume;
     u.pitch = pitch;

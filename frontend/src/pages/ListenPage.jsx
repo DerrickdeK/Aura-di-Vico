@@ -14,6 +14,7 @@ import WhisperCard from "../components/WhisperCard";
 import POIDrawer from "../components/POIDrawer";
 import VirtualNavPanel from "../components/VirtualNavPanel";
 import PocketModeChip from "../components/PocketModeChip";
+import WalkingMap from "../components/WalkingMap";
 import { unlockAudio } from "../lib/audio";
 import { speak, stopSpeaking, unlockSpeech } from "../lib/speech";
 import { t, getOpeningLine } from "../lib/i18n";
@@ -134,7 +135,17 @@ export default function ListenPage() {
         </p>
       </header>
 
-      <div className="mt-10 flex justify-center">
+      <div className="mt-8">
+        <WalkingMap
+          position={position}
+          sightings={sightings}
+          pois={filteredPois}
+          onSelectPoi={(p) => setActivePoi(p)}
+          height={280}
+        />
+      </div>
+
+      <div className="mt-6 flex justify-center">
         <ListeningCompass
           sightings={sightings}
           sensedRadius={radii.sensed_radius_m}
