@@ -15,6 +15,7 @@ import POIDrawer from "../components/POIDrawer";
 import VirtualNavPanel from "../components/VirtualNavPanel";
 import PocketModeChip from "../components/PocketModeChip";
 import WalkingMap from "../components/WalkingMap";
+import NearbyPoiStrip from "../components/NearbyPoiStrip";
 import { unlockAudio } from "../lib/audio";
 import { speak, stopSpeaking, unlockSpeech } from "../lib/speech";
 import { t, getOpeningLine } from "../lib/i18n";
@@ -142,6 +143,13 @@ export default function ListenPage() {
           pois={filteredPois}
           onSelectPoi={(p) => setActivePoi(p)}
           height={280}
+        />
+        <NearbyPoiStrip
+          sightings={sightings}
+          pois={filteredPois}
+          language={language}
+          hasPosition={!!position}
+          onSelectPoi={(p) => setActivePoi(p)}
         />
       </div>
 
