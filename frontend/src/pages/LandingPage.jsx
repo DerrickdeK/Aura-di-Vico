@@ -12,6 +12,7 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import LandmarkMap from "../components/LandmarkMap";
 import LandmarkThumbs from "../components/LandmarkThumbs";
 import LandmarkDetail from "../components/LandmarkDetail";
+import CityNarrator from "../components/CityNarrator";
 
 // Well-known area anchors come from /api/area — one config file controls
 // which landmarks appear on the landing page for any city/campus. Images
@@ -58,6 +59,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen pb-24" data-testid="landing-page">
+      <CityNarrator />
       {/* Top bar */}
       <header className="px-5 sm:px-10 pt-6 flex items-center justify-between gap-3">
         <div className="font-serif text-2xl tracking-tight" data-testid="landing-brand">{brand}</div>

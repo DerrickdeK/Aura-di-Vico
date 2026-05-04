@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 12 — CityNarrator (Vico-Equense-as-narrator auto-intro) verified end-to-end. Backend pytest: 157 passed / 2 skipped (matches the expected baseline of 153 + 4 new test_narrator.py tests). Frontend: on a fresh context with localStorage cleared and SWs unregistered, [data-testid=city-narrator-sheet] auto-opens within the 600ms post-ready delay; eyebrow = 'Una voce da Vico Equense' (IT) / 'A voice from Vico Equense' (EN), title = 'Aura di Vico Equense', body ≈ 1722 chars starting 'Mi chiamano in molti modi…' (IT) and 'They call me by many names…' (EN). All three controls (hear, skip, close) are present. Clicking skip or X writes an ISO date to localStorage key `aura-narrator-heard:vico-equense`, the sheet unmounts, and a full page reload does NOT re-open it. Clearing that key + reload re-opens the narrator. Language swap IT→EN swaps the monologue body as expected. /api/area narrator.intro.{it,en} both ≥150 words; /api/area?tenant=brera-milano returns slug=brera-milano with no narrator block (gracefully omitted) — component correctly renders null. Landing page underneath modal renders intact: brand 'Aura di Vico Equense', eyebrow 'PENISOLA SORRENTINA · LA CITTÀ A PICCO SUL MARE', hero 'A Vico Equense, i luoghi nascosti ti sussurrano', full 18-POI map + 5 landmark cards.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "CityNarrator sheet (desktop 1280x900)", "issues": [
+        "On 900px viewports the sheet's inner content (eyebrow+title+~1700-char monologue+action row) totals ~1009px while max-h is 92vh ≈ 828px. The action row (hear/skip/close buttons) renders at y≈785-831 — so without scrolling inside the sheet, users see only 2/3 of the monologue and must scroll inside the sheet to reach 'Ascolta la sua voce' / 'Cammina con lei →'. Not blocking (scroll works, and on mobile the sheet anchors to the bottom so buttons sit right above the safe area) but consider making the action row a sticky footer inside the scroll container so the two CTAs are always reachable without scrolling — that matches the Medium-style reading pattern Aura uses elsewhere.",
+        "Minor: during my first Playwright click attempt, force=True click at the skip-btn center landed near the page-level 'Made with Emergent' badge (y≈864). Not a regression in CityNarrator; just flagging that a sticky footer would also remove this edge case for automation."
+      ]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_narrator.py",
+    "/app/test_reports/pytest/iter12_results.xml"
+  ],
+  "action_items": [
+    "(Optional UX) Make the action row inside CityNarrator a sticky footer within the scrolling sheet so 'Ascolta la sua voce' and 'Cammina con lei →' are always visible without scrolling through the full 6-paragraph monologue on desktop."
+  ],
+  "critical_code_review_comments": [
+    "CityNarrator correctly guards against missing narrator via `if (!intro) return null;` and the first-visit localStorage read — so Brera (no narrator.intro) renders nothing, matching the review-request contract.",
+    "area_config.merged_area deep-merges narrator.intro per locale (verified by test_narrator.test_merged_area_shallow_merges_narrator_override): overriding `it` preserves `en` from the base config. Admin override flow works end-to-end (pytest verified).",
+    "speak() in /app/frontend/src/lib/speech.js cleanly accepts onEnd/onError callbacks; the narrator uses onEnd to flip setSpeaking(false) so the button toggles back to 'Hear' automatically when the TTS finishes.",
+    "localStorage key scoping is per-tenant slug (`aura-narrator-heard:${slug}`) — switching tenants will correctly re-trigger the narrator for each new city, which is the right default.",
+    "Minor (carried over from iter10/11): /app/backend/server.py is still ~1400 lines. Router extraction is still pending but unrelated to this feature."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% (157 passed, 2 expected Brera-landmark-chat skips — full suite; 4 new test_narrator.py tests all green)",
+    "frontend": "100% on every item in the review request (auto-open, eyebrow/title/body, 3 controls, dismiss+persist, clear+reopen, IT↔EN swap, Brera graceful-skip, landing underneath intact)"
+  },
+  "test_credentials": "admin@brera.app / BreraAdmin2026! (not exercised this iteration — admin override flow verified via pytest only, since that is the authoritative contract check).",
+  "seed_data_creation": "None. All frontend checks used localStorage + reload only; backend tests use AREA_CONFIG_PATH pin and clean up.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The narrator auto-opens 600ms after /api/area resolves, only if localStorage `aura-narrator-heard:<slug>` is missing. To test reliably in Playwright: (1) navigate first, (2) localStorage.clear() + SW unregister, (3) navigate again with wait_until=networkidle, (4) wait_for_selector on [data-testid=city-narrator-sheet]. IMPORTANT: the sheet is taller than a 900px viewport (inner ~1009px vs max-h 92vh). Playwright's force=True click on city-narrator-skip-btn may land near the page-level Emergent badge overlay — use `document.querySelector('[data-testid=city-narrator-skip-btn]').click()` via page.evaluate for a reliable dismiss, or scroll the sheet first (sheet.scrollTop=scrollHeight). Same applies to the hear/close buttons. Backend regression cmd: `cd /app/backend && set -a && . .env && set +a && python -m pytest tests/ -q` — expect 157 passed, 2 skipped.",
+  "rca of the issue": "No bug. Initial Playwright dismiss click failures were a test-harness limitation (button off-viewport in 900px desktop due to 92vh max-h + ~1009px content) — once resolved via DOM-level .click() the dismiss + persist + reload behaviour matches spec exactly. Only a cosmetic UX follow-up suggested (sticky footer inside the sheet for always-visible CTAs)."
+}

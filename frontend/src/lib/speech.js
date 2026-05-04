@@ -122,7 +122,7 @@ export function unlockSpeech() {
   }
 }
 
-export function speak(text, { lang = "en", rate, volume = 0.9, pitch = 1 } = {}) {
+export function speak(text, { lang = "en", rate, volume = 0.9, pitch = 1, onEnd, onError } = {}) {
   if (!isSpeechSupported() || !text) return;
   try {
     window.speechSynthesis.cancel();
@@ -143,6 +143,8 @@ export function speak(text, { lang = "en", rate, volume = 0.9, pitch = 1 } = {})
     u.rate = typeof rate === "number" ? rate : defaultRate;
     u.volume = volume;
     u.pitch = pitch;
+    if (typeof onEnd === "function") u.onend = onEnd;
+    if (typeof onError === "function") u.onerror = onError;
     window.speechSynthesis.speak(u);
   } catch (err) {
     devWarn("speak() failed:", err);

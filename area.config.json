@@ -17,7 +17,10 @@
     "it": "la città a picco sul mare"
   },
   "map": {
-    "center": { "lat": 40.6625, "lng": 14.4325 },
+    "center": {
+      "lat": 40.6625,
+      "lng": 14.4325
+    },
     "default_zoom": 15,
     "landing_zoom": 14
   },
@@ -37,7 +40,10 @@
   "landmarks": [
     {
       "id": "annunziata",
-      "name": { "en": "Chiesa della Santissima Annunziata", "it": "Chiesa della Santissima Annunziata" },
+      "name": {
+        "en": "Chiesa della Santissima Annunziata",
+        "it": "Chiesa della Santissima Annunziata"
+      },
       "note": {
         "en": "A 14th-century church perched on a sheer cliff over the Bay of Naples.",
         "it": "Una chiesa trecentesca a picco sulla scogliera, affacciata sul Golfo di Napoli."
@@ -65,7 +71,10 @@
     },
     {
       "id": "castello-giusso",
-      "name": { "en": "Castello Giusso", "it": "Castello Giusso" },
+      "name": {
+        "en": "Castello Giusso",
+        "it": "Castello Giusso"
+      },
       "note": {
         "en": "A 13th-century Angevin castle still inhabited by the Giusso family.",
         "it": "Un castello angioino del '200, ancora abitato dalla famiglia Giusso."
@@ -79,7 +88,7 @@
         "it": "Il mio ponte levatoio si abbassò per Carlo d'Angiò. Sa ancora come fare."
       },
       "latitude": 40.6632,
-      "longitude": 14.4340,
+      "longitude": 14.434,
       "address": "Via Castello Giusso, 80069 Vico Equense NA",
       "short_description": "An Angevin fortress continuously inhabited since the 13th century.",
       "long_description": "Commissioned by Charles II of Anjou in 1284 as coastal defence against Saracen raids, the castle has survived earthquakes, Angevin-Aragonese wars, and Bourbon renovations. Passed to the Giusso family in 1694 as part of Costanza Ravaschieri's dowry, it remains their private residence. The grounds include a neoclassical park with rare Mediterranean flora and an 18th-century chapel dedicated to Saint Anne.",
@@ -93,7 +102,10 @@
     },
     {
       "id": "pizza-metro",
-      "name": { "en": "Pizza a Metro da Gigino", "it": "Pizza a Metro da Gigino" },
+      "name": {
+        "en": "Pizza a Metro da Gigino",
+        "it": "Pizza a Metro da Gigino"
+      },
       "note": {
         "en": "Where pizza-by-the-meter was invented in 1960.",
         "it": "Dove la pizza a metro fu inventata nel 1960."
@@ -121,7 +133,10 @@
     },
     {
       "id": "scrajo",
-      "name": { "en": "Scrajo Terme", "it": "Scrajo Terme" },
+      "name": {
+        "en": "Scrajo Terme",
+        "it": "Scrajo Terme"
+      },
       "note": {
         "en": "Early 20th-century sulphur baths carved into the seaside rock.",
         "it": "Stabilimento termale di inizio Novecento scavato nella roccia a mare."
@@ -135,7 +150,7 @@
         "it": "Le mie sorgenti di zolfo mormorano dal 1895. Ascolta."
       },
       "latitude": 40.6553,
-      "longitude": 14.4180,
+      "longitude": 14.418,
       "address": "SS145 Sorrentina, 80069 Vico Equense NA",
       "short_description": "Historic sulphur thermal baths, operating since 1895.",
       "long_description": "The Scrajo thermal complex was inaugurated in 1895 around natural sulphur springs that emerge directly into the sea. The cliff-side structures — terraces, pools, and a changing pavilion carved into tuff — epitomise Italian Liberty (Art Nouveau) seaside architecture. Beyond its Belle Époque glamour, the waters are still certified by the Italian Ministry of Health for dermatological and respiratory conditions.",
@@ -149,7 +164,10 @@
     },
     {
       "id": "gabriele",
-      "name": { "en": "Gelateria Gabriele", "it": "Gelateria Gabriele" },
+      "name": {
+        "en": "Gelateria Gabriele",
+        "it": "Gelateria Gabriele"
+      },
       "note": {
         "en": "A 1875 pastry bar where lemon delizie were perfected.",
         "it": "Pasticceria del 1875 dove è stata perfezionata la delizia al limone."
@@ -181,253 +199,383 @@
       "name": "Antiquarium Silio Italico",
       "short_description": "A tiny archaeological museum built over a Greek necropolis.",
       "long_description": "Excavations in 1958 beneath Via Nicotera uncovered 238 tombs from the 7th–5th centuries BC, complete with black-figure vases and jewellery. The Antiquarium displays the finest pieces in a restored 14th-century crypt adjoining the Santissima Annunziata church.",
-      "latitude": 40.6620, "longitude": 14.4312,
+      "latitude": 40.662,
+      "longitude": 14.4312,
       "address": "Via Vescovado 1, 80069 Vico Equense NA",
       "category": "Hidden Museum",
       "image_url": "https://images.unsplash.com/photo-1580933884538-9dc2e6c1cf6a?w=1200",
       "trigger_radius_m": 40,
       "hours": "Tue–Sun 10:00–13:00, 16:00–19:00",
       "fun_fact": "A silver Greek coin from 470 BC found here bears the earliest known depiction of a nymph holding a lyre.",
-      "interest_tags": ["history", "art", "curios"],
-      "opening_line": { "en": "Two hundred and thirty-eight tombs were once beneath your feet. Some of them still whisper." }
+      "interest_tags": [
+        "history",
+        "art",
+        "curios"
+      ],
+      "opening_line": {
+        "en": "Two hundred and thirty-eight tombs were once beneath your feet. Some of them still whisper."
+      }
     },
     {
       "name": "Marina di Equa",
       "short_description": "A hidden Norman-era fishing cove with a watchtower.",
       "long_description": "Set below the cliffs west of the town, Marina di Equa preserves a 12th-century square watchtower (Torre di Equa) that guarded against Saracen raids. The pebble beach is tucked between two rock promontories and accessed by a narrow stairway from the coastal road.",
-      "latitude": 40.6520, "longitude": 14.4206,
+      "latitude": 40.652,
+      "longitude": 14.4206,
       "address": "Via Marina di Equa, 80069 Vico Equense NA",
       "category": "Hidden Beach",
       "image_url": "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200",
       "trigger_radius_m": 80,
       "hours": "Always accessible",
       "fun_fact": "The tower's inner spiral staircase is only 48 cm wide — designed to force attackers to climb one at a time.",
-      "interest_tags": ["history", "sceneries", "local_legends"],
-      "opening_line": { "en": "A Norman watchtower, still standing. The Saracen ships never did get past." }
+      "interest_tags": [
+        "history",
+        "sceneries",
+        "local_legends"
+      ],
+      "opening_line": {
+        "en": "A Norman watchtower, still standing. The Saracen ships never did get past."
+      }
     },
     {
       "name": "Chiesa di Santa Maria del Toro",
       "short_description": "A 16th-century country chapel with a miraculous fresco.",
       "long_description": "Legend says the Virgin Mary appeared here to a shepherd in 1528, leaving a fresco of her face on a boulder. The chapel was built around the stone, which is still embedded in the wall behind the altar.",
-      "latitude": 40.6682, "longitude": 14.4380,
+      "latitude": 40.6682,
+      "longitude": 14.438,
       "address": "Via Santa Maria del Toro, 80069 Vico Equense NA",
       "category": "Hidden Church",
       "image_url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df?w=1200",
       "trigger_radius_m": 45,
       "hours": "Sun 09:00–12:00, or on request",
       "fun_fact": "Locals still leave written prayers tucked into a crack in the miraculous boulder.",
-      "interest_tags": ["local_legends", "history", "architecture"],
-      "opening_line": { "en": "A shepherd saw her face on a stone in 1528. The stone is still behind my altar." }
+      "interest_tags": [
+        "local_legends",
+        "history",
+        "architecture"
+      ],
+      "opening_line": {
+        "en": "A shepherd saw her face on a stone in 1528. The stone is still behind my altar."
+      }
     },
     {
       "name": "Monte Faito — Belvedere dei Capi",
       "short_description": "A 1,131m-peak with a 360° Amalfi–Vesuvius panorama.",
       "long_description": "Accessible by cable car from nearby Castellammare di Stabia or by winding road from Vico Equense, Monte Faito's summit offers an unmatched view spanning Vesuvius, Capri, Ischia, the Amalfi coast, and on clear days the Pontine Islands. The belvedere is lined with beech woods (faggio, hence the name).",
-      "latitude": 40.7127, "longitude": 14.4879,
+      "latitude": 40.7127,
+      "longitude": 14.4879,
       "address": "Belvedere dei Capi, 80069 Faito NA",
       "category": "Scenic Viewpoint",
       "image_url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
       "trigger_radius_m": 150,
       "hours": "Always accessible (cable car: Apr–Oct)",
       "fun_fact": "Filmed by Roberto Rossellini in 1954's Voyage to Italy starring Ingrid Bergman.",
-      "interest_tags": ["sceneries", "history"],
-      "opening_line": { "en": "From up here you see Vesuvius AND Capri in one glance. No one forgets this." }
+      "interest_tags": [
+        "sceneries",
+        "history"
+      ],
+      "opening_line": {
+        "en": "From up here you see Vesuvius AND Capri in one glance. No one forgets this."
+      }
     },
     {
       "name": "Cantina del Vesuvio Giuliana",
       "short_description": "A volcanic-soil winery producing Lacryma Christi since 1890.",
       "long_description": "Four generations of the Giuliana family have pressed grapes on these Vesuvian slopes. Their Lacryma Christi del Vesuvio Bianco and Piedirosso are made entirely from vines rooted in black pumice soil. The tasting room looks directly at the volcano's cone.",
-      "latitude": 40.6805, "longitude": 14.4550,
+      "latitude": 40.6805,
+      "longitude": 14.455,
       "address": "Strada Provinciale 39, 80069 Vico Equense NA",
       "category": "Historic Winery",
       "image_url": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1200",
       "trigger_radius_m": 60,
       "hours": "Mon–Sat 10:00–18:00 (tastings by appointment)",
       "fun_fact": "A 1944 bottle, sealed before the last Vesuvius eruption, is displayed in the entrance — still unopened.",
-      "interest_tags": ["food", "history", "sceneries"],
-      "opening_line": { "en": "My vines drink volcanic ash. Taste what the mountain remembers." }
+      "interest_tags": [
+        "food",
+        "history",
+        "sceneries"
+      ],
+      "opening_line": {
+        "en": "My vines drink volcanic ash. Taste what the mountain remembers."
+      }
     },
     {
       "name": "Spiaggia di Seiano",
       "short_description": "A black-sand beach at the foot of a 90m cliff.",
       "long_description": "Reached by a slow funicular from the coastal road, Seiano beach sits in a protected cove with black volcanic sand and pebbles. The water deepens quickly — favoured by snorkellers for the offshore Roman ruins visible at 5m depth.",
-      "latitude": 40.6580, "longitude": 14.4265,
+      "latitude": 40.658,
+      "longitude": 14.4265,
       "address": "Spiaggia di Seiano, 80069 Vico Equense NA",
       "category": "Hidden Beach",
       "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200",
       "trigger_radius_m": 70,
       "hours": "Always accessible",
       "fun_fact": "Submerged Roman columns from a 1st-century maritime villa lie 15 metres offshore.",
-      "interest_tags": ["sceneries", "history"],
-      "opening_line": { "en": "Roman columns rest 15 metres below my waves. The snorkellers know." }
+      "interest_tags": [
+        "sceneries",
+        "history"
+      ],
+      "opening_line": {
+        "en": "Roman columns rest 15 metres below my waves. The snorkellers know."
+      }
     },
     {
       "name": "Torre di Equa",
       "short_description": "A lone 12th-century watchtower above a fishing cove.",
       "long_description": "One of the Sorrento Peninsula's best-preserved Norman watchtowers, Torre di Equa was built around 1150 as part of the coastal warning network against Saracen raids. Its roof platform once held iron braziers lit at night to signal neighbouring towers.",
-      "latitude": 40.6515, "longitude": 14.4198,
+      "latitude": 40.6515,
+      "longitude": 14.4198,
       "address": "Marina di Equa, 80069 Vico Equense NA",
       "category": "Historic Trace",
       "image_url": "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=1200",
       "trigger_radius_m": 35,
       "hours": "Exterior always accessible",
       "fun_fact": "A 1544 parchment in the Naples archives records its keeper's weekly ration of bread and olive oil.",
-      "interest_tags": ["history", "architecture", "local_legends"],
-      "opening_line": { "en": "My brazier was lit every Saracen night. The sea remembers the smoke." }
+      "interest_tags": [
+        "history",
+        "architecture",
+        "local_legends"
+      ],
+      "opening_line": {
+        "en": "My brazier was lit every Saracen night. The sea remembers the smoke."
+      }
     },
     {
       "name": "Casa Museo di Silio Italico",
       "short_description": "The tomb-chamber of the Roman poet Silius Italicus, rediscovered 1922.",
       "long_description": "The 1st-century Latin epic poet Silius Italicus (author of Punica, the longest surviving Latin poem) died here in AD 101 at his seaside villa. A small chamber beneath Piazza Umberto is believed to be his original tomb, identified by an inscription fragment.",
-      "latitude": 40.6628, "longitude": 14.4315,
+      "latitude": 40.6628,
+      "longitude": 14.4315,
       "address": "Piazza Umberto I, 80069 Vico Equense NA",
       "category": "Historic Trace",
       "image_url": "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1200",
       "trigger_radius_m": 30,
       "hours": "Fri–Sat 17:00–20:00",
       "fun_fact": "Silius Italicus starved himself to death, aged 75, as a stoic farewell to the world.",
-      "interest_tags": ["history", "local_legends", "art"],
-      "opening_line": { "en": "A Roman poet chose this place to die. His verses still sit in the stone." }
+      "interest_tags": [
+        "history",
+        "local_legends",
+        "art"
+      ],
+      "opening_line": {
+        "en": "A Roman poet chose this place to die. His verses still sit in the stone."
+      }
     },
     {
       "name": "Chiesa dei Santi Ciro e Giovanni",
       "short_description": "Vico's 16th-century co-cathedral with a Neapolitan baroque altar.",
       "long_description": "Built in 1575 and dedicated to the patron saints of the town. The gilded wooden altar (1732) survived the earthquake that destroyed much of the old quarter. Three silver reliquaries of Saints Cyrus and John are processed through the streets every 31 January.",
-      "latitude": 40.6630, "longitude": 14.4334,
+      "latitude": 40.663,
+      "longitude": 14.4334,
       "address": "Via Roma, 80069 Vico Equense NA",
       "category": "Hidden Church",
       "image_url": "https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=1200",
       "trigger_radius_m": 35,
       "hours": "Daily 08:00–12:00, 16:00–19:00",
       "fun_fact": "The bell tower doubles as the town's official siren on the feast day.",
-      "interest_tags": ["history", "architecture", "local_legends"],
-      "opening_line": { "en": "On 31 January my saints walk the streets in silver. Come meet them." }
+      "interest_tags": [
+        "history",
+        "architecture",
+        "local_legends"
+      ],
+      "opening_line": {
+        "en": "On 31 January my saints walk the streets in silver. Come meet them."
+      }
     },
     {
       "name": "Funicolare del Monte Faito",
       "short_description": "The highest cable car in Italy, opened 1952.",
       "long_description": "Built in 1952 to connect Castellammare di Stabia's seafront (36m) directly to Monte Faito's 1100m beech forests. The eight-minute ride climbs 1,064 metres — steeper than Switzerland's famed Gornergrat. Vico Equense uses it as the fastest escape from summer heat.",
-      "latitude": 40.7105, "longitude": 14.4860,
+      "latitude": 40.7105,
+      "longitude": 14.486,
       "address": "Via Cosenza, 80069 Castellammare di Stabia NA",
       "category": "Historic Transport",
       "image_url": "https://images.unsplash.com/photo-1512391289745-4c6d15e78ce9?w=1200",
       "trigger_radius_m": 80,
       "hours": "Apr–Oct, 07:30–16:40",
       "fun_fact": "An August 1960 earthquake damaged the cable — repaired overnight so hikers stranded at the summit came down by dawn.",
-      "interest_tags": ["history", "sceneries", "curios"],
-      "opening_line": { "en": "One thousand metres in eight minutes. The world's steepest beech forest is mine." }
+      "interest_tags": [
+        "history",
+        "sceneries",
+        "curios"
+      ],
+      "opening_line": {
+        "en": "One thousand metres in eight minutes. The world's steepest beech forest is mine."
+      }
     },
     {
       "name": "Punta Scutolo",
       "short_description": "A cliff promontory with a Second World War observation bunker.",
       "long_description": "The northern tip of Vico Equense's coastline juts out toward Naples. A reinforced concrete bunker built in 1943 by the Wehrmacht still stands at the cliff edge, its observation slits now framing postcard views of Vesuvius.",
-      "latitude": 40.6710, "longitude": 14.4260,
+      "latitude": 40.671,
+      "longitude": 14.426,
       "address": "Punta Scutolo, 80069 Vico Equense NA",
       "category": "Historic Trace",
       "image_url": "https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=1200",
       "trigger_radius_m": 50,
       "hours": "Always accessible",
       "fun_fact": "During the Allied landings in September 1943 the bunker was surrendered without a shot by its 14 German defenders.",
-      "interest_tags": ["history", "sceneries", "local_legends"],
-      "opening_line": { "en": "A wartime bunker, now pointed at Vesuvius. No one fires anymore." }
+      "interest_tags": [
+        "history",
+        "sceneries",
+        "local_legends"
+      ],
+      "opening_line": {
+        "en": "A wartime bunker, now pointed at Vesuvius. No one fires anymore."
+      }
     },
     {
       "name": "Pasticceria Gabriele 1875 — Forno",
       "short_description": "The back kitchen where Sorrento lemon sfogliatelle are shaped by hand.",
       "long_description": "Behind the public counter of Gelateria Gabriele, the Gabriele family still rolls sfogliatelle from cold laminated dough brushed with lard, one at a time. Visitors with the know-how can watch through a side window on weekday mornings.",
-      "latitude": 40.6627, "longitude": 14.4322,
+      "latitude": 40.6627,
+      "longitude": 14.4322,
       "address": "Corso Umberto I 5, 80069 Vico Equense NA",
       "category": "Artisan Workshop",
       "image_url": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200",
       "trigger_radius_m": 25,
       "hours": "Tue–Sun 07:00–10:00 (observation window)",
       "fun_fact": "The lamination rolls at 4°C to keep the lard crystalline — the secret to a shatter-crisp shell.",
-      "interest_tags": ["food", "curios", "shopping"],
-      "opening_line": { "en": "Sfogliatelle are rolled here every morning at seven. The lard is always cold." }
+      "interest_tags": [
+        "food",
+        "curios",
+        "shopping"
+      ],
+      "opening_line": {
+        "en": "Sfogliatelle are rolled here every morning at seven. The lard is always cold."
+      }
     },
     {
       "name": "Chiostro di San Salvatore",
       "short_description": "A 14th-century cloister hidden inside the old hospital.",
       "long_description": "Behind the walls of the former Conservatorio di San Salvatore, a small Gothic cloister with 24 slender columns remains open to the public. The well at its centre still yields drinkable water — used by the nuns until 1946.",
-      "latitude": 40.6623, "longitude": 14.4329,
+      "latitude": 40.6623,
+      "longitude": 14.4329,
       "address": "Via San Salvatore, 80069 Vico Equense NA",
       "category": "Hidden Cloister",
       "image_url": "https://images.unsplash.com/photo-1551022372-0bdac482b9d6?w=1200",
       "trigger_radius_m": 35,
       "hours": "Mon–Fri 09:00–12:00",
       "fun_fact": "Twenty-four columns, for the twenty-four hours of the canonical day.",
-      "interest_tags": ["architecture", "history", "sceneries"],
-      "opening_line": { "en": "Twenty-four columns, one for each hour of a canonical day. The well still answers." }
+      "interest_tags": [
+        "architecture",
+        "history",
+        "sceneries"
+      ],
+      "opening_line": {
+        "en": "Twenty-four columns, one for each hour of a canonical day. The well still answers."
+      }
     },
     {
       "name": "Bar Centrale",
       "short_description": "A 1934 café on Corso Umberto, the town's living room.",
       "long_description": "The marble counter at Bar Centrale has served espresso continuously since 1934. In the 1960s it was the unofficial meeting point for the directors of Neapolitan cinema escaping Roma's heat — De Sica, Fellini, Leone all signed its guestbook.",
-      "latitude": 40.6625, "longitude": 14.4324,
+      "latitude": 40.6625,
+      "longitude": 14.4324,
       "address": "Corso Umberto I 12, 80069 Vico Equense NA",
       "category": "Historic Café",
       "image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200",
       "trigger_radius_m": 25,
       "hours": "Daily 06:30–23:00",
       "fun_fact": "The guestbook contains Federico Fellini's handwritten note: 'qui si pensa meglio' (one thinks better here).",
-      "interest_tags": ["food", "history", "curios"],
-      "opening_line": { "en": "Fellini wrote here that one thinks better in my chairs. Find a seat." }
+      "interest_tags": [
+        "food",
+        "history",
+        "curios"
+      ],
+      "opening_line": {
+        "en": "Fellini wrote here that one thinks better in my chairs. Find a seat."
+      }
     },
     {
       "name": "Giardino Aranci di Vico",
       "short_description": "A secret orange garden inside the old episcopal palace.",
       "long_description": "A private 19th-century orange grove kept by the Bishop of Sorrento-Castellammare, planted with rare bitter-orange cultivars for sacramental essence. Opens to the public three times a year during the Festival dei Limoni.",
-      "latitude": 40.6621, "longitude": 14.4319,
+      "latitude": 40.6621,
+      "longitude": 14.4319,
       "address": "Via Vescovado, 80069 Vico Equense NA",
       "category": "Hidden Garden",
       "image_url": "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=1200",
       "trigger_radius_m": 40,
       "hours": "Open during Festa dei Limoni (May)",
       "fun_fact": "Three of its trees are clones of a 1602 specimen from the Farnese gardens in Rome.",
-      "interest_tags": ["sceneries", "history", "curios"],
-      "opening_line": { "en": "My bitter oranges perfume a Pope's chrism. Smell the chapel before you see it." }
+      "interest_tags": [
+        "sceneries",
+        "history",
+        "curios"
+      ],
+      "opening_line": {
+        "en": "My bitter oranges perfume a Pope's chrism. Smell the chapel before you see it."
+      }
     },
     {
       "name": "Torre dell'Annunziata Vecchia",
       "short_description": "A ruined 15th-century bell tower overlooking the bay.",
       "long_description": "The original bell tower of Santissima Annunziata, struck by lightning in 1632 and left half-standing. Its foundations now hold a wrought-iron cross visible from the sea — used as a navigation marker by local fishermen.",
-      "latitude": 40.6617, "longitude": 14.4302,
+      "latitude": 40.6617,
+      "longitude": 14.4302,
       "address": "Via Vescovado, 80069 Vico Equense NA",
       "category": "Historic Trace",
       "image_url": "https://images.unsplash.com/photo-1599386345770-dfc9fdc68d3f?w=1200",
       "trigger_radius_m": 30,
       "hours": "Always accessible",
       "fun_fact": "Fishermen call it 'a' crocetta — the little cross — and still use it as a visual marker.",
-      "interest_tags": ["history", "sceneries", "local_legends"],
-      "opening_line": { "en": "Lightning left me half a tower in 1632. Fishermen still steer by my cross." }
+      "interest_tags": [
+        "history",
+        "sceneries",
+        "local_legends"
+      ],
+      "opening_line": {
+        "en": "Lightning left me half a tower in 1632. Fishermen still steer by my cross."
+      }
     },
     {
       "name": "Macelleria De Gennaro",
       "short_description": "The 1891 butcher's shop famous for Vesuvian 'annecchia' salami.",
       "long_description": "Opened by Vincenzo De Gennaro in 1891, still run by his descendants. The shop cures its own annecchia (Vesuvian young-bull salami) in the original rock cellar carved into the hill behind the counter.",
-      "latitude": 40.6628, "longitude": 14.4332,
+      "latitude": 40.6628,
+      "longitude": 14.4332,
       "address": "Via Roma 22, 80069 Vico Equense NA",
       "category": "Historic Shop",
       "image_url": "https://images.unsplash.com/photo-1542367592-8849eb950fd8?w=1200",
       "trigger_radius_m": 25,
       "hours": "Tue–Sat 07:00–13:30, 17:00–20:00",
       "fun_fact": "The cellar maintains a year-round 12°C from the volcanic rock — no electricity needed.",
-      "interest_tags": ["food", "history", "shopping"],
-      "opening_line": { "en": "My rock cellar stays at twelve degrees, year-round. The salami knows." }
+      "interest_tags": [
+        "food",
+        "history",
+        "shopping"
+      ],
+      "opening_line": {
+        "en": "My rock cellar stays at twelve degrees, year-round. The salami knows."
+      }
     },
     {
       "name": "Belvedere Marinella",
       "short_description": "A cliff terrace with a 1910 wrought-iron gazebo.",
       "long_description": "A small public terrace built in 1910 as part of Vico's Belle Époque seafront promenade. Its wrought-iron gazebo, restored in 2019, shelters a marble bench where locals still take evening coffee overlooking the bay.",
-      "latitude": 40.6618, "longitude": 14.4328,
+      "latitude": 40.6618,
+      "longitude": 14.4328,
       "address": "Belvedere Marinella, 80069 Vico Equense NA",
       "category": "Scenic Viewpoint",
       "image_url": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1200",
       "trigger_radius_m": 30,
       "hours": "Always accessible",
       "fun_fact": "The gazebo's original blueprints are in the Capodimonte archives, signed 'F. Luigi Caldieri, ing.'",
-      "interest_tags": ["sceneries", "architecture", "history"],
-      "opening_line": { "en": "Sit on my marble bench at sunset. Vesuvius turns rose, then violet, then indigo." }
+      "interest_tags": [
+        "sceneries",
+        "architecture",
+        "history"
+      ],
+      "opening_line": {
+        "en": "Sit on my marble bench at sunset. Vesuvius turns rose, then violet, then indigo."
+      }
     }
-  ]
+  ],
+  "narrator": {
+    "intro": {
+      "it": "Mi chiamano in molti modi — Aequa ai tempi degli Etruschi, Vico Equense dai Longobardi, 'a Vico dai miei figli quando parlano di me sottovoce. Sono una città a picco sul mare, e il mare mi conosce da sempre. \n\nIl vento del Tirreno mi consuma dal 1320: le campane della Santissima Annunziata hanno suonato per sette secoli senza mai stancarsi. Nel 1732 un terremoto mi ha spaccata in due; ho ricostruito le mie chiese pietra su pietra, e dalla mia scogliera guardo ancora Ischia nelle mattine limpide e Capri al tramonto. \n\nNel 1284 Carlo II d'Angiò mi ha lasciato un castello. La famiglia Giusso lo abita da diciannove generazioni — sì, la stessa famiglia, dal 1694. Il mio poeta Silio Italico scelse le mie scogliere per morire nell'anno 101 dopo Cristo; sotto Piazza Umberto riposano ancora le sue ceneri. \n\nMa non ti parlo solo di pietre. Nel 1895 ho aperto le terme di Scrajo, e Enrico Caruso veniva a bagnarsi nelle mie acque sulfuree prima dei concerti estivi. Nel 1960, al numero 15 di via Nicotera, Gigino Dell'Amura ha inventato la pizza a metro perché un pullman di pellegrini aveva fame. Sophia Loren ne ha ordinata una di due metri nel '72. Da Gabriele macino limoni di Sorrento dal 1875, e nel 1978 al mio bancone è nata la delizia al limone come la conosci oggi. \n\nDiciotto luoghi ti aspettano tra le mie stradine e le mie scogliere — una torre normanna dove i saraceni non sono mai passati, un chiostro gotico con ventiquattro colonne per le ventiquattro ore del giorno canonico, un giardino segreto di aranci amari che profumano il crisma di un Papa, un bunker del '43 che ora punta pacifico al Vesuvio. \n\nNon li devi cercare. Cammina. Saranno loro a sfiorarti il polso quando ci passerai vicino. Io sono qui. E ti parlo.",
+      "en": "They call me by many names — Aequa to the Etruscans, Vico Equense since the Lombards, 'a Vico when my children speak of me under their breath. I am a cliffside town over the sea, and the sea has always known me. \n\nThe Tyrrhenian wind has scoured me since 1320: the bells of Santissima Annunziata have rung for seven centuries without tiring. In 1732 an earthquake split me in two; I rebuilt my churches stone by stone, and from my cliff I still watch Ischia on clear mornings and Capri at dusk. \n\nIn 1284 Charles of Anjou left me a castle. The Giusso family has called it home for nineteen generations — yes, the same family, since 1694. My poet Silius Italicus chose my shores to die on in AD 101; his ashes still rest beneath Piazza Umberto. \n\nBut I am not only stones. In 1895 I opened the Scrajo thermal baths, and Enrico Caruso would soak in my sulphur springs before his summer concerts. In 1960, at number 15 of Via Nicotera, Gigino Dell'Amura invented pizza-by-the-metre because a bus of pilgrims was hungry. Sophia Loren ordered one two metres long in '72. At Gabriele's I have been grinding Sorrento lemons by hand since 1875, and in 1978 the delizia al limone as you know it was perfected right at my counter. \n\nEighteen places wait for you between my streets and my cliffs — a Norman watchtower the Saracens never passed, a Gothic cloister with twenty-four columns for the twenty-four hours of the canonical day, a secret garden of bitter oranges that perfume a Pope's chrism, a 1943 bunker now pointed peacefully at Vesuvius. \n\nYou don't need to search for them. Walk. They will quietly reach for your wrist when you pass close enough. I am here. And I am speaking to you."
+    }
+  }
 }

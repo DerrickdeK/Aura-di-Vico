@@ -133,6 +133,7 @@ def public_area(slug: str | None = None) -> dict:
         "map": cfg.get("map", {}),
         "palette": cfg.get("palette", {}),
         "landmarks": cfg.get("landmarks", []),
+        "narrator": cfg.get("narrator", {}),
     }
 
 
@@ -155,6 +156,18 @@ def merged_area(overrides: dict | None = None, slug: str | None = None) -> dict:
     for k in ("brand", "area", "city", "tagline"):
         if k in overrides and isinstance(overrides[k], dict):
             out[k] = {**base.get(k, {}), **overrides[k]}
+    # Narrator has a nested `intro: {it, en}` — deep-merge so an admin can
+    # edit one language without wiping the other.
+    if isinstance(overrides.get("narrator"), dict):
+        base_narr = base.get("narrator", {}) or {}
+        ov_narr = overrides["narrator"]
+        merged = {**base_narr}
+        for k, v in ov_narr.items():
+            if isinstance(v, dict) and isinstance(base_narr.get(k), dict):
+                merged[k] = {**base_narr[k], **v}
+            else:
+                merged[k] = v
+        out["narrator"] = merged
     if isinstance(overrides.get("map"), dict):
         out["map"] = {**base.get("map", {}), **overrides["map"]}
     if isinstance(overrides.get("palette"), dict):

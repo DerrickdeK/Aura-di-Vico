@@ -90,6 +90,14 @@ const STRINGS = {
       admin: "Admin",
     },
 
+    narrator: {
+      eyebrow: "A voice from {area}",
+      hear: "Hear her speak",
+      stop: "Stop listening",
+      skip: "Continue in silence",
+      next: "Walk with her →",
+    },
+
     contribute: {
       eyebrow: "Contribute",
       title: "Give {area} a new voice",
@@ -376,6 +384,14 @@ const STRINGS = {
       profile: "Profilo",
       signIn: "Accedi",
       admin: "Admin",
+    },
+
+    narrator: {
+      eyebrow: "Una voce da {area}",
+      hear: "Ascolta la sua voce",
+      stop: "Ferma l'ascolto",
+      skip: "Continua in silenzio",
+      next: "Cammina con lei →",
     },
 
     contribute: {
