@@ -1,0 +1,140 @@
+{
+  "slug": "oltrarno-florence",
+  "brand": {
+    "it": "Aura di Oltrarno",
+    "en": "Aura di Oltrarno"
+  },
+  "area": {
+    "it": "Oltrarno",
+    "en": "Oltrarno"
+  },
+  "city": {
+    "it": "Firenze",
+    "en": "Florence"
+  },
+  "tagline": {
+    "it": "Dove l'artigianato sussurra ancora",
+    "en": "Where craftsmanship still whispers"
+  },
+  "map": {
+    "center": {
+      "lat": 43.765,
+      "lng": 11.248
+    },
+    "default_zoom": 15,
+    "landing_zoom": 14
+  },
+  "palette": {
+    "bg": "#FBF8F3",
+    "surface": "#FFFFFF",
+    "map-water": "#B8D4E8",
+    "text-primary": "#2B2520",
+    "text-secondary": "#6B5D52",
+    "text-tertiary": "#998F85",
+    "inverse": "#FBF8F3",
+    "terracotta": "#C85A3F",
+    "deep-green": "#3A5944",
+    "warm-ochre": "#D4A574",
+    "border": "#E8DFD3"
+  },
+  "landmarks": [
+    {
+      "id": "palazzo-pitti",
+      "name": {
+        "it": "Palazzo Pitti",
+        "en": "Pitti Palace"
+      },
+      "note": {
+        "it": "Il palazzo mediceo che domina l'Oltrarno con i suoi giardini monumentali.",
+        "en": "The Medici palace dominating Oltrarno with monumental gardens behind."
+      },
+      "voice": {
+        "it": "Dove la grandezza dei Medici si specchia nel verde dei giardini",
+        "en": "Where Medici grandeur mirrors itself in garden greens"
+      },
+      "intro": {
+        "it": "Costruito per il banchiere Luca Pitti nel 1458, questo palazzo rinascimentale divenne residenza dei Granduchi di Toscana. Dietro la severa facciata in bugnato si celano otto musei e i magnifici Giardini di Boboli, testimoni silenziosi di secoli di potere fiorentino.",
+        "en": "Built for banker Luca Pitti in 1458, this Renaissance palace became the Tuscan Grand Dukes' residence. Behind the austere rusticated facade hide eight museums and the magnificent Boboli Gardens, silent witnesses to centuries of Florentine power and artistry."
+      },
+      "latitude": 43.765,
+      "longitude": 11.25,
+      "address": "Piazza de' Pitti, 1, 50125 Firenze",
+      "short_description": "Renaissance palace housing museums and Boboli Gardens",
+      "canonical_facts": []
+    },
+    {
+      "id": "santo-spirito",
+      "name": {
+        "it": "Basilica di Santo Spirito",
+        "en": "Basilica of Santo Spirito"
+      },
+      "note": {
+        "it": "Capolavoro brunelleschiano nascosto dietro una facciata incompiuta.",
+        "en": "Brunelleschi masterpiece hidden behind an unfinished facade."
+      },
+      "voice": {
+        "it": "Armonia perfetta celata sotto semplicità inaspettata",
+        "en": "Perfect harmony concealed beneath unexpected simplicity"
+      },
+      "intro": {
+        "it": "Progettata da Filippo Brunelleschi nel 1428, la basilica nasconde un interno di stupefacente eleganza dietro la sua facciata spoglia. Le quaranta colonne corinzie creano un ritmo perfetto che incarna l'ideale rinascimentale di proporzione e luce. La piazza antistante pulsa di vita artigiana quotidiana.",
+        "en": "Designed by Filippo Brunelleschi in 1428, the basilica conceals an interior of stunning elegance behind its bare facade. Forty Corinthian columns create perfect rhythm embodying the Renaissance ideal of proportion and light. The piazza outside pulses with daily artisan life."
+      },
+      "latitude": 43.7675,
+      "lng": 11.2465,
+      "address": "Piazza Santo Spirito, 30, 50125 Firenze",
+      "short_description": "Brunelleschi's harmonious Renaissance church facing a lively square",
+      "canonical_facts": [],
+      "longitude": 11.2484
+    },
+    {
+      "id": "ponte-vecchio",
+      "name": {
+        "it": "Ponte Vecchio",
+        "en": "Ponte Vecchio"
+      },
+      "note": {
+        "it": "Il ponte medievale dove gli orafi espongono da cinque secoli.",
+        "en": "The medieval bridge where goldsmiths have displayed for five centuries."
+      },
+      "voice": {
+        "it": "Dove l'oro brilla sospeso tra due rive del tempo",
+        "en": "Where gold gleams suspended between two shores of time"
+      },
+      "intro": {
+        "it": "Costruito nel 1345, l'unico ponte fiorentino risparmiato dalla guerra ospita botteghe orafe dal 1593, quando Ferdinando I espulse i macellai. Il Corridoio Vasariano corre sopra le teste dei passanti, collegando Palazzo Vecchio a Palazzo Pitti in un percorso segreto mediceo ancora percorribile.",
+        "en": "Built in 1345, Florence's only bridge spared by war has housed goldsmith shops since 1593, when Ferdinando I expelled the butchers. The Vasari Corridor runs above visitors' heads, connecting Palazzo Vecchio to Pitti Palace in a secret Medici passage still walkable today."
+      },
+      "latitude": 43.7679,
+      "longitude": 11.253,
+      "address": "Ponte Vecchio, 50125 Firenze",
+      "short_description": "Medieval bridge lined with historic goldsmith workshops",
+      "canonical_facts": []
+    },
+    {
+      "id": "giardino-bardini",
+      "name": {
+        "it": "Giardino Bardini",
+        "en": "Bardini Garden"
+      },
+      "note": {
+        "it": "Giardino barocco che regala la vista più bella di Firenze.",
+        "en": "Baroque garden offering Florence's most beautiful view."
+      },
+      "voice": {
+        "it": "Dove i cipressi incorniciano la cupola di Brunelleschi",
+        "en": "Where cypresses frame Brunelleschi's dome perfectly"
+      },
+      "intro": {
+        "it": "Recuperato negli anni Duemila dopo decenni di abbandono, questo giardino barocco del Seicento sale in terrazze panoramiche sopra l'Oltrarno. Le scalinate di glicini, la collezione di ortensie e la vista mozzafiato sul Duomo ne fanno un rifugio segreto lontano dalle folle turistiche del centro.",
+        "en": "Restored in the 2000s after decades of abandonment, this seventeenth-century baroque garden rises in panoramic terraces above Oltrarno. Wisteria staircases, hydrangea collections, and breathtaking views of the Duomo make it a secret refuge far from tourist crowds downtown."
+      },
+      "latitude": 43.7625,
+      "longitude": 11.259,
+      "address": "Via dei Bardi, 1, 50125 Firenze",
+      "short_description": "Restored baroque hillside garden with panoramic city views",
+      "canonical_facts": []
+    }
+  ],
+  "pois": []
+}

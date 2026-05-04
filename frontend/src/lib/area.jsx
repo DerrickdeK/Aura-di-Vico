@@ -47,7 +47,13 @@ export function AreaProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-    api.get("/area")
+    // Forward the browser URL's ?tenant= to the API so the preview can
+    // switch cities without a subdomain (main-app deploys can rely on
+    // subdomain resolution instead).
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const tenant = new URLSearchParams(search).get("tenant");
+    const path = tenant ? `/area?tenant=${encodeURIComponent(tenant)}` : "/area";
+    api.get(path)
       .then(({ data }) => {
         if (cancelled) return;
         setArea(data);
