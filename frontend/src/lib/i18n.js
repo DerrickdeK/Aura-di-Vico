@@ -98,6 +98,13 @@ const STRINGS = {
       next: "Walk with her →",
     },
 
+    pocket: {
+      prompt: "Whispers in your pocket?",
+      enable: "Yes, let her call",
+      enabling: "…",
+      enabled: "She'll call you from your pocket.",
+    },
+
     contribute: {
       eyebrow: "Contribute",
       title: "Give {area} a new voice",
@@ -392,6 +399,13 @@ const STRINGS = {
       stop: "Ferma l'ascolto",
       skip: "Continua in silenzio",
       next: "Cammina con lei →",
+    },
+
+    pocket: {
+      prompt: "Sussurri in tasca?",
+      enable: "Sì, fatti chiamare",
+      enabling: "…",
+      enabled: "Ti chiamerà dalla tasca.",
     },
 
     contribute: {

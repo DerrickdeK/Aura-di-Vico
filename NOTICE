@@ -1,0 +1,95 @@
+# Aura — Notice of Authorship, License, and Commercial Options
+
+## Copyright
+
+Copyright © 2026 The Aura di Vico Equense authors and contributors.
+All rights reserved, except as granted by the licenses below.
+
+## Primary License — AGPL-3.0
+
+This software is released under the **GNU Affero General Public License,
+version 3.0 or later (AGPL-3.0-or-later)**. The full text of the license
+is in the `LICENSE` file at the root of this repository.
+
+In plain language, this license guarantees that:
+
+1. **You may** use, study, modify, and redistribute this software freely.
+2. **You may** run a modified version as a web service, on your own
+   infrastructure, for any purpose (commercial or non-commercial).
+3. **If you do run a modified version as a web service, you MUST** make
+   the complete corresponding source code of *your* modifications
+   available to every user of that service, under the same AGPL-3.0
+   terms. The license text explains how.
+4. **You may not** relicense the software under a more restrictive
+   license, remove copyright notices, or distribute it without this
+   NOTICE file and the LICENSE file.
+
+The intent is simple: the code is a commons. Every improvement anyone
+makes to the public fork must flow back to the public fork.
+
+## Optional Commercial License
+
+If you wish to use this software in a way that is **incompatible with
+AGPL-3.0** — for example, to run a modified, private, closed-source
+fork as part of a proprietary hotel-chain platform, tourism portal, or
+other commercial product where your source code cannot be disclosed —
+you may obtain a separate commercial license from the copyright holder.
+
+**To request a commercial license, contact:**
+
+> *(contact email to be added by the maintainer)*
+
+A commercial license typically covers:
+
+- Private forks (no obligation to publish your modifications)
+- Warranty and technical support arrangements
+- Custom branding and white-label deployments
+- Indemnification from AGPL-3.0 obligations for your deployment only
+
+The commercial license is offered case-by-case. Non-profits, schools,
+municipalities, student projects, and open-source community forks are
+always welcome under the free AGPL-3.0 license — no commercial license
+is required in those cases.
+
+## Trademark Notice
+
+The names **"Aura"**, **"Aura di Vico Equense"**, and the associated
+whisper-walking concept are trademarks-in-use of the original authors.
+The AGPL-3.0 grants rights to the *software source code only*, not to
+the product name or brand identity.
+
+If you fork and modify this software, you **must rename your fork**
+to something distinct (e.g., "Sorrento Whispers", "Coastal Echo",
+"Your-City Discover") so there is no confusion between the original
+project and community or commercial derivatives.
+
+The `area.config.json` template is explicitly designed to make a fork
+and rename a two-minute operation (change brand, area, city, tagline,
+palette, landmarks). Please use it.
+
+## Third-party components
+
+This software uses several third-party open-source libraries and
+services, each under its own license. The relevant upstream licenses
+continue to apply to their respective components; nothing in this
+NOTICE overrides them. Notable:
+
+- **React, React Router** (MIT) — https://react.dev
+- **FastAPI, Motor, Pydantic** (MIT / BSD) — https://fastapi.tiangolo.com
+- **Leaflet, OpenStreetMap tiles** (BSD-2-Clause / ODbL)
+- **Framer Motion, Lucide Icons, Tailwind CSS, shadcn/ui** (MIT)
+- **Pillow** (HPND / MIT-CMU)
+- **Anthropic SDK, Resend SDK** (MIT) — requires the user's own API keys
+- **Emergent Integrations, Emergent LLM Universal Key** (commercial, optional)
+
+The Emergent-platform scripts and "Made with Emergent" badge are
+**optional** and may be removed by a forker without affecting
+functionality.
+
+## Contributing
+
+Contributions are welcome under the AGPL-3.0 terms. By submitting a pull
+request, you agree that your contribution will be licensed under
+AGPL-3.0. If the project later adopts a Contributor License Agreement
+(CLA) to enable the dual-licensing model for new commercial agreements,
+contributors will be asked to sign it individually.

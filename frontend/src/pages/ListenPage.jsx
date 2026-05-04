@@ -13,6 +13,7 @@ import ListeningCompass from "../components/ListeningCompass";
 import WhisperCard from "../components/WhisperCard";
 import POIDrawer from "../components/POIDrawer";
 import VirtualNavPanel from "../components/VirtualNavPanel";
+import PocketModeChip from "../components/PocketModeChip";
 import { unlockAudio } from "../lib/audio";
 import { speak, stopSpeaking, unlockSpeech } from "../lib/speech";
 import { t, getOpeningLine } from "../lib/i18n";
@@ -122,6 +123,7 @@ export default function ListenPage() {
 
   return (
     <div className="min-h-screen pb-28 px-5 pt-12 max-w-xl mx-auto" data-testid="listen-page">
+      <PocketModeChip />
       <header className="text-center">
         <p className="eyebrow">{locationLabel || "—"} {virtualOn && t(language, "listen.virtualBadge")}</p>
         <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-none">
