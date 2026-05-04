@@ -21,6 +21,11 @@ from typing import Optional
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
+try:
+    from anthropic import AsyncAnthropic
+except ImportError:
+    AsyncAnthropic = None  # type: ignore
+
 logger = logging.getLogger("brera.area_clone")
 
 MODEL_PROVIDER = "anthropic"
@@ -104,27 +109,66 @@ def _extract_json(raw: str) -> dict:
     return json.loads(s)
 
 
+async def _suggest_via_anthropic(user_text: str, api_key: str) -> str:
+    """Direct Anthropic SDK call — used when ANTHROPIC_API_KEY is set so
+    we bypass the Emergent LLM gateway budget. Returns the raw model
+    text."""
+    if AsyncAnthropic is None:
+        raise RuntimeError("anthropic SDK not installed; run `pip install anthropic`.")
+    client = AsyncAnthropic(api_key=api_key)
+    resp = await client.messages.create(
+        model=MODEL_NAME,
+        max_tokens=MAX_OUTPUT,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": user_text}],
+    )
+    # Anthropic returns content blocks — concatenate all text blocks
+    parts = []
+    for block in resp.content or []:
+        text = getattr(block, "text", None)
+        if text:
+            parts.append(text)
+    return "".join(parts)
+
+
+async def _suggest_via_emergent(user_text: str, session_id: str) -> str:
+    """Fallback path — uses the shared Emergent LLM key. Subject to the
+    account-wide Universal Key budget cap."""
+    api_key = (os.environ.get("EMERGENT_LLM_KEY") or "").strip()
+    if not api_key:
+        raise RuntimeError("No LLM credentials configured (set ANTHROPIC_API_KEY or EMERGENT_LLM_KEY).")
+    chat = LlmChat(
+        api_key=api_key,
+        session_id=session_id,
+        system_message=SYSTEM_PROMPT,
+    ).with_model(MODEL_PROVIDER, MODEL_NAME).with_params(max_tokens=MAX_OUTPUT)
+    return await chat.send_message(UserMessage(text=user_text))
+
+
 async def suggest_area(city_name: str, country: Optional[str] = None,
                        vibe: Optional[str] = None,
                        session_id: Optional[str] = None) -> dict:
-    """Ask Claude for a starter area config. Raises RuntimeError on LLM
-    failure or JSON-parse failure — caller should surface as HTTP 502."""
-    api_key = (os.environ.get("EMERGENT_LLM_KEY") or "").strip()
-    if not api_key:
-        raise RuntimeError("EMERGENT_LLM_KEY is not configured; clone wizard disabled.")
+    """Ask Claude for a starter area config. Prefers a user-provided
+    Anthropic key (``ANTHROPIC_API_KEY``) over the shared Emergent
+    gateway so individual developers can bypass the Universal Key cap.
 
-    chat = LlmChat(
-        api_key=api_key,
-        session_id=session_id or f"area-clone-{_slugify(city_name)}",
-        system_message=SYSTEM_PROMPT,
-    ).with_model(MODEL_PROVIDER, MODEL_NAME).with_params(max_tokens=MAX_OUTPUT)
-
+    Raises RuntimeError on LLM failure or JSON-parse failure — caller
+    should surface as HTTP 502.
+    """
+    anthropic_key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
     user_text = _build_user_prompt(city_name, country, vibe)
+    session = session_id or f"area-clone-{_slugify(city_name)}"
+
     try:
-        raw = await chat.send_message(UserMessage(text=user_text))
+        if anthropic_key:
+            logger.info("Clone: using direct Anthropic key (bypasses Emergent cap).")
+            raw = await _suggest_via_anthropic(user_text, anthropic_key)
+        else:
+            logger.info("Clone: using Emergent LLM key (subject to Universal Key budget).")
+            raw = await _suggest_via_emergent(user_text, session)
     except Exception as err:
         logger.error("Clone LLM call failed: %s", err, exc_info=True)
-        raise RuntimeError(f"Claude call failed: {err}") from err
+        raise RuntimeError(f"LLM call failed: {err}") from err
 
     try:
         data = _extract_json(raw or "")
