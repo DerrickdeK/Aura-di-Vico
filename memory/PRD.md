@@ -87,6 +87,15 @@ All chip groups allow zero selections (treated as "no preference"). Personal-mod
   - 26+ new tests (`test_iter10_phases.py`, `test_tenants.py`). Testing-agent auto-fixed a wrong-import compile-blocker in `GiftStatsCard.jsx` (`../lib/api` → `../../lib/api`).
   - Cosmetic: updated the photo_url i18n hint (EN + IT) now that uploads are live.
 
+- **Iteration 13 (Feb 2026)** — **Vico Equense pivot** (pre-mayor-demo cleanup, 153/155 pytest PASS):
+  - **Default tenant flipped** from `brera-milano` → `vico-equense`. `/app/area.config.json` seed replaced with the Vico config; the old Brera JSON preserved at `/app/configs/brera-milano.json` so `?tenant=brera-milano` still serves the original Milan experience (reversible, zero data loss).
+  - **`tenants.py`** — `default_tenant()` falls back to `vico-equense`; `available_tenants()` now enumerates `/app/configs/*.json` + the active default-seed slug (no hardcoded Brera). **`area_config.py`** — `_tenant_path(slug)` maps any slug matching the currently-loaded default to `/app/area.config.json` (decoupled from Brera).
+  - **`.env`** — `DEFAULT_TENANT_SLUG="vico-equense"`, `SENDER_EMAIL="Aura di Vico Equense <onboarding@resend.dev>"`, Anthropic API key rotated and re-wired.
+  - **Area-aware copy**: `mailer.py` (subject + footer + "…joins the ones {area} will tell…"), `share_card.py` (OG headline + eyebrow + site_name + footer), `safety.py` (system prompt) all now pull `brand/area/city` from the active area config instead of hardcoding "Brera" / "Milano". OG cards now render `"Marco ha invitato Anna a camminare per Vico Equense"`.
+  - **Frontend**: `public/index.html` (title, meta description, apple-web-app-title), `public/manifest.json` (name + short_name + description), `public/service-worker.js` (notification fallback) all re-branded Vico. `lib/i18n.js` landing eyebrow is now `{city} · {tagline}` (auto-pulls "LA CITTÀ A PICCO SUL MARE" from area config) instead of the hardcoded "bohemian quarter". `status.citizen` changed from "Citizen of Milan" → "Local resident" / "Residente locale". `POICoordPicker` search placeholder de-Milano'd.
+  - **Tests updated**: `test_area_config.py` now asserts Vico defaults + Vico landmark ids. Added 8 new Vico-specific regression tests (153 total passing, 0 regressions, same 2 pre-existing Brera-only skips).
+  - Security: last-session's Anthropic key exposed in chat was rotated; successor key wired at `ANTHROPIC_API_KEY`. Follow-up: rotate again after demo + set per-key monthly cap in Anthropic Console.
+
 ## Backlog
 - **P0** — Wire the *Brera-as-narrator* intro story (700-word monologue I drafted) right after the language pick on first run; English & Italian written; other 5 languages fallback to English until students translate.
 - **P1** — AI-supported dialogue per POI (`response_formats.dialogue`): each POI becomes a character via Emergent LLM key (Claude/GPT) with a per-POI system prompt; seeded by approved `dialogue_prompt` contributions.
