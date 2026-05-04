@@ -69,7 +69,7 @@ export default function POICoordPicker({ latitude, longitude, address, onChange 
         place(lat, lng);
         setSearchTarget({ lat, lng });
       } else {
-        setSearchError("No match — try adding 'Milano' to the address.");
+        setSearchError("No match — try adding the city name to the address.");
       }
     } catch (err) {
       setSearchError(err.message);
@@ -87,7 +87,7 @@ export default function POICoordPicker({ latitude, longitude, address, onChange 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); searchAddress(); } }}
-            placeholder="Search address (e.g. Via Brera 28, Milano)"
+            placeholder="Search address (e.g. street, city)"
             className="input-field text-sm flex-1"
             data-testid="poi-coord-search"
           />

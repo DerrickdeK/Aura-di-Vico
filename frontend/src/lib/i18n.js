@@ -17,7 +17,7 @@ const STRINGS = {
     silenceGeoOff: "Location is off — try the virtual walk to feel how it works.",
 
     landing: {
-      eyebrow: "{city} · the bohemian quarter",
+      eyebrow: "{city} · {tagline}",
       heroPart1: "In {area}, the hidden places",
       heroPart2: "whisper to you.",
       heroIntro: "A 240-year-old ginkgo behind a gate. A 1933 milk bar with twelve tables. Napoleon as a Roman god, twice life-size, in a courtyard most tourists walk past. You don't search for them — they will quietly reach for your wrist when you walk near.",
@@ -228,7 +228,7 @@ const STRINGS = {
       prefer_not_to_say: "Prefer not to say",
     },
     status: {
-      citizen: "Citizen of Milan",
+      citizen: "Local resident",
       visitor: "Visitor",
       guest: "Guest",
       tourist: "Tourist",
@@ -305,7 +305,7 @@ const STRINGS = {
     silenceGeoOff: "Posizione disattivata — prova la passeggiata virtuale per scoprire come funziona.",
 
     landing: {
-      eyebrow: "{city} · il quartiere bohémien",
+      eyebrow: "{city} · {tagline}",
       heroPart1: "A {area}, i luoghi nascosti",
       heroPart2: "ti sussurrano.",
       heroIntro: "Un ginkgo di 240 anni dietro un cancello. Una latteria del 1933 con dodici tavoli. Napoleone come dio romano, due volte a grandezza naturale, in un cortile davanti a cui quasi tutti passano. Non li devi cercare — saranno loro a sfiorarti il polso quando ci passerai vicino.",
@@ -516,7 +516,7 @@ const STRINGS = {
       prefer_not_to_say: "Preferisco non dirlo",
     },
     status: {
-      citizen: "Cittadino milanese",
+      citizen: "Residente locale",
       visitor: "Visitatore",
       guest: "Ospite",
       tourist: "Turista",

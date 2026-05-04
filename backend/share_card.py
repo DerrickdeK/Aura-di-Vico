@@ -27,15 +27,34 @@ from html import escape as html_escape
 
 from PIL import Image, ImageDraw, ImageFont
 
-logger = logging.getLogger("brera.share")
+logger = logging.getLogger("aura.share")
 
 # ── Image dimensions ────────────────────────────────────────────────────
 OG_W, OG_H = 1200, 630
-# Brera palette (kept in sync with frontend CSS variables).
+# Default palette (kept in sync with frontend CSS variables).
 BG = (245, 240, 232)        # cream
 TERRACOTTA = (192, 86, 64)
 TEXT_PRIMARY = (40, 32, 28)
 TEXT_SECONDARY = (110, 95, 85)
+
+
+def _area_labels(lang: str) -> tuple[str, str, str]:
+    """Return (brand, area, city) from the active area.config.json with safe fallbacks."""
+    try:
+        from area_config import load_area
+        cfg = load_area()
+        def pick(key: str, default: str) -> str:
+            v = cfg.get(key)
+            if isinstance(v, dict):
+                return v.get(lang) or v.get("en") or default
+            return v or default
+        return (
+            pick("brand", "Aura"),
+            pick("area", "Aura"),
+            pick("city", ""),
+        )
+    except Exception:
+        return ("Aura", "Aura", "")
 
 
 def _pick_font(candidates: list[str], size: int) -> ImageFont.FreeTypeFont:
@@ -96,15 +115,17 @@ def render_og_image(sender: str, recipient: str, poi_count: int, lang: str = "it
     pad_x = 80
     text_max_w = OG_W - pad_x * 2
 
-    # Top eyebrow
-    eyebrow = "BRERA · MILANO" if lang != "it" else "BRERA · MILANO"
+    brand, area, city = _area_labels(lang)
+    area_upper = (area or "Aura").upper()
+    city_upper = (city or "").upper()
+    eyebrow = f"{area_upper} · {city_upper}" if city_upper else area_upper
     draw.text((pad_x, 60), eyebrow, font=eyebrow_font, fill=TERRACOTTA, spacing=8)
 
     # Headline
     if lang == "it":
-        headline = f"{sender} ha invitato {recipient} a camminare per Brera."
+        headline = f"{sender} ha invitato {recipient} a camminare per {area}."
     else:
-        headline = f"{sender} has invited {recipient} for a walk through Brera."
+        headline = f"{sender} has invited {recipient} for a walk through {area}."
     headline_lines = _wrap(draw, headline, headline_font, text_max_w)[:3]
     y = 130
     for line in headline_lines:
@@ -119,7 +140,8 @@ def render_og_image(sender: str, recipient: str, poi_count: int, lang: str = "it
     draw.text((pad_x, y + 12), sub, font=sub_font, fill=TEXT_SECONDARY)
 
     # Footer
-    draw.text((pad_x, OG_H - 70), "brera-discover · whisper-first walking", font=foot_font, fill=TEXT_SECONDARY)
+    foot = f"{brand} · whisper-first walking"
+    draw.text((pad_x, OG_H - 70), foot, font=foot_font, fill=TEXT_SECONDARY)
 
     out = io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -142,11 +164,12 @@ def render_share_html(itinerary: dict, frontend_url: str, og_image_url: str) -> 
     recipient = html_escape(itinerary.get("recipient_name", "") or "")
     n = len(itinerary.get("poi_ids", []) or [])
     lang = (itinerary.get("language") or "it").lower()
+    brand, area, _city = _area_labels(lang)
     if lang == "it":
-        title = f"{sender} ha invitato {recipient} a camminare per Brera"
+        title = f"{sender} ha invitato {recipient} a camminare per {area}"
         desc = f"Un dono: una passeggiata di {n} luoghi sussurrati, scelti con cura."
     else:
-        title = f"{sender} has invited {recipient} for a walk through Brera"
+        title = f"{sender} has invited {recipient} for a walk through {area}"
         desc = f"A gift: a walk of {n} whispered places, chosen with care."
     canonical = f"{frontend_url.rstrip('/')}/gift/{slug}"
 
@@ -168,7 +191,7 @@ def render_share_html(itinerary: dict, frontend_url: str, og_image_url: str) -> 
 <meta property="og:image:height" content="{OG_H}">
 <meta property="og:url" content="{html_escape(canonical)}">
 <meta property="og:locale" content="{'it_IT' if lang == 'it' else 'en_US'}">
-<meta property="og:site_name" content="Brera Discover">
+<meta property="og:site_name" content="{html_escape(brand)}">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{html_escape(title)}">

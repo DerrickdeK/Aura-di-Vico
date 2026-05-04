@@ -26,10 +26,10 @@ VERDICT_OK     = "ok"
 VERDICT_BLOCK  = "blocked"
 
 SCREENING_PROMPT = """You are a content-safety classifier for a community
-walking app for the historic Brera quarter of Milan. Students and curators
-submit short narratives, fun-facts and dialogue prompts about real places.
-Your job is to flag submissions that violate the project's social-cohesion
-mission.
+walking app that guides visitors around a designated urban area. Students
+and curators submit short narratives, fun-facts and dialogue prompts about
+real places within that area. Your job is to flag submissions that violate
+the project's social-cohesion mission.
 
 BLOCK if the submission contains any of:
 - Hate speech, slurs, or attacks on a protected group (race, religion, gender, orientation, nationality)

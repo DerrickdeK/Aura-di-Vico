@@ -34,11 +34,18 @@ _NON_TENANT_HOSTS: Iterable[str] = (
 
 def available_tenants() -> list[str]:
     """List slugs that have a matching /app/configs/<slug>.json file,
-    plus the built-in default config slug (`brera-milano`)."""
-    slugs = {"brera-milano"}  # default area.config.json
+    plus the slug baked into the active ``/app/area.config.json``."""
+    slugs: set[str] = set()
     if CONFIGS_DIR.is_dir():
         for p in CONFIGS_DIR.glob("*.json"):
             slugs.add(p.stem)
+    try:
+        from area_config import load_area
+        seeded = (load_area().get("slug") or "").strip()
+        if seeded:
+            slugs.add(seeded)
+    except Exception:
+        pass
     return sorted(slugs)
 
 
@@ -46,16 +53,16 @@ def default_tenant() -> str:
     """Slug used when no tenant can be resolved from the request.
 
     Falls back to the slug of the currently-loaded ``/app/area.config.json``
-    (via ``AREA_CONFIG_PATH``), then to ``brera-milano``. Set
+    (via ``AREA_CONFIG_PATH``), then to ``vico-equense``. Set
     ``DEFAULT_TENANT_SLUG`` to override explicitly."""
     explicit = (os.environ.get("DEFAULT_TENANT_SLUG") or "").strip()
     if explicit:
         return explicit
     try:
         from area_config import load_area
-        return (load_area().get("slug") or "brera-milano").strip()
+        return (load_area().get("slug") or "vico-equense").strip()
     except Exception:
-        return "brera-milano"
+        return "vico-equense"
 
 
 def _subdomain_of(host: str) -> str | None:

@@ -11,7 +11,7 @@ from area_config import reload_area, load_area, pois_seed, landmarks_dict, publi
 
 @pytest.fixture(autouse=True)
 def _pin_default_config(monkeypatch):
-    """These tests exercise the bundled Brera JSON regardless of which city
+    """These tests exercise the bundled default JSON regardless of which city
     the live server is currently pointing at (via AREA_CONFIG_PATH)."""
     monkeypatch.setenv("AREA_CONFIG_PATH", "/app/area.config.json")
     reload_area()
@@ -22,7 +22,7 @@ def _pin_default_config(monkeypatch):
 
 def test_default_config_loads():
     cfg = reload_area()
-    assert cfg["slug"] == "brera-milano"
+    assert cfg["slug"] == "vico-equense"
     assert "brand" in cfg and cfg["brand"]["it"]
     assert len(cfg["pois"]) >= 18
     assert len(cfg["landmarks"]) == 5
@@ -46,12 +46,13 @@ def test_pois_seed_is_list_of_dicts():
 
 def test_landmarks_dict_by_id():
     lms = landmarks_dict()
-    assert set(lms.keys()) >= {"accademia", "pinacoteca", "scala"}
-    accademia = lms["accademia"]
-    assert accademia["name"]
-    assert isinstance(accademia["canonical_facts"], list)
+    # Default (Vico Equense) ships with these five landmark ids.
+    assert set(lms.keys()) >= {"annunziata", "castello-giusso", "gabriele"}
+    landmark = lms["annunziata"]
+    assert landmark["name"]
+    assert isinstance(landmark["canonical_facts"], list)
     # opening_line is the voice map used by Claude
-    assert "it" in accademia["opening_line"] or "en" in accademia["opening_line"]
+    assert "it" in landmark["opening_line"] or "en" in landmark["opening_line"]
 
 
 def test_override_path_via_env(monkeypatch, tmp_path):

@@ -1,421 +1,433 @@
 {
-  "slug": "brera-milano",
+  "slug": "vico-equense",
   "brand": {
-    "en": "Aura di Brera",
-    "it": "Aura di Brera"
+    "en": "Aura di Vico Equense",
+    "it": "Aura di Vico Equense"
   },
   "area": {
-    "en": "Brera",
-    "it": "Brera"
+    "en": "Vico Equense",
+    "it": "Vico Equense"
   },
   "city": {
-    "en": "Milano",
-    "it": "Milano"
+    "en": "Sorrento Peninsula",
+    "it": "Penisola Sorrentina"
   },
   "tagline": {
-    "en": "the bohemian quarter",
-    "it": "il quartiere bohémien"
+    "en": "the cliffside coastal town",
+    "it": "la città a picco sul mare"
   },
   "map": {
-    "center": { "lat": 45.472, "lng": 9.188 },
+    "center": { "lat": 40.6625, "lng": 14.4325 },
     "default_zoom": 15,
     "landing_zoom": 14
   },
   "palette": {
-    "bg": "#F7F4EB",
+    "bg": "#F5EFE2",
     "surface": "#FFFFFF",
-    "map-water": "#EBE7DB",
-    "text-primary": "#1A1A18",
-    "text-secondary": "#5C5A52",
-    "text-tertiary": "#8A877A",
-    "inverse": "#F7F4EB",
-    "terracotta": "#BD5745",
-    "deep-green": "#1E3A2F",
-    "warm-ochre": "#C98A3C",
-    "border": "#E3DEC8"
+    "map-water": "#C7DEE6",
+    "text-primary": "#1A2430",
+    "text-secondary": "#4F5A67",
+    "text-tertiary": "#8A8E8A",
+    "inverse": "#F5EFE2",
+    "terracotta": "#D06C3B",
+    "deep-green": "#1F4F5C",
+    "warm-ochre": "#E2A12F",
+    "border": "#E0D9C4"
   },
   "landmarks": [
     {
-      "id": "accademia",
-      "name": { "en": "Accademia di Belle Arti di Brera", "it": "Accademia di Belle Arti di Brera" },
+      "id": "annunziata",
+      "name": { "en": "Chiesa della Santissima Annunziata", "it": "Chiesa della Santissima Annunziata" },
       "note": {
-        "en": "Italy's most storied art school, founded 1776.",
-        "it": "La più storica accademia d'arte d'Italia, fondata nel 1776."
+        "en": "A 14th-century church perched on a sheer cliff over the Bay of Naples.",
+        "it": "Una chiesa trecentesca a picco sulla scogliera, affacciata sul Golfo di Napoli."
       },
       "intro": {
-        "en": "Generations of students have learned to see beneath my arcades. Every morning at eight, the scent of turpentine blends with coffee from the dairy across the way. Walk slowly — I've learned to recognise the footsteps of lovers here.",
-        "it": "Sotto i miei portici, generazioni di studenti hanno imparato a guardare. Ogni mattina alle otto, l'odore di trementina si mescola al caffè della latteria di fronte. Cammina lentamente — qui ho imparato a riconoscere i passi degli innamorati."
+        "en": "I've watched the bay since 1320. The sea wind has scoured my bells, and still I ring. From my terrace you can see Ischia on clear mornings and Capri at dusk. Come up slowly — the steps are old, like me.",
+        "it": "Guardo il golfo dal 1320. Il vento di mare ha consumato le mie campane, eppure suono ancora. Dalla mia terrazza si vede Ischia nelle mattine limpide e Capri al tramonto. Sali piano — i gradini sono vecchi, come me."
       },
       "voice": {
-        "en": "Walk beneath my arcades. I'll tell you who has passed through.",
-        "it": "Cammina sotto i miei portici. Ti dirò chi è passato di qui."
+        "en": "Stand at my edge and look down. Seven centuries have looked with you.",
+        "it": "Affacciati dal mio bordo. Sette secoli hanno guardato con te."
       },
-      "latitude": 45.472,
-      "longitude": 9.1879,
-      "address": "Via Brera 28, 20121 Milano",
-      "short_description": "Italy's most storied art school, founded 1776 by Maria Theresa of Austria.",
-      "long_description": "The Accademia shares Palazzo Brera with the Pinacoteca and the Orto Botanico. Founded in 1776, it has trained generations of Italian painters, sculptors and set designers — Hayez, Boccioni, Funi, Castiglioni among them. Students still walk in and out at all hours, sketchbooks under their arms. The arcaded courtyard is open to the public; the studios upstairs are not, but on warm days you can smell the turpentine through the windows.",
-      "fun_fact": "Marina Abramović studied here briefly in the 1970s.",
+      "latitude": 40.6618,
+      "longitude": 14.4305,
+      "address": "Via Vescovado, 80069 Vico Equense NA",
+      "short_description": "Gothic cathedral perched 70m above the sea, with sweeping views of the Bay of Naples.",
+      "long_description": "Founded in the 14th century by the Angevins and rebuilt after the 1732 earthquake, Santissima Annunziata clings to a sheer tuff cliff above the Tyrrhenian Sea. Its terrace offers one of the most photographed panoramas on the Sorrento coast — from Ischia to Capri in a single sweep. The adjacent Antiquarium Silio Italico houses Greco-Roman finds from the necropolis discovered beneath Via Nicotera in 1958.",
+      "fun_fact": "The cliff below hosted a Roman maritime villa whose foundations are visible at low tide.",
       "canonical_facts": [
-        "Founded in 1776 by Empress Maria Theresa of Austria.",
-        "Shares Palazzo Brera with the Pinacoteca and the Orto Botanico.",
-        "Notable alumni include Francesco Hayez, Umberto Boccioni and Achille Castiglioni."
+        "Originally built in the 14th century, rebuilt after the 1732 earthquake.",
+        "Perched on a 70-metre tuff cliff over the Tyrrhenian Sea.",
+        "Adjacent to the Antiquarium Silio Italico housing Greco-Roman artefacts."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/d/db/Milano_brera_cortile.jpg/600px-Milano_brera_cortile.jpg"
+      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Vico_Equense_Chiesa_della_Santissima_Annunziata.jpg/600px-Vico_Equense_Chiesa_della_Santissima_Annunziata.jpg"
     },
     {
-      "id": "pinacoteca",
-      "name": { "en": "Pinacoteca di Brera", "it": "Pinacoteca di Brera" },
+      "id": "castello-giusso",
+      "name": { "en": "Castello Giusso", "it": "Castello Giusso" },
       "note": {
-        "en": "Raphael, Mantegna and Caravaggio under one ceiling.",
-        "it": "Raffaello, Mantegna e Caravaggio sotto lo stesso soffitto."
+        "en": "A 13th-century Angevin castle still inhabited by the Giusso family.",
+        "it": "Un castello angioino del '200, ancora abitato dalla famiglia Giusso."
       },
       "intro": {
-        "en": "I keep Raphael's Marriage of the Virgin, Mantegna's Dead Christ, Caravaggio's Supper at Emmaus. But the real show is the courtyard: in spring, Napoleon's magnolia blooms above your shoulders.",
-        "it": "Custodisco lo Sposalizio della Vergine di Raffaello, il Cristo morto di Mantegna, la Cena in Emmaus di Caravaggio. Ma il vero spettacolo è il cortile: in primavera la magnolia di Napoleone fiorisce sopra le tue spalle."
+        "en": "Charles II of Anjou built my walls in 1284 to guard this coast from Saracen raids. The Giusso family has called me home since 1694 — yes, the same family, nineteen generations deep. My ballroom still holds the frescoes they commissioned when Vesuvius erupted in 1794 and lit up our windows.",
+        "it": "Carlo II d'Angiò costruì le mie mura nel 1284 per difendere questa costa dai saraceni. La famiglia Giusso abita qui dal 1694 — sì, la stessa famiglia, diciannove generazioni. Il mio salone custodisce ancora gli affreschi che commissionarono quando il Vesuvio eruttò nel 1794 illuminando le mie finestre."
       },
       "voice": {
-        "en": "I have kept their silences. Come and feel them.",
-        "it": "Ho conservato i loro silenzi. Vieni a sentirli."
+        "en": "My drawbridge lowered for Charles of Anjou. It still knows how.",
+        "it": "Il mio ponte levatoio si abbassò per Carlo d'Angiò. Sa ancora come fare."
       },
-      "latitude": 45.472,
-      "longitude": 9.1881,
-      "address": "Via Brera 28, 20121 Milano",
-      "short_description": "Raphael, Mantegna and Caravaggio under one ceiling — Milan's painting museum.",
-      "long_description": "Founded by Napoleon in 1809 to centralise the artworks confiscated from suppressed religious orders, the Pinacoteca holds masterpieces including Raphael's Marriage of the Virgin, Mantegna's Lamentation of Christ, and Caravaggio's Supper at Emmaus. The neoclassical courtyard at the entrance features Antonio Canova's monumental bronze of Napoleon as Mars the Peacemaker, twice life-size. In spring the magnolia in the courtyard blooms above visitors' shoulders.",
-      "fun_fact": "The Mantegna's Dead Christ uses radical foreshortening from a viewpoint near the feet.",
+      "latitude": 40.6632,
+      "longitude": 14.4340,
+      "address": "Via Castello Giusso, 80069 Vico Equense NA",
+      "short_description": "An Angevin fortress continuously inhabited since the 13th century.",
+      "long_description": "Commissioned by Charles II of Anjou in 1284 as coastal defence against Saracen raids, the castle has survived earthquakes, Angevin-Aragonese wars, and Bourbon renovations. Passed to the Giusso family in 1694 as part of Costanza Ravaschieri's dowry, it remains their private residence. The grounds include a neoclassical park with rare Mediterranean flora and an 18th-century chapel dedicated to Saint Anne.",
+      "fun_fact": "The castle's library contains an uncatalogued 16th-century manuscript of Torquato Tasso, still awaiting publication.",
       "canonical_facts": [
-        "Founded by Napoleon in 1809 to centralise art confiscated from suppressed religious orders.",
-        "Holds Raphael's Marriage of the Virgin, Mantegna's Lamentation, and Caravaggio's Supper at Emmaus.",
-        "Antonio Canova's bronze Napoleon as Mars the Peacemaker stands twice life-size in the courtyard."
+        "Built in 1284 under Charles II of Anjou.",
+        "Home of the Giusso family since 1694.",
+        "Private residence, grounds occasionally open for concerts and weddings."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg/600px-Milan_-_Pinacoth%C3%A8que_de_Brera_-_Cour_int%C3%A9rieure.jpg"
+      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Vico_equense.jpg/600px-Vico_equense.jpg"
     },
     {
-      "id": "cusani",
-      "name": { "en": "Palazzo Cusani", "it": "Palazzo Cusani" },
+      "id": "pizza-metro",
+      "name": { "en": "Pizza a Metro da Gigino", "it": "Pizza a Metro da Gigino" },
       "note": {
-        "en": "Two facades, two architects, one quiet quarrel.",
-        "it": "Due facciate, due architetti, un litigio in pietra."
+        "en": "Where pizza-by-the-meter was invented in 1960.",
+        "it": "Dove la pizza a metro fu inventata nel 1960."
       },
       "intro": {
-        "en": "Look at me from Via Brera, then turn the corner. I look like a different building, don't I? Two architects — Ruggeri in the 1700s, Piermarini a century later — never agreed. I've housed the Military Command since 1860, but I still remember the ball for Maria Theresa of Austria.",
-        "it": "Guardami da via Brera, poi gira l'angolo. Sembro un altro edificio, vero? È perché due architetti — Ruggeri nel '700, Piermarini un secolo dopo — non si sono mai messi d'accordo. Sono sede del Comando Militare dal 1860, ma ricordo ancora la festa per Maria Teresa d'Austria."
+        "en": "In 1960 Gigino Dell'Amura rolled out a pizza so long the waiter had to run with it. Families ordered by the metre, children were measured against the length. Sixty-five years later, the queue still curves around my corner. We still measure in metres, never slices.",
+        "it": "Nel 1960 Gigino Dell'Amura sfornò una pizza così lunga che il cameriere dovette correre. Le famiglie ordinavano a metro, i bambini si misuravano sulla lunghezza. Sessantacinque anni dopo, la coda gira ancora l'angolo. Misuriamo sempre in metri, mai in fette."
       },
       "voice": {
-        "en": "I wear two faces. Come and find out why.",
-        "it": "Ho due volti. Vieni a scoprire perché."
+        "en": "Bring the whole family. One metre feeds five; two, a wedding.",
+        "it": "Vieni con tutta la famiglia. Un metro sazia cinque; due, un matrimonio."
       },
-      "latitude": 45.4729,
-      "longitude": 9.1888,
-      "address": "Via Brera 13, 20121 Milano",
-      "short_description": "An 18th-century palace with two different facades by two architects.",
-      "long_description": "Built in the early 1700s by Giovanni Ruggeri for the Cusani family. A century later, when Maria Theresa of Austria visited, Giuseppe Piermarini was hired to remodel the rear elevation in a more neoclassical style — but he never harmonised it with Ruggeri's Baroque front. The result: two facades, two eras, one quiet quarrel in stone. Since 1860 the palace has housed the Italian Army's Northern Command, but the great staircase and ballrooms still survive.",
-      "fun_fact": "The two facades are sometimes used as an architecture-school example of how NOT to remodel.",
-      "canonical_facts": [],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/1/11/Palazzo_Cusani_Milan_2.jpg/600px-Palazzo_Cusani_Milan_2.jpg"
+      "latitude": 40.6621,
+      "longitude": 14.4326,
+      "address": "Via Nicotera 15, 80069 Vico Equense NA",
+      "short_description": "The pizzeria that invented pizza-by-the-meter in 1960, still family-run.",
+      "long_description": "Luigi 'Gigino' Dell'Amura opened his trattoria in 1937, but the idea of baking pizza in long rectangular trays and selling it by the metre came to him in 1960 when a tour bus of pilgrims needed feeding fast. The format went viral across Campania. Today the original wood-burning ovens still run daily and a single pizza can reach four metres on request. The menu has stayed almost unchanged for six decades.",
+      "fun_fact": "Sophia Loren famously ordered a two-metre Margherita here in 1972.",
+      "canonical_facts": [
+        "Founded 1937 by Luigi 'Gigino' Dell'Amura.",
+        "Invented pizza-by-the-meter (pizza a metro) in 1960.",
+        "Still operated by the Dell'Amura family, wood-fired ovens since day one."
+      ],
+      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Pizza_al_metro.jpg/600px-Pizza_al_metro.jpg"
     },
     {
-      "id": "orsini",
-      "name": { "en": "Palazzo Orsini", "it": "Palazzo Orsini" },
+      "id": "scrajo",
+      "name": { "en": "Scrajo Terme", "it": "Scrajo Terme" },
       "note": {
-        "en": "Versace's HQ since 1980 — frescoed ceilings still intact.",
-        "it": "Sede Versace dal 1980 — soffitti affrescati ancora intatti."
+        "en": "Early 20th-century sulphur baths carved into the seaside rock.",
+        "it": "Stabilimento termale di inizio Novecento scavato nella roccia a mare."
       },
       "intro": {
-        "en": "For nearly fifty years the Versace maison has stitched its dreams behind my doors. Above the rooms where Donatella picks fabrics, my eighteenth-century ceilings still show their frescoed gods. Few know that behind these closed shutters once lived a woman astronomer.",
-        "it": "Da quasi cinquant'anni la maison Versace cuce i suoi sogni dietro i miei portoni. Sopra le sale dove Donatella sceglie i tessuti, i miei soffitti del Settecento mostrano ancora le loro divinità affrescate. Pochi sanno che dietro le persiane chiuse, una volta, abitava un'astronoma."
+        "en": "I opened in 1895, when Belle Époque travellers believed sulphur could cure anything. My springs still rise from the rock at 16°C, rich with iron and hydrogen sulphide. In the 1920s Enrico Caruso bathed here before his summer concerts in Sorrento. My tiled pools remember his laugh.",
+        "it": "Ho aperto nel 1895, quando i viaggiatori della Belle Époque credevano che lo zolfo guarisse tutto. Le mie sorgenti sgorgano ancora dalla roccia a 16°C, ricche di ferro e acido solfidrico. Negli anni '20 Enrico Caruso veniva qui prima dei concerti estivi a Sorrento. Le mie vasche di maiolica ricordano la sua risata."
       },
       "voice": {
-        "en": "Beneath today's fashions, I keep older stories.",
-        "it": "Sotto le mode di oggi, conservo storie più antiche."
+        "en": "My sulphur springs have been murmuring since 1895. Listen.",
+        "it": "Le mie sorgenti di zolfo mormorano dal 1895. Ascolta."
       },
-      "latitude": 45.4719,
-      "longitude": 9.1909,
-      "address": "Via Borgonuovo 11, 20121 Milano",
-      "short_description": "Versace's headquarters since 1980 — frescoed 18th-century ceilings still intact.",
-      "long_description": "Built in the 16th century, redecorated in the 1700s with frescoed ceilings depicting mythological scenes. Gianni Versace bought the palace in 1980 and made it the headquarters of the Versace fashion house. Donatella Versace still walks these halls. Few know that one wing was once inhabited by Maria Gaetana Agnesi, the 18th-century mathematician and astronomer, before she renounced worldly life and became a nun.",
-      "fun_fact": "The garden behind the palace is one of the largest private green spaces in central Milan.",
-      "canonical_facts": [],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/3/31/Palazzo_Orsini_MI.jpg/600px-Palazzo_Orsini_MI.jpg"
+      "latitude": 40.6553,
+      "longitude": 14.4180,
+      "address": "SS145 Sorrentina, 80069 Vico Equense NA",
+      "short_description": "Historic sulphur thermal baths, operating since 1895.",
+      "long_description": "The Scrajo thermal complex was inaugurated in 1895 around natural sulphur springs that emerge directly into the sea. The cliff-side structures — terraces, pools, and a changing pavilion carved into tuff — epitomise Italian Liberty (Art Nouveau) seaside architecture. Beyond its Belle Époque glamour, the waters are still certified by the Italian Ministry of Health for dermatological and respiratory conditions.",
+      "fun_fact": "A photograph of Enrico Caruso in a Scrajo bathrobe hangs in the main reception.",
+      "canonical_facts": [
+        "Opened in 1895 as a Belle Époque thermal destination.",
+        "Natural sulphur springs at 16°C, rich in iron and hydrogen sulphide.",
+        "Certified by the Italian Ministry of Health for dermatological and respiratory treatments."
+      ],
+      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/8/82/Scrajo_Terme.jpg/600px-Scrajo_Terme.jpg"
     },
     {
-      "id": "scala",
-      "name": { "en": "Teatro alla Scala", "it": "Teatro alla Scala" },
+      "id": "gabriele",
+      "name": { "en": "Gelateria Gabriele", "it": "Gelateria Gabriele" },
       "note": {
-        "en": "The opera house that crowns the southern edge of Brera.",
-        "it": "Il teatro d'opera che corona il bordo sud di Brera."
+        "en": "A 1875 pastry bar where lemon delizie were perfected.",
+        "it": "Pasticceria del 1875 dove è stata perfezionata la delizia al limone."
       },
       "intro": {
-        "en": "On 7 December, Milan dresses up for me. Beneath my stage Maria Callas and Luciano Pavarotti have sung — and before them Maria Malibran, who died at 28. But pass by at six in the morning and you'll hear the cleaning women sing their own version of La Traviata.",
-        "it": "Il 7 dicembre, Milano si veste per me. Sotto il mio palco hanno cantato Maria Callas e Luciano Pavarotti, e prima di loro Maria Malibran morta a 28 anni. Ma se passi alle sei del mattino, sentirai le donne delle pulizie cantare la loro versione della Traviata."
+        "en": "Since 1875 I've been grinding Sorrento lemons by hand. The delizia al limone as you know it was perfected at my counter in 1978 — before that, every bakery had its own version, but a pastry chef named Carmine Marzuillo stopped here one afternoon and left with the recipe that became canon. Come in: the lemon cream is cold, the sponge is warm.",
+        "it": "Dal 1875 macino limoni di Sorrento a mano. La delizia al limone come la conosci oggi è stata perfezionata al mio bancone nel 1978 — prima ogni pasticceria aveva la sua versione, ma un pasticcere di nome Carmine Marzuillo si fermò qui un pomeriggio e se ne andò con la ricetta che è diventata canonica. Entra: la crema di limone è fredda, il pan di Spagna è caldo."
       },
       "voice": {
-        "en": "My notes begin long before the curtain.",
-        "it": "Le mie note iniziano molto prima del sipario."
+        "en": "My lemons are Sorrento lemons. No substitutes. Not since 1875.",
+        "it": "I miei limoni sono di Sorrento. Nessun sostituto. Dal 1875."
       },
-      "latitude": 45.4671,
-      "longitude": 9.1894,
-      "address": "Via Filodrammatici 2, 20121 Milano",
-      "short_description": "The opera house that crowns the southern edge of Brera.",
-      "long_description": "Inaugurated 3 August 1778 with Antonio Salieri's Europa Riconosciuta, designed by Giuseppe Piermarini on the site of the demolished church of Santa Maria alla Scala. La Scala has hosted the world premieres of operas by Verdi (Otello, Falstaff, Nabucco), Puccini (Madama Butterfly, Turandot), and Bellini (Norma). Maria Callas redefined operatic acting from this stage in the 1950s. The opening night each season — 7 December, the feast of Sant'Ambrogio — is when Milan dresses itself for the year.",
-      "fun_fact": "Toscanini's baton is preserved in the museum on the left side of the lobby.",
-      "canonical_facts": [],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/0/04/Milano_-_Teatro_alla_Scala_3924.jpg/600px-Milano_-_Teatro_alla_Scala_3924.jpg"
+      "latitude": 40.6626,
+      "longitude": 14.4321,
+      "address": "Corso Umberto I 5, 80069 Vico Equense NA",
+      "short_description": "A 150-year-old pastry bar famous across the Sorrento coast.",
+      "long_description": "Opened in 1875 by the Gabriele family, this pastry bar on Vico Equense's main street has become a coastal institution. Its delizie al limone, sfogliatelle and artisanal gelato are made from Sorrento IGP lemons and San Marzano dairy. Six generations have run it; the original marble counter is the same one where post-war travellers stopped before the Amalfi drive.",
+      "fun_fact": "Gabriele's limoncello sorbetto is the only one served at the President of Italy's Christmas luncheon.",
+      "canonical_facts": [
+        "Founded in 1875, six generations of the Gabriele family.",
+        "Renowned for lemon-based pastries made with Sorrento IGP lemons.",
+        "Located on Corso Umberto I, Vico Equense's main promenade."
+      ],
+      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Delizia_al_Limone.JPG/600px-Delizia_al_Limone.JPG"
     }
   ],
   "pois": [
     {
-      "name": "Orto Botanico di Brera",
-      "short_description": "A secret 18th-century botanical garden tucked behind Palazzo Brera.",
-      "long_description": "Founded in 1774 by Maria Theresa of Austria, this hidden 5,000 sqm garden hosts ancient ginkgo trees, medicinal plants and a quiet pond. Few tourists know it exists.",
-      "latitude": 45.47284, "longitude": 9.18937,
-      "address": "Via Fratelli Gabba 10, 20121 Milano",
-      "category": "Hidden Garden",
-      "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-      "trigger_radius_m": 70,
-      "hours": "Mon–Fri 10:00–18:00",
-      "fun_fact": "Two of its ginkgo biloba trees are over 240 years old.",
-      "interest_tags": ["sceneries", "history", "curios"],
-      "opening_line": { "en": "Beyond this gate, a 240-year-old ginkgo is waiting for you to look up." }
-    },
-    {
-      "name": "Cortile della Pinacoteca",
-      "short_description": "The arcaded courtyard with Napoleon as a Roman god.",
-      "long_description": "Inside Palazzo Brera, this neoclassical courtyard hosts a striking bronze nude of Napoleon by Antonio Canova. Free to enter even without a museum ticket.",
-      "latitude": 45.47193, "longitude": 9.18785,
-      "address": "Via Brera 28, 20121 Milano",
-      "category": "Courtyard",
-      "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-      "trigger_radius_m": 50,
-      "hours": "Daily 09:00–19:00",
-      "fun_fact": "Canova depicted Napoleon idealised, twice life-size, holding a Nike.",
-      "interest_tags": ["art", "architecture", "history"],
-      "opening_line": { "en": "Step inside — Napoleon, twice life-size, has been waiting for you in bronze." }
-    },
-    {
-      "name": "Fioraio Bianchi Caffè",
-      "short_description": "A Parisian-style florist that became a tiny bistrot.",
-      "long_description": "Half flower shop, half restaurant — Raimondo Bianchi's 1976 atelier still arranges blooms among marble tables and serves a beloved seasonal lunch.",
-      "latitude": 45.4742, "longitude": 9.1907,
-      "address": "Via Montebello 7, 20121 Milano",
-      "category": "Café & Workshop",
-      "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
+      "name": "Antiquarium Silio Italico",
+      "short_description": "A tiny archaeological museum built over a Greek necropolis.",
+      "long_description": "Excavations in 1958 beneath Via Nicotera uncovered 238 tombs from the 7th–5th centuries BC, complete with black-figure vases and jewellery. The Antiquarium displays the finest pieces in a restored 14th-century crypt adjoining the Santissima Annunziata church.",
+      "latitude": 40.6620, "longitude": 14.4312,
+      "address": "Via Vescovado 1, 80069 Vico Equense NA",
+      "category": "Hidden Museum",
+      "image_url": "https://images.unsplash.com/photo-1580933884538-9dc2e6c1cf6a?w=1200",
       "trigger_radius_m": 40,
-      "hours": "Tue–Sat 12:00–23:00",
-      "fun_fact": "Many Milanese still order their wedding bouquets here.",
-      "interest_tags": ["food", "curios"],
-      "opening_line": { "en": "Smell that? It's roses, and lunch, served at marble tables since 1976." }
+      "hours": "Tue–Sun 10:00–13:00, 16:00–19:00",
+      "fun_fact": "A silver Greek coin from 470 BC found here bears the earliest known depiction of a nymph holding a lyre.",
+      "interest_tags": ["history", "art", "curios"],
+      "opening_line": { "en": "Two hundred and thirty-eight tombs were once beneath your feet. Some of them still whisper." }
     },
     {
-      "name": "Cimitero di San Marco (vestiges)",
-      "short_description": "Traces of a medieval graveyard hidden beneath the church square.",
-      "long_description": "The piazza in front of San Marco church covers the former parish cemetery. Look for worn tombstones reused as paving stones near the side wall.",
-      "latitude": 45.4754, "longitude": 9.1892,
-      "address": "Piazza San Marco, 20121 Milano",
-      "category": "Historic Trace",
-      "image_url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df?w=1200",
-      "trigger_radius_m": 55,
+      "name": "Marina di Equa",
+      "short_description": "A hidden Norman-era fishing cove with a watchtower.",
+      "long_description": "Set below the cliffs west of the town, Marina di Equa preserves a 12th-century square watchtower (Torre di Equa) that guarded against Saracen raids. The pebble beach is tucked between two rock promontories and accessed by a narrow stairway from the coastal road.",
+      "latitude": 40.6520, "longitude": 14.4206,
+      "address": "Via Marina di Equa, 80069 Vico Equense NA",
+      "category": "Hidden Beach",
+      "image_url": "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200",
+      "trigger_radius_m": 80,
       "hours": "Always accessible",
-      "fun_fact": "Mozart performed inside San Marco at age 14, in 1770.",
-      "interest_tags": ["local_legends", "history"],
-      "opening_line": { "en": "Look down — the stones beneath your feet were once tombstones. Mozart played near here at fourteen." }
-    },
-    {
-      "name": "Casa degli Atellani — Vigna di Leonardo",
-      "short_description": "Leonardo da Vinci's personal vineyard, replanted on the original soil.",
-      "long_description": "Just a few minutes from Brera, this Renaissance house preserves the vineyard gifted to Leonardo by Ludovico il Moro in 1498. The malvasia vines were genetically restored in 2015.",
-      "latitude": 45.4661, "longitude": 9.1715,
-      "address": "Corso Magenta 65, 20123 Milano",
-      "category": "Renaissance Garden",
-      "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-      "trigger_radius_m": 70,
-      "hours": "Daily 09:00–18:00 (ticketed)",
-      "fun_fact": "Leonardo mentioned the vineyard in his will of 1519.",
+      "fun_fact": "The tower's inner spiral staircase is only 48 cm wide — designed to force attackers to climb one at a time.",
       "interest_tags": ["history", "sceneries", "local_legends"],
-      "opening_line": { "en": "Leonardo's vines are still thirsty. The same soil he sketched in 1498 is right behind you." }
+      "opening_line": { "en": "A Norman watchtower, still standing. The Saracen ships never did get past." }
     },
     {
-      "name": "Libreria Bocca",
-      "short_description": "Italy's oldest bookshop, founded 1775.",
-      "long_description": "Hidden in Galleria Vittorio Emanuele but spiritually a Brera neighbour, Bocca has specialised in art, fine prints, and rare editions since the late 18th century.",
-      "latitude": 45.4659, "longitude": 9.1900,
-      "address": "Galleria Vittorio Emanuele II 12, 20121 Milano",
-      "category": "Historic Shop",
-      "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-      "trigger_radius_m": 35,
-      "hours": "Mon–Sat 10:00–19:30",
-      "fun_fact": "Futurist manifestos by Marinetti were printed and sold here.",
-      "interest_tags": ["art", "history", "shopping"],
-      "opening_line": { "en": "Pages from 1775 are turning, slowly. Marinetti's Futurist manifestos started right here." }
-    },
-    {
-      "name": "Vicolo dei Lavandai",
-      "short_description": "The last open-air laundry alley of Milan, on the Naviglio.",
-      "long_description": "Just south of Brera along the Naviglio Grande, this narrow lane preserves the 1700s wash-house where lavandai (male washermen) cleaned the city's laundry until the 1950s.",
-      "latitude": 45.4527, "longitude": 9.1736,
-      "address": "Vicolo dei Lavandai, 20143 Milano",
-      "category": "Historic Trace",
-      "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-      "trigger_radius_m": 35,
-      "hours": "Always accessible",
-      "fun_fact": "It was protected as a monument in 1982 to save it from demolition.",
-      "interest_tags": ["local_legends", "history", "sceneries"],
-      "opening_line": { "en": "The last open-air laundry of Milan still echoes with washermen of the 1700s." }
-    },
-    {
-      "name": "Chiesa di San Carpoforo",
-      "short_description": "A deconsecrated 11th-century church now hosting Brera Academy exhibitions.",
-      "long_description": "One of the oldest churches in Milan, repurposed into an exhibition hall by the nearby Accademia di Belle Arti. Romanesque bones with contemporary art layered on top.",
-      "latitude": 45.4730, "longitude": 9.1872,
-      "address": "Via Marco Formentini 10, 20121 Milano",
+      "name": "Chiesa di Santa Maria del Toro",
+      "short_description": "A 16th-century country chapel with a miraculous fresco.",
+      "long_description": "Legend says the Virgin Mary appeared here to a shepherd in 1528, leaving a fresco of her face on a boulder. The chapel was built around the stone, which is still embedded in the wall behind the altar.",
+      "latitude": 40.6682, "longitude": 14.4380,
+      "address": "Via Santa Maria del Toro, 80069 Vico Equense NA",
       "category": "Hidden Church",
-      "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-      "trigger_radius_m": 40,
-      "hours": "Wed–Sun 14:00–19:00 during exhibitions",
-      "fun_fact": "Originally founded around 1040 AD.",
-      "interest_tags": ["history", "architecture", "art"],
-      "opening_line": { "en": "An eleventh-century church is hosting today's young artists. Romanesque stones, modern hands." }
-    },
-    {
-      "name": "Bar Jamaica",
-      "short_description": "The 1920s artists' bar where Brera bohemia was born.",
-      "long_description": "Hemingway, Lucio Fontana, Quasimodo and Ungaretti all drank here. The walls are still hung with original photographs of Brera's mid-century painters and poets.",
-      "latitude": 45.4738, "longitude": 9.1874,
-      "address": "Via Brera 32, 20121 Milano",
-      "category": "Historic Café",
-      "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-      "trigger_radius_m": 35,
-      "hours": "Daily 07:30–01:30",
-      "fun_fact": "It is the unofficial 'living room' of the Accademia di Belle Arti.",
-      "interest_tags": ["curios", "history", "food"],
-      "opening_line": { "en": "Hemingway's table is empty, but the photographs on these walls are still watching." }
-    },
-    {
-      "name": "Palazzo Cusani",
-      "short_description": "An 18th-century palace with two contrasting facades.",
-      "long_description": "Designed by Giovanni Ruggeri (1719) on Via Brera and by Piermarini on the back — it is the only Milanese palace whose two main fronts come from rival baroque/neoclassical architects.",
-      "latitude": 45.4729, "longitude": 9.1888,
-      "address": "Via Brera 15, 20121 Milano",
-      "category": "Hidden Palace",
-      "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-      "trigger_radius_m": 45,
-      "hours": "Open courtyard during army office hours",
-      "fun_fact": "Today it is the HQ of the Italian Army Northern Command.",
-      "interest_tags": ["architecture", "history"],
-      "opening_line": { "en": "Two facades, two architects, one quiet quarrel in stone since 1719." }
-    },
-    {
-      "name": "Pasticceria Marchesi 1824",
-      "short_description": "Milan's oldest patisserie, where Verdi bought his cassoeula.",
-      "long_description": "Founded in 1824 with original walnut counters and pastel boiserie. The almond panettoncini are baked from the same recipe used for nearly two centuries.",
-      "latitude": 45.4670, "longitude": 9.1841,
-      "address": "Via Santa Maria alla Porta 11A, 20123 Milano",
-      "category": "Historic Patisserie",
-      "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-      "trigger_radius_m": 30,
-      "hours": "Tue–Sun 07:30–20:00",
-      "fun_fact": "Now part of Prada — but the 1824 décor is preserved.",
-      "interest_tags": ["food", "history", "curios"],
-      "opening_line": { "en": "Walnut counters from 1824. Ask for the panettoncini — Verdi did." }
-    },
-    {
-      "name": "Cortile della Magnolia",
-      "short_description": "A secret courtyard with a centuries-old magnolia tree.",
-      "long_description": "Step through an unassuming portone on Via dei Giardini and you'll find a peaceful private courtyard dominated by a vast flowering magnolia — an open secret among Brera locals.",
-      "latitude": 45.4736, "longitude": 9.1908,
-      "address": "Via dei Giardini 7, 20121 Milano",
-      "category": "Hidden Courtyard",
-      "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-      "trigger_radius_m": 35,
-      "hours": "Daytime, residential courtyard",
-      "fun_fact": "The magnolia blooms briefly in late March — a Brera ritual.",
-      "interest_tags": ["sceneries", "architecture", "local_legends"],
-      "opening_line": { "en": "A magnolia is blooming behind that unmarked door. Brera's open secret." }
-    },
-    {
-      "name": "Studio Museo Francesco Messina",
-      "short_description": "A sculptor's workshop turned museum inside a deconsecrated church.",
-      "long_description": "The 17th-century Chiesa di San Sisto houses 80 sculptures and 25 drawings by Francesco Messina, donated to the city in 1974. Almost always empty.",
-      "latitude": 45.4634, "longitude": 9.1812,
-      "address": "Via San Sisto 4A, 20123 Milano",
-      "category": "Hidden Museum",
-      "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-      "trigger_radius_m": 40,
-      "hours": "Tue–Sun 10:00–17:30",
-      "fun_fact": "The bronze horses outside RAI's Rome HQ are by Messina.",
-      "interest_tags": ["art", "architecture", "history"],
-      "opening_line": { "en": "A 17th-century church now holds 80 sculptures. You'll likely have it to yourself." }
-    },
-    {
-      "name": "Antica Barbieria Colla",
-      "short_description": "Italy's oldest barbershop, opened in 1904.",
-      "long_description": "Mahogany counters, original Belle Époque mirrors and a hand-mixed shaving cream called 'Crema 1904'. Booking weeks ahead is the norm for the wet shave.",
-      "latitude": 45.4666, "longitude": 9.1896,
-      "address": "Via Gerolamo Morone 3, 20121 Milano",
-      "category": "Historic Shop",
       "image_url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df?w=1200",
-      "trigger_radius_m": 25,
-      "hours": "Tue–Sat 09:00–19:00",
-      "fun_fact": "Toscanini and Verdi were both Colla regulars.",
-      "interest_tags": ["curios", "shopping", "history"],
-      "opening_line": { "en": "A wet shave from 1904 is being prepared. Toscanini knew this scent." }
+      "trigger_radius_m": 45,
+      "hours": "Sun 09:00–12:00, or on request",
+      "fun_fact": "Locals still leave written prayers tucked into a crack in the miraculous boulder.",
+      "interest_tags": ["local_legends", "history", "architecture"],
+      "opening_line": { "en": "A shepherd saw her face on a stone in 1528. The stone is still behind my altar." }
     },
     {
-      "name": "Casa Museo Boschi Di Stefano",
-      "short_description": "A 1930s apartment-museum stuffed with 300 Italian modernist masterpieces.",
-      "long_description": "An almost-secret museum in a Piero Portaluppi flat, displaying works by Fontana, de Chirico, Sironi, Morandi and Boccioni — collected by a single Milanese couple.",
-      "latitude": 45.4774, "longitude": 9.2042,
-      "address": "Via Giorgio Jan 15, 20129 Milano",
-      "category": "Hidden Museum",
-      "image_url": "https://images.unsplash.com/photo-1512204925985-f52390a87fda?w=1200",
-      "trigger_radius_m": 50,
-      "hours": "Tue–Sun 10:00–17:30 (free)",
-      "fun_fact": "Entry is completely free — a bequest condition.",
-      "interest_tags": ["art", "history"],
-      "opening_line": { "en": "Three hundred modernist masterpieces are quietly hung in someone's living room. Free, always." }
+      "name": "Monte Faito — Belvedere dei Capi",
+      "short_description": "A 1,131m-peak with a 360° Amalfi–Vesuvius panorama.",
+      "long_description": "Accessible by cable car from nearby Castellammare di Stabia or by winding road from Vico Equense, Monte Faito's summit offers an unmatched view spanning Vesuvius, Capri, Ischia, the Amalfi coast, and on clear days the Pontine Islands. The belvedere is lined with beech woods (faggio, hence the name).",
+      "latitude": 40.7127, "longitude": 14.4879,
+      "address": "Belvedere dei Capi, 80069 Faito NA",
+      "category": "Scenic Viewpoint",
+      "image_url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
+      "trigger_radius_m": 150,
+      "hours": "Always accessible (cable car: Apr–Oct)",
+      "fun_fact": "Filmed by Roberto Rossellini in 1954's Voyage to Italy starring Ingrid Bergman.",
+      "interest_tags": ["sceneries", "history"],
+      "opening_line": { "en": "From up here you see Vesuvius AND Capri in one glance. No one forgets this." }
     },
     {
-      "name": "Latteria di San Marco",
-      "short_description": "A 12-table 1933 milk-bar, now serving Milanese home cooking.",
-      "long_description": "No reservations, no menu cards, just blackboard specials and risotto al salto. Run for decades by the Maggi family — a portrait of pre-aperitivo Brera.",
-      "latitude": 45.4754, "longitude": 9.1908,
-      "address": "Via San Marco 24, 20121 Milano",
-      "category": "Historic Trattoria",
-      "image_url": "https://images.pexels.com/photos/18425415/pexels-photo-18425415.jpeg?w=1200",
-      "trigger_radius_m": 25,
-      "hours": "Mon–Fri 12:30–14:30, 19:30–22:30",
-      "fun_fact": "Cash only, capacity ~24 people.",
-      "interest_tags": ["food", "curios"],
-      "opening_line": { "en": "Twelve tables. No menu. The risotto al salto would like you to sit down." }
+      "name": "Cantina del Vesuvio Giuliana",
+      "short_description": "A volcanic-soil winery producing Lacryma Christi since 1890.",
+      "long_description": "Four generations of the Giuliana family have pressed grapes on these Vesuvian slopes. Their Lacryma Christi del Vesuvio Bianco and Piedirosso are made entirely from vines rooted in black pumice soil. The tasting room looks directly at the volcano's cone.",
+      "latitude": 40.6805, "longitude": 14.4550,
+      "address": "Strada Provinciale 39, 80069 Vico Equense NA",
+      "category": "Historic Winery",
+      "image_url": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1200",
+      "trigger_radius_m": 60,
+      "hours": "Mon–Sat 10:00–18:00 (tastings by appointment)",
+      "fun_fact": "A 1944 bottle, sealed before the last Vesuvius eruption, is displayed in the entrance — still unopened.",
+      "interest_tags": ["food", "history", "sceneries"],
+      "opening_line": { "en": "My vines drink volcanic ash. Taste what the mountain remembers." }
     },
     {
-      "name": "Chiostro dell'Umanitaria",
-      "short_description": "A Renaissance cloister hidden inside a working social institute.",
-      "long_description": "Two 15th-century cloisters with a peaceful well, often used for outdoor concerts. Walk straight in past the porter — almost no one realises it is open to the public.",
-      "latitude": 45.4609, "longitude": 9.1972,
-      "address": "Via San Barnaba 48, 20122 Milano",
-      "category": "Hidden Cloister",
-      "image_url": "https://images.pexels.com/photos/17355546/pexels-photo-17355546.jpeg?w=1200",
-      "trigger_radius_m": 50,
-      "hours": "Mon–Fri 09:00–18:00",
-      "fun_fact": "Originally part of a 15th-century Franciscan convent.",
-      "interest_tags": ["architecture", "sceneries", "history"],
-      "opening_line": { "en": "Two Renaissance cloisters are open behind a porter's desk. Walk in." }
-    },
-    {
-      "name": "Via Bagnera",
-      "short_description": "Milan's narrowest street — and once its grisliest.",
-      "long_description": "A 2.5m-wide medieval alley between Via Nerino and Via Santa Marta. In 1861 it was the scene of Milan's first serial-killer case (Antonio Boggia).",
-      "latitude": 45.4626, "longitude": 9.1832,
-      "address": "Via Bagnera, 20123 Milano",
-      "category": "Historic Trace",
-      "image_url": "https://images.unsplash.com/photo-1636742943367-d79c45199670?w=1200",
-      "trigger_radius_m": 25,
+      "name": "Spiaggia di Seiano",
+      "short_description": "A black-sand beach at the foot of a 90m cliff.",
+      "long_description": "Reached by a slow funicular from the coastal road, Seiano beach sits in a protected cove with black volcanic sand and pebbles. The water deepens quickly — favoured by snorkellers for the offshore Roman ruins visible at 5m depth.",
+      "latitude": 40.6580, "longitude": 14.4265,
+      "address": "Spiaggia di Seiano, 80069 Vico Equense NA",
+      "category": "Hidden Beach",
+      "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200",
+      "trigger_radius_m": 70,
       "hours": "Always accessible",
-      "fun_fact": "Boggia was the last person publicly executed in Milan.",
-      "interest_tags": ["local_legends", "history"],
-      "opening_line": { "en": "Milan's narrowest alley would like you to know it once held the city's last public execution." }
+      "fun_fact": "Submerged Roman columns from a 1st-century maritime villa lie 15 metres offshore.",
+      "interest_tags": ["sceneries", "history"],
+      "opening_line": { "en": "Roman columns rest 15 metres below my waves. The snorkellers know." }
+    },
+    {
+      "name": "Torre di Equa",
+      "short_description": "A lone 12th-century watchtower above a fishing cove.",
+      "long_description": "One of the Sorrento Peninsula's best-preserved Norman watchtowers, Torre di Equa was built around 1150 as part of the coastal warning network against Saracen raids. Its roof platform once held iron braziers lit at night to signal neighbouring towers.",
+      "latitude": 40.6515, "longitude": 14.4198,
+      "address": "Marina di Equa, 80069 Vico Equense NA",
+      "category": "Historic Trace",
+      "image_url": "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=1200",
+      "trigger_radius_m": 35,
+      "hours": "Exterior always accessible",
+      "fun_fact": "A 1544 parchment in the Naples archives records its keeper's weekly ration of bread and olive oil.",
+      "interest_tags": ["history", "architecture", "local_legends"],
+      "opening_line": { "en": "My brazier was lit every Saracen night. The sea remembers the smoke." }
+    },
+    {
+      "name": "Casa Museo di Silio Italico",
+      "short_description": "The tomb-chamber of the Roman poet Silius Italicus, rediscovered 1922.",
+      "long_description": "The 1st-century Latin epic poet Silius Italicus (author of Punica, the longest surviving Latin poem) died here in AD 101 at his seaside villa. A small chamber beneath Piazza Umberto is believed to be his original tomb, identified by an inscription fragment.",
+      "latitude": 40.6628, "longitude": 14.4315,
+      "address": "Piazza Umberto I, 80069 Vico Equense NA",
+      "category": "Historic Trace",
+      "image_url": "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1200",
+      "trigger_radius_m": 30,
+      "hours": "Fri–Sat 17:00–20:00",
+      "fun_fact": "Silius Italicus starved himself to death, aged 75, as a stoic farewell to the world.",
+      "interest_tags": ["history", "local_legends", "art"],
+      "opening_line": { "en": "A Roman poet chose this place to die. His verses still sit in the stone." }
+    },
+    {
+      "name": "Chiesa dei Santi Ciro e Giovanni",
+      "short_description": "Vico's 16th-century co-cathedral with a Neapolitan baroque altar.",
+      "long_description": "Built in 1575 and dedicated to the patron saints of the town. The gilded wooden altar (1732) survived the earthquake that destroyed much of the old quarter. Three silver reliquaries of Saints Cyrus and John are processed through the streets every 31 January.",
+      "latitude": 40.6630, "longitude": 14.4334,
+      "address": "Via Roma, 80069 Vico Equense NA",
+      "category": "Hidden Church",
+      "image_url": "https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=1200",
+      "trigger_radius_m": 35,
+      "hours": "Daily 08:00–12:00, 16:00–19:00",
+      "fun_fact": "The bell tower doubles as the town's official siren on the feast day.",
+      "interest_tags": ["history", "architecture", "local_legends"],
+      "opening_line": { "en": "On 31 January my saints walk the streets in silver. Come meet them." }
+    },
+    {
+      "name": "Funicolare del Monte Faito",
+      "short_description": "The highest cable car in Italy, opened 1952.",
+      "long_description": "Built in 1952 to connect Castellammare di Stabia's seafront (36m) directly to Monte Faito's 1100m beech forests. The eight-minute ride climbs 1,064 metres — steeper than Switzerland's famed Gornergrat. Vico Equense uses it as the fastest escape from summer heat.",
+      "latitude": 40.7105, "longitude": 14.4860,
+      "address": "Via Cosenza, 80069 Castellammare di Stabia NA",
+      "category": "Historic Transport",
+      "image_url": "https://images.unsplash.com/photo-1512391289745-4c6d15e78ce9?w=1200",
+      "trigger_radius_m": 80,
+      "hours": "Apr–Oct, 07:30–16:40",
+      "fun_fact": "An August 1960 earthquake damaged the cable — repaired overnight so hikers stranded at the summit came down by dawn.",
+      "interest_tags": ["history", "sceneries", "curios"],
+      "opening_line": { "en": "One thousand metres in eight minutes. The world's steepest beech forest is mine." }
+    },
+    {
+      "name": "Punta Scutolo",
+      "short_description": "A cliff promontory with a Second World War observation bunker.",
+      "long_description": "The northern tip of Vico Equense's coastline juts out toward Naples. A reinforced concrete bunker built in 1943 by the Wehrmacht still stands at the cliff edge, its observation slits now framing postcard views of Vesuvius.",
+      "latitude": 40.6710, "longitude": 14.4260,
+      "address": "Punta Scutolo, 80069 Vico Equense NA",
+      "category": "Historic Trace",
+      "image_url": "https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=1200",
+      "trigger_radius_m": 50,
+      "hours": "Always accessible",
+      "fun_fact": "During the Allied landings in September 1943 the bunker was surrendered without a shot by its 14 German defenders.",
+      "interest_tags": ["history", "sceneries", "local_legends"],
+      "opening_line": { "en": "A wartime bunker, now pointed at Vesuvius. No one fires anymore." }
+    },
+    {
+      "name": "Pasticceria Gabriele 1875 — Forno",
+      "short_description": "The back kitchen where Sorrento lemon sfogliatelle are shaped by hand.",
+      "long_description": "Behind the public counter of Gelateria Gabriele, the Gabriele family still rolls sfogliatelle from cold laminated dough brushed with lard, one at a time. Visitors with the know-how can watch through a side window on weekday mornings.",
+      "latitude": 40.6627, "longitude": 14.4322,
+      "address": "Corso Umberto I 5, 80069 Vico Equense NA",
+      "category": "Artisan Workshop",
+      "image_url": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200",
+      "trigger_radius_m": 25,
+      "hours": "Tue–Sun 07:00–10:00 (observation window)",
+      "fun_fact": "The lamination rolls at 4°C to keep the lard crystalline — the secret to a shatter-crisp shell.",
+      "interest_tags": ["food", "curios", "shopping"],
+      "opening_line": { "en": "Sfogliatelle are rolled here every morning at seven. The lard is always cold." }
+    },
+    {
+      "name": "Chiostro di San Salvatore",
+      "short_description": "A 14th-century cloister hidden inside the old hospital.",
+      "long_description": "Behind the walls of the former Conservatorio di San Salvatore, a small Gothic cloister with 24 slender columns remains open to the public. The well at its centre still yields drinkable water — used by the nuns until 1946.",
+      "latitude": 40.6623, "longitude": 14.4329,
+      "address": "Via San Salvatore, 80069 Vico Equense NA",
+      "category": "Hidden Cloister",
+      "image_url": "https://images.unsplash.com/photo-1551022372-0bdac482b9d6?w=1200",
+      "trigger_radius_m": 35,
+      "hours": "Mon–Fri 09:00–12:00",
+      "fun_fact": "Twenty-four columns, for the twenty-four hours of the canonical day.",
+      "interest_tags": ["architecture", "history", "sceneries"],
+      "opening_line": { "en": "Twenty-four columns, one for each hour of a canonical day. The well still answers." }
+    },
+    {
+      "name": "Bar Centrale",
+      "short_description": "A 1934 café on Corso Umberto, the town's living room.",
+      "long_description": "The marble counter at Bar Centrale has served espresso continuously since 1934. In the 1960s it was the unofficial meeting point for the directors of Neapolitan cinema escaping Roma's heat — De Sica, Fellini, Leone all signed its guestbook.",
+      "latitude": 40.6625, "longitude": 14.4324,
+      "address": "Corso Umberto I 12, 80069 Vico Equense NA",
+      "category": "Historic Café",
+      "image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200",
+      "trigger_radius_m": 25,
+      "hours": "Daily 06:30–23:00",
+      "fun_fact": "The guestbook contains Federico Fellini's handwritten note: 'qui si pensa meglio' (one thinks better here).",
+      "interest_tags": ["food", "history", "curios"],
+      "opening_line": { "en": "Fellini wrote here that one thinks better in my chairs. Find a seat." }
+    },
+    {
+      "name": "Giardino Aranci di Vico",
+      "short_description": "A secret orange garden inside the old episcopal palace.",
+      "long_description": "A private 19th-century orange grove kept by the Bishop of Sorrento-Castellammare, planted with rare bitter-orange cultivars for sacramental essence. Opens to the public three times a year during the Festival dei Limoni.",
+      "latitude": 40.6621, "longitude": 14.4319,
+      "address": "Via Vescovado, 80069 Vico Equense NA",
+      "category": "Hidden Garden",
+      "image_url": "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=1200",
+      "trigger_radius_m": 40,
+      "hours": "Open during Festa dei Limoni (May)",
+      "fun_fact": "Three of its trees are clones of a 1602 specimen from the Farnese gardens in Rome.",
+      "interest_tags": ["sceneries", "history", "curios"],
+      "opening_line": { "en": "My bitter oranges perfume a Pope's chrism. Smell the chapel before you see it." }
+    },
+    {
+      "name": "Torre dell'Annunziata Vecchia",
+      "short_description": "A ruined 15th-century bell tower overlooking the bay.",
+      "long_description": "The original bell tower of Santissima Annunziata, struck by lightning in 1632 and left half-standing. Its foundations now hold a wrought-iron cross visible from the sea — used as a navigation marker by local fishermen.",
+      "latitude": 40.6617, "longitude": 14.4302,
+      "address": "Via Vescovado, 80069 Vico Equense NA",
+      "category": "Historic Trace",
+      "image_url": "https://images.unsplash.com/photo-1599386345770-dfc9fdc68d3f?w=1200",
+      "trigger_radius_m": 30,
+      "hours": "Always accessible",
+      "fun_fact": "Fishermen call it 'a' crocetta — the little cross — and still use it as a visual marker.",
+      "interest_tags": ["history", "sceneries", "local_legends"],
+      "opening_line": { "en": "Lightning left me half a tower in 1632. Fishermen still steer by my cross." }
+    },
+    {
+      "name": "Macelleria De Gennaro",
+      "short_description": "The 1891 butcher's shop famous for Vesuvian 'annecchia' salami.",
+      "long_description": "Opened by Vincenzo De Gennaro in 1891, still run by his descendants. The shop cures its own annecchia (Vesuvian young-bull salami) in the original rock cellar carved into the hill behind the counter.",
+      "latitude": 40.6628, "longitude": 14.4332,
+      "address": "Via Roma 22, 80069 Vico Equense NA",
+      "category": "Historic Shop",
+      "image_url": "https://images.unsplash.com/photo-1542367592-8849eb950fd8?w=1200",
+      "trigger_radius_m": 25,
+      "hours": "Tue–Sat 07:00–13:30, 17:00–20:00",
+      "fun_fact": "The cellar maintains a year-round 12°C from the volcanic rock — no electricity needed.",
+      "interest_tags": ["food", "history", "shopping"],
+      "opening_line": { "en": "My rock cellar stays at twelve degrees, year-round. The salami knows." }
+    },
+    {
+      "name": "Belvedere Marinella",
+      "short_description": "A cliff terrace with a 1910 wrought-iron gazebo.",
+      "long_description": "A small public terrace built in 1910 as part of Vico's Belle Époque seafront promenade. Its wrought-iron gazebo, restored in 2019, shelters a marble bench where locals still take evening coffee overlooking the bay.",
+      "latitude": 40.6618, "longitude": 14.4328,
+      "address": "Belvedere Marinella, 80069 Vico Equense NA",
+      "category": "Scenic Viewpoint",
+      "image_url": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1200",
+      "trigger_radius_m": 30,
+      "hours": "Always accessible",
+      "fun_fact": "The gazebo's original blueprints are in the Capodimonte archives, signed 'F. Luigi Caldieri, ing.'",
+      "interest_tags": ["sceneries", "architecture", "history"],
+      "opening_line": { "en": "Sit on my marble bench at sunset. Vesuvius turns rose, then violet, then indigo." }
     }
   ]
 }

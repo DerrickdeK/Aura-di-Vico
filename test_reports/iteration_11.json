@@ -1,0 +1,43 @@
+{
+  "summary": "Iteration 11 — Vico Equense pivot regression test (pre-mayor-demo). Backend: full pytest suite 153 passed / 2 skipped (= 145 baseline + 8 new Vico-specific tests in test_vico_pivot.py; the same 2 Brera-only landmark-chat skips remain). All 11 items in the review request verified green — default tenant is vico-equense with 18 POIs + 5 landmarks, Brera remains reachable via ?tenant=brera-milano, /api/tenant returns active='vico-equense' + both available, /api/share/{slug} OG meta reads 'Vico Equense' / site_name 'Aura di Vico Equense', /api/og-image/itineraries/{slug}.png returns a valid 1200x630 PNG (~40-60KB), POST /api/admin/area-clone returns 200 with the rotated Anthropic key, itinerary create+fetch round-trip works, POI chat responds sensibly in IT. Frontend landing (both / and /?tenant=brera-milano): title, eyebrow 'PENISOLA SORRENTINA · LA CITTÀ A PICCO SUL MARE', hero tagline, all 5 landmark cards (Annunziata / Castello Giusso / Pizza a Metro / Scrajo Terme / Gabriele), map centered on Vico Equense, and zero 'Brera'/'Milano' strings in rendered DOM on the default route — all verified. Brera tenant override swaps the whole page to 'Aura di Brera' / Milano / bohemian eyebrow as expected. No blocking issues.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "browser <title> on ?tenant=brera-milano", "issues": ["document.title stays 'Aura di Vico Equense · la costa sussurrata' even when the tenant query-param switches the page to the Brera branding. The title is hardcoded in /app/frontend/public/index.html and is not updated client-side on tenant resolution. COSMETIC / NON-BLOCKING for the mayor demo (which uses the root URL → correct Vico title). If Brera is ever shared externally via ?tenant=brera-milano the OG link preview is still correct (server-rendered), but the browser tab title would read Vico. Fix: have App.js / a root layout run a useEffect that sets document.title from the resolved tenant brand.it/brand.en."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_vico_pivot.py",
+    "/app/test_reports/pytest/iter11_vico.xml"
+  ],
+  "action_items": [
+    "(Optional, cosmetic) Set document.title client-side from the resolved tenant brand so that ?tenant=brera-milano tabs read 'Aura di Brera …' instead of the Vico default. Not needed for the mayor demo."
+  ],
+  "critical_code_review_comments": [
+    "Vico default wiring is clean: /api/area with no params returns slug=vico-equense; /api/area?tenant=brera-milano returns slug=brera-milano; /api/tenant lists both with active=vico-equense. No leaks of Brera/Milano strings in the default-tenant rendered DOM (i18n key status.citizen confirmed renders as 'Residente locale').",
+    "Share card / OG image generator (/api/share/{slug} and /api/og-image/itineraries/{slug}.png): og:title, og:site_name, and rendered PNG all pick up the Vico brand from the active tenant. Tested PNG is a valid 1200x630 PNG with correct magic bytes and size ~40-60KB.",
+    "Rotated ANTHROPIC_API_KEY in /app/backend/.env is live — /api/admin/area-clone returned 200 on a single happy-path request (no budget-burn loops).",
+    "Itinerary endpoint requires BOTH recipient_name AND sender_name (server.py:256-258); the original request's features_or_bugs_to_test item 7 should be updated to note both fields are required (returns 422 otherwise). Non-blocking, spec-accurate.",
+    "Brera tenant assets preserved: /app/configs/brera-milano.json reachable via ?tenant=brera-milano with full Brera branding (Accademia / Pinacoteca / Cusani / Orsini / Scala landmarks, Milano map center). Good multi-tenant decoupling — the pivot didn't destroy legacy data.",
+    "No new regressions vs. iteration 10: the 145 existing tests still pass, and the 2 expected skips (test_iter6_canonical_and_landmark_chat.py) are Brera-landmark-chat assertions that correctly skip when AREA_CONFIG_PATH points to Vico.",
+    "Minor (already flagged in iter10, still open): /app/backend/server.py remains ~1400 lines. Further router extraction (itineraries, pois, area-settings) would improve maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_vico_pivot.py (NEW — 8 targeted Vico-pivot regression tests covering /api/area default+brera, /api/tenant, share card OG meta, og-image PNG, itinerary round-trip, admin area-clone happy path, POI chat)"
+  ],
+  "success_rate": {
+    "backend": "100% (153 passed, 2 expected skips — full suite incl. 8 new Vico pivot tests; 145 baseline preserved)",
+    "frontend": "100% on every item in the review request — landing renders 'Aura di Vico Equense', eyebrow 'PENISOLA SORRENTINA · LA CITTÀ A PICCO SUL MARE', hero 'A Vico Equense, i luoghi nascosti ti sussurrano.', all 5 landmark cards present, map centered on Vico, zero 'Brera'/'Milano' in DOM text, browser <title> 'Aura di Vico Equense · la costa sussurrata', manifest.short_name 'Vico Equense'. Brera fallback via ?tenant=brera-milano still works end-to-end."
+  },
+  "test_credentials": "admin@brera.app / BreraAdmin2026! — verified working (login via /api/auth/login, session cookies set, admin-only /api/admin/area-clone accessible).",
+  "seed_data_creation": "2 TEST_-prefixed itineraries created on the default tenant during test runs (TEST_vico gift for mayor demo, TEST_vico itinerary). Both use the first 3-4 POIs from /api/pois. No production data touched. Admin clone created one draft config blob via Anthropic — single call, minimal budget use.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Re-run baseline with `cd /app/backend && set -a && . .env && set +a && export REACT_APP_BACKEND_URL=https://brera-discovery.preview.emergentagent.com && python -m pytest tests/ -q`. Expected: 153 passed, 2 skipped. The 8 new tests live in tests/test_vico_pivot.py and cover the Vico-pivot contract specifically (default tenant, brera fallback, /api/tenant active+available, share card og meta, og-image PNG magic+size, itinerary create+fetch requires both recipient_name AND sender_name, admin area-clone 1x happy path, POI chat). The 2 skips are Brera-specific landmark-chat assertions in test_iter6_canonical_and_landmark_chat.py that correctly skip when AREA_CONFIG_PATH points to Vico Equense — do NOT remove these, they'll re-activate if the default tenant is ever flipped back. Frontend: landing page data-testids to note — landing-eyebrow (present), landing-hero. The cosmetic browser-title-on-brera-tenant issue is the only open item and is not a blocker.",
+  "rca of the issue": "No bug RCA needed — the pivot from Brera-default to Vico-default is implemented correctly. The only finding is cosmetic (document.title hardcoded in index.html doesn't reflect ?tenant=brera-milano overrides). For the mayor demo tomorrow this is a non-issue: the demo uses the root URL which serves the correct Vico title, OG meta, and landing copy."
+}

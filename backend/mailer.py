@@ -12,7 +12,7 @@ import os
 
 import resend
 
-logger = logging.getLogger("brera.mailer")
+logger = logging.getLogger("aura.mailer")
 
 # ---------------------------------------------------------------------------
 # HTML templates (inline CSS, table layout — email clients are fragile)
@@ -21,8 +21,30 @@ _BRAND = "#BD5745"
 _BG    = "#F5F1E8"
 _TXT   = "#1A1A18"
 
+
+def _area_labels(lang: str) -> tuple[str, str, str]:
+    """Return (brand, area, city) in the requested language, with safe fallbacks.
+    Reads from the active area.config.json so emails follow the current city."""
+    try:
+        from area_config import load_area
+        cfg = load_area()
+        def pick(key: str, default: str) -> str:
+            v = cfg.get(key)
+            if isinstance(v, dict):
+                return v.get(lang) or v.get("en") or default
+            return v or default
+        return (
+            pick("brand", "Aura"),
+            pick("area", "Aura"),
+            pick("city", ""),
+        )
+    except Exception:
+        return ("Aura", "Aura", "")
+
+
 def _shell(title: str, body_html: str, lang: str) -> str:
-    year_line = "Aura di Brera · Milano" if lang == "it" else "Aura di Brera · Milan"
+    brand, area, city = _area_labels(lang)
+    year_line = f"{brand} · {city}" if city else brand
     return f"""<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><title>{title}</title></head>
 <body style="margin:0;padding:0;background:{_BG};font-family:Georgia,serif;color:{_TXT};">
@@ -50,8 +72,9 @@ def _shell(title: str, body_html: str, lang: str) -> str:
 
 def password_reset_email(reset_url: str, lang: str = "it") -> tuple[str, str]:
     """Return (subject, html) for a password-reset email."""
+    brand, _area, _city = _area_labels(lang)
     if lang == "it":
-        subject = "Reimposta la tua password · Aura di Brera"
+        subject = f"Reimposta la tua password · {brand}"
         body = f"""
         <p>Abbiamo ricevuto una richiesta di reimpostazione della password per il tuo account.</p>
         <p>Clicca sul pulsante qui sotto per sceglierne una nuova. Il link è valido per <strong>un'ora</strong>.</p>
@@ -67,7 +90,7 @@ def password_reset_email(reset_url: str, lang: str = "it") -> tuple[str, str]:
         """
         return subject, _shell("Reimposta la password", body, lang)
 
-    subject = "Reset your password · Aura di Brera"
+    subject = f"Reset your password · {brand}"
     body = f"""
     <p>We received a request to reset the password on your account.</p>
     <p>Click the button below to choose a new one. The link is valid for <strong>one hour</strong>.</p>
@@ -86,17 +109,18 @@ def password_reset_email(reset_url: str, lang: str = "it") -> tuple[str, str]:
 
 def contribution_moderated_email(user_name: str, status: str, poi_name: str,
                                  note: str | None, lang: str = "it") -> tuple[str, str]:
+    _brand, area, _city = _area_labels(lang)
     if lang == "it":
         verb = "è stato pubblicato" if status == "approved" else "non è stato pubblicato"
         subject = f"Il tuo contributo su {poi_name} {verb}"
         ok = status == "approved"
-        line = ("Grazie, il tuo sussurro è ora tra quelli che Brera racconterà ai prossimi camminatori."
+        line = (f"Grazie, il tuo sussurro è ora tra quelli che {area} racconterà ai prossimi camminatori."
                 if ok else
                 "Abbiamo deciso di non pubblicarlo questa volta. Puoi inviarne un altro quando vuoi.")
     else:
         subject = f"Your contribution about {poi_name} has been {'approved' if status == 'approved' else 'not used'}"
         ok = status == "approved"
-        line = ("Thank you — your whisper now joins the ones Brera will tell to future walkers."
+        line = (f"Thank you — your whisper now joins the ones {area} will tell to future walkers."
                 if ok else
                 "We've chosen not to publish this one this time. You're welcome to submit another whenever you like.")
 

@@ -34,10 +34,15 @@ def _resolve_path() -> Path:
 
 
 def _tenant_path(slug: str) -> Path:
-    """Resolve a tenant slug to a /app/configs/<slug>.json file. The
-    built-in 'brera-milano' slug maps back to the default path so the
-    multi-tenant router can treat it like any other tenant."""
-    if slug == "brera-milano":
+    """Resolve a tenant slug to a /app/configs/<slug>.json file. If the slug
+    matches the active default config's own slug, return the default path so
+    the multi-tenant router can treat it like any other tenant without
+    round-tripping the same data twice."""
+    try:
+        default_slug = (load_area().get("slug") or "").strip()
+    except Exception:
+        default_slug = ""
+    if slug and slug == default_slug:
         return _DEFAULT_PATH
     return _TENANT_CONFIGS_DIR / f"{slug}.json"
 
