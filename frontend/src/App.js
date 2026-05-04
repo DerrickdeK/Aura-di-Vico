@@ -17,6 +17,7 @@ import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordPages";
 import GiftComposerPage from "./pages/GiftComposerPage";
 import GiftRecipientPage from "./pages/GiftRecipientPage";
 import AdminAreaPage from "./pages/AdminAreaPage";
+import VicoPreviewPage from "./pages/VicoPreviewPage";
 import "./App.css";
 
 function ListenGate() {
@@ -32,6 +33,7 @@ function Shell() {
     <>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/preview" element={<VicoPreviewPage />} />
         <Route path="/listen" element={<ListenGate />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
