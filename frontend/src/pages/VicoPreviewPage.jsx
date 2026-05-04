@@ -330,6 +330,21 @@ export default function VicoPreviewPage() {
               <ArrowRight size={16} />
             </Link>
             <Link
+              to="/listen?demo=1"
+              data-testid="vico-preview-demo-btn"
+              className="inline-flex items-center gap-2 px-7 py-4 rounded-full transition-all hover:scale-[1.02]"
+              style={{
+                background: "var(--deep-green)",
+                color: "#fff",
+                fontSize: 15,
+                letterSpacing: "0.04em",
+                boxShadow: "0 10px 30px rgba(31, 79, 92, 0.35)",
+              }}
+            >
+              <Sparkles size={16} />
+              {lang === "it" ? "Modalità Demo" : "Demo mode"}
+            </Link>
+            <Link
               to="/gift/new"
               data-testid="vico-preview-gift-btn"
               className="inline-flex items-center gap-2 px-7 py-4 rounded-full transition-all hover:scale-[1.02]"

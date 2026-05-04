@@ -46,7 +46,8 @@ export default function ListenPage() {
   const [audioOn, setAudioOn] = useState(true);
 
   // Virtual mode: triggered explicitly by user. ?virtual=1 query enables on load.
-  const [virtualOn, setVirtualOn] = useState(searchParams.get("virtual") === "1");
+  const demoOn = searchParams.get("demo") === "1";
+  const [virtualOn, setVirtualOn] = useState(searchParams.get("virtual") === "1" || demoOn);
   const [virtualMode, setVirtualMode] = useState("auto"); // "auto" | "step" | "drag"
 
   const language = user?.language || "en";
@@ -55,12 +56,32 @@ export default function ListenPage() {
   const voiceEnabled = responseFormats.includes("voice");
   const notif = user?.notifications_enabled || false;
 
-  const filteredPois = useMemo(() => filterByThemes(pois, interests), [pois, interests]);
+  const themedPois = useMemo(() => filterByThemes(pois, interests), [pois, interests]);
+
+  // Demo mode: lock the route to a curated 5-stop loop around Piazza Umberto.
+  // Same UI surface (map + thumbnails + compass + drawer) but a pristine,
+  // slow-paced auto-walk for showcase use.
+  const DEMO_NAMES = [
+    "Piazza Umberto I",
+    "Hotel Aequa",
+    "Tito's Ristorante",
+    "Gelateria Gabriele",
+    "Bar Centrale",
+  ];
+  const filteredPois = useMemo(() => {
+    if (!demoOn) return themedPois;
+    const byName = new Map(themedPois.map((p) => [p.name, p]));
+    const ordered = DEMO_NAMES.map((n) => byName.get(n)).filter(Boolean);
+    // Fall back to themed list if names changed and none match.
+    return ordered.length ? ordered : themedPois;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themedPois, demoOn]);
 
   const { position: virtualPosition, stepForward, setDragPosition } = useVirtualPosition({
     enabled: virtualOn,
     mode: virtualMode,
     pois: filteredPois,
+    slow: demoOn,
   });
   const position = virtualOn ? virtualPosition : realPosition;
 
@@ -126,6 +147,21 @@ export default function ListenPage() {
   return (
     <div className="min-h-screen pb-28 px-5 pt-12 max-w-xl mx-auto" data-testid="listen-page">
       <PocketModeChip />
+      {demoOn && (
+        <div
+          data-testid="demo-mode-banner"
+          className="mb-4 flex items-center justify-center gap-2 mx-auto px-4 py-1.5 rounded-full text-xs uppercase tracking-[0.18em]"
+          style={{
+            background: "var(--terracotta)",
+            color: "#fff",
+            width: "fit-content",
+            boxShadow: "0 4px 12px rgba(189, 87, 69, 0.28)",
+          }}
+        >
+          <span style={{ background: "#fff", width: 6, height: 6, borderRadius: "50%" }} />
+          {language === "it" ? "Modalità Demo · Tour guidato" : "Demo mode · Guided tour"}
+        </div>
+      )}
       <header className="text-center">
         <p className="eyebrow">{locationLabel || "—"} {virtualOn && t(language, "listen.virtualBadge")}</p>
         <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-none">

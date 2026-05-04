@@ -8,6 +8,9 @@ const BRERA_CENTER = getAreaCenter();
 const STEP_MS = 350;
 const STEP_DELTA = 0.04;
 const STEP_MANUAL = 0.18;
+// Demo pace: ~3× slower so the audience can read each POI before it advances.
+const DEMO_STEP_MS = 900;
+const DEMO_STEP_DELTA = 0.025;
 
 /**
  * Build a sensible walking route through every POI using a greedy
@@ -48,7 +51,7 @@ function buildRoute(pois) {
  *   - "step": user clicks "Step forward" to advance one segment at a time
  *   - "drag": user drags a pin on a small map; setDragPosition() updates state
  */
-export default function useVirtualPosition({ enabled, mode, pois }) {
+export default function useVirtualPosition({ enabled, mode, pois, slow = false }) {
   // Memoised route — only rebuilds when the POI list changes (by length or first id).
   const path = useMemo(() => buildRoute(pois), [pois]);
   const pathLen = path.length;
@@ -81,17 +84,19 @@ export default function useVirtualPosition({ enabled, mode, pois }) {
   // Auto-walk timer.
   useEffect(() => {
     if (!enabled || mode !== "auto" || pathLen < 2) return undefined;
+    const stepMs = slow ? DEMO_STEP_MS : STEP_MS;
+    const stepDelta = slow ? DEMO_STEP_DELTA : STEP_DELTA;
     const id = setInterval(() => {
       setAutoStep((s) => {
         if (s >= 1) {
           setAutoIdx((i) => (i + 1) % pathLen);
           return 0;
         }
-        return s + STEP_DELTA;
+        return s + stepDelta;
       });
-    }, STEP_MS);
+    }, stepMs);
     return () => clearInterval(id);
-  }, [enabled, mode, pathLen]);
+  }, [enabled, mode, pathLen, slow]);
 
   const stepForward = useCallback(() => {
     setStepProgress((p) => {
