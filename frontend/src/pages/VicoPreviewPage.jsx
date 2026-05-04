@@ -315,7 +315,7 @@ export default function VicoPreviewPage() {
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
-              to="/listen?virtual=1"
+              to="/listen"
               data-testid="vico-preview-begin-btn"
               className="inline-flex items-center gap-2 px-7 py-4 rounded-full transition-all hover:scale-[1.02]"
               style={{
