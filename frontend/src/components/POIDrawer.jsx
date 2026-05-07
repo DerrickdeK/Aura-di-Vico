@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, MapPin, Clock, Sparkles, BookOpen, MessageCircle, Image as ImageIcon } from "lucide-react";
 import { api } from "../lib/api";
 import { devWarn } from "../lib/log";
+import EmptyPhotoSlot from "./EmptyPhotoSlot";
 import useLocale from "../hooks/useLocale";
 import { t } from "../lib/i18n";
 import POIChatPanel, { POIChatLauncher } from "./POIChatPanel";
@@ -91,12 +92,18 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
               <div className="w-12 h-1.5 rounded-full bg-[var(--border)]" />
             </div>
             <div className="relative">
-              <img
-                src={poi.image_url}
-                alt={poi.name}
-                className="w-full h-56 object-cover"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
-              />
+              {poi.image_url ? (
+                <img
+                  src={poi.image_url}
+                  alt={poi.name}
+                  className="w-full h-56 object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              ) : (
+                <div className="w-full h-56">
+                  <EmptyPhotoSlot label={poi.name} language="it" variant="hero" testId={`empty-photo-poi-${poi.id}`} />
+                </div>
+              )}
               <button
                 onClick={onClose}
                 className="absolute top-3 right-3 w-9 h-9 rounded-full bg-[var(--bg)]/90 backdrop-blur flex items-center justify-center"

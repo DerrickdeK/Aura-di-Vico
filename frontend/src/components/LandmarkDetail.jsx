@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Quote, MessageCircle } from "lucide-react";
 import POIChatPanel from "./POIChatPanel";
+import EmptyPhotoSlot from "./EmptyPhotoSlot";
 import useLocale from "../hooks/useLocale";
 
 const CTA = {
@@ -39,12 +40,21 @@ export default function LandmarkDetail({ landmark, lang, onClose }) {
           <article className="mt-5 bg-[var(--surface)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-md">
             <div className="grid sm:grid-cols-[260px_1fr]">
               <div className="relative h-40 sm:h-auto bg-[var(--bg)]">
-                <img
-                  src={landmark.image}
-                  alt={landmark.name[lang] || landmark.name.en}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
+                {landmark.image ? (
+                  <img
+                    src={landmark.image}
+                    alt={landmark.name[lang] || landmark.name.en}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <EmptyPhotoSlot
+                    label={landmark.name[lang] || landmark.name.en}
+                    language={lang}
+                    variant="card"
+                    testId={`empty-photo-landmark-detail-${landmark.id}`}
+                  />
+                )}
               </div>
               <div className="p-5 sm:p-6 relative">
                 <button

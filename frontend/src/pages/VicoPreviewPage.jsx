@@ -7,6 +7,7 @@ import { useArea, pickLocale } from "../lib/area";
 import useLocale from "../hooks/useLocale";
 import { speak, stopSpeaking, isSpeechSupported, unlockSpeech } from "../lib/speech";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import EmptyPhotoSlot from "../components/EmptyPhotoSlot";
 
 // Image proxy — consistent with LandingPage.
 const IMG_PROXY = "https://wsrv.nl/?w=900&h=1200&fit=cover&output=jpg&url=";
@@ -244,13 +245,15 @@ export default function VicoPreviewPage() {
                 data-testid={`vico-preview-landmark-${lm.id}`}
                 style={{ aspectRatio: "3 / 4" }}
               >
-                {lm.image && (
+                {lm.image ? (
                   <img
                     src={lm.image}
                     alt={lm.name}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
                   />
+                ) : (
+                  <EmptyPhotoSlot label={lm.name} language={lang} variant="card" testId={`empty-photo-landmark-${lm.id}`} />
                 )}
                 <div
                   className="absolute inset-0"

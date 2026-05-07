@@ -67,7 +67,8 @@
         "Perched on a 70-metre tuff cliff over the Tyrrhenian Sea.",
         "Adjacent to the Antiquarium Silio Italico housing Greco-Roman artefacts."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Vico_Equense_Chiesa_della_Santissima_Annunziata.jpg/600px-Vico_Equense_Chiesa_della_Santissima_Annunziata.jpg"
+      "image_wikimedia": "",
+      "image_url": ""
     },
     {
       "id": "castello-giusso",
@@ -98,7 +99,8 @@
         "Home of the Giusso family since 1694.",
         "Private residence, grounds occasionally open for concerts and weddings."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Vico_equense.jpg/600px-Vico_equense.jpg"
+      "image_wikimedia": "",
+      "image_url": ""
     },
     {
       "id": "pizza-metro",
@@ -129,7 +131,8 @@
         "Invented pizza-by-the-meter (pizza a metro) in 1960.",
         "Still operated by the Dell'Amura family, wood-fired ovens since day one."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Pizza_al_metro.jpg/600px-Pizza_al_metro.jpg"
+      "image_wikimedia": "",
+      "image_url": ""
     },
     {
       "id": "scrajo",
@@ -160,7 +163,8 @@
         "Natural sulphur springs at 16°C, rich in iron and hydrogen sulphide.",
         "Certified by the Italian Ministry of Health for dermatological and respiratory treatments."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/8/82/Scrajo_Terme.jpg/600px-Scrajo_Terme.jpg"
+      "image_wikimedia": "",
+      "image_url": ""
     },
     {
       "id": "gabriele",
@@ -191,7 +195,8 @@
         "Renowned for lemon-based pastries made with Sorrento IGP lemons.",
         "Located on Corso Umberto I, Vico Equense's main promenade."
       ],
-      "image_wikimedia": "upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Delizia_al_Limone.JPG/600px-Delizia_al_Limone.JPG"
+      "image_wikimedia": "",
+      "image_url": ""
     }
   ],
   "pois": [
@@ -203,7 +208,7 @@
       "longitude": 14.4243,
       "address": "Via Vescovado 1, 80069 Vico Equense NA",
       "category": "Hidden Museum",
-      "image_url": "https://images.unsplash.com/photo-1565116175827-64847f972a3f?w=1200",
+      "image_url": "",
       "trigger_radius_m": 40,
       "hours": "Tue–Sun 10:00–13:00, 16:00–19:00",
       "fun_fact": "A silver Greek coin from 470 BC found here bears the earliest known depiction of a nymph holding a lyre.",
@@ -215,7 +220,8 @@
       "opening_line": {
         "en": "Two hundred and thirty-eight tombs were once beneath your feet. Some of them still whisper.",
         "it": "Duecentotrentotto tombe dormivano sotto i tuoi piedi. Alcune sussurrano ancora."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Marina di Equa",
@@ -225,7 +231,7 @@
       "longitude": 14.418152,
       "address": "Via Marina di Equa, 80069 Vico Equense NA",
       "category": "Hidden Beach",
-      "image_url": "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200",
+      "image_url": "",
       "trigger_radius_m": 80,
       "hours": "Always accessible",
       "fun_fact": "The tower's inner spiral staircase is only 48 cm wide — designed to force attackers to climb one at a time.",
@@ -237,7 +243,8 @@
       "opening_line": {
         "en": "A Norman watchtower, still standing. The Saracen ships never did get past.",
         "it": "Una torre di guardia normanna, ancora in piedi. Le navi saracene non ci sono mai passate."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Chiesa di Santa Maria del Toro",
@@ -247,7 +254,7 @@
       "longitude": 14.431467,
       "address": "Via Santa Maria del Toro, 80069 Vico Equense NA",
       "category": "Hidden Church",
-      "image_url": "https://images.unsplash.com/photo-1615800098746-73af8261e3df?w=1200",
+      "image_url": "",
       "trigger_radius_m": 45,
       "hours": "Sun 09:00–12:00, or on request",
       "fun_fact": "Locals still leave written prayers tucked into a crack in the miraculous boulder.",
@@ -259,7 +266,8 @@
       "opening_line": {
         "en": "A shepherd saw her face on a stone in 1528. The stone is still behind my altar.",
         "it": "Un pastore vide il suo volto su una pietra nel 1528. La pietra è ancora dietro il mio altare."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Monte Faito — Belvedere dei Capi",
@@ -269,7 +277,7 @@
       "longitude": 14.4814,
       "address": "Belvedere dei Capi, 80069 Faito NA",
       "category": "Scenic Viewpoint",
-      "image_url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
+      "image_url": "",
       "trigger_radius_m": 150,
       "hours": "Always accessible (cable car: Apr–Oct)",
       "fun_fact": "Filmed by Roberto Rossellini in 1954's Voyage to Italy starring Ingrid Bergman.",
@@ -280,7 +288,8 @@
       "opening_line": {
         "en": "From up here you see Vesuvius AND Capri in one glance. No one forgets this.",
         "it": "Da quassù vedi Vesuvio E Capri in un solo sguardo. Nessuno lo dimentica."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Cantina del Vesuvio Giuliana",
@@ -290,7 +299,7 @@
       "longitude": 14.449,
       "address": "Strada Provinciale 39, 80069 Vico Equense NA",
       "category": "Historic Winery",
-      "image_url": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1200",
+      "image_url": "",
       "trigger_radius_m": 60,
       "hours": "Mon–Sat 10:00–18:00 (tastings by appointment)",
       "fun_fact": "A 1944 bottle, sealed before the last Vesuvius eruption, is displayed in the entrance — still unopened.",
@@ -302,7 +311,8 @@
       "opening_line": {
         "en": "My vines drink volcanic ash. Taste what the mountain remembers.",
         "it": "Le mie viti bevono cenere vulcanica. Assaggia ciò che la montagna ricorda."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Spiaggia di Seiano",
@@ -312,7 +322,7 @@
       "longitude": 14.4205,
       "address": "Spiaggia di Seiano, 80069 Vico Equense NA",
       "category": "Hidden Beach",
-      "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200",
+      "image_url": "",
       "trigger_radius_m": 70,
       "hours": "Always accessible",
       "fun_fact": "Submerged Roman columns from a 1st-century maritime villa lie 15 metres offshore.",
@@ -323,7 +333,8 @@
       "opening_line": {
         "en": "Roman columns rest 15 metres below my waves. The snorkellers know.",
         "it": "Colonne romane riposano quindici metri sotto le mie onde. Gli sub lo sanno."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Torre di Equa",
@@ -333,7 +344,7 @@
       "longitude": 14.4135,
       "address": "Marina di Equa, 80069 Vico Equense NA",
       "category": "Historic Trace",
-      "image_url": "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=1200",
+      "image_url": "",
       "trigger_radius_m": 35,
       "hours": "Exterior always accessible",
       "fun_fact": "A 1544 parchment in the Naples archives records its keeper's weekly ration of bread and olive oil.",
@@ -345,7 +356,8 @@
       "opening_line": {
         "en": "My brazier was lit every Saracen night. The sea remembers the smoke.",
         "it": "Il mio braciere veniva acceso ogni notte saracena. Il mare ricorda il fumo."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Casa Museo di Silio Italico",
@@ -355,7 +367,7 @@
       "longitude": 14.4265,
       "address": "Piazza Umberto I, 80069 Vico Equense NA",
       "category": "Historic Trace",
-      "image_url": "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1200",
+      "image_url": "",
       "trigger_radius_m": 30,
       "hours": "Fri–Sat 17:00–20:00",
       "fun_fact": "Silius Italicus starved himself to death, aged 75, as a stoic farewell to the world.",
@@ -367,7 +379,8 @@
       "opening_line": {
         "en": "A Roman poet chose this place to die. His verses still sit in the stone.",
         "it": "Un poeta romano scelse questo luogo per morire. I suoi versi siedono ancora nella pietra."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Chiesa dei Santi Ciro e Giovanni",
@@ -377,7 +390,7 @@
       "longitude": 14.425047,
       "address": "Via Roma, 80069 Vico Equense NA",
       "category": "Hidden Church",
-      "image_url": "https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=1200",
+      "image_url": "",
       "trigger_radius_m": 35,
       "hours": "Daily 08:00–12:00, 16:00–19:00",
       "fun_fact": "The bell tower doubles as the town's official siren on the feast day.",
@@ -389,7 +402,8 @@
       "opening_line": {
         "en": "On 31 January my saints walk the streets in silver. Come meet them.",
         "it": "Il 31 gennaio i miei santi camminano per le strade in argento. Vieni a incontrarli."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Funicolare del Monte Faito",
@@ -399,7 +413,7 @@
       "longitude": 14.4795,
       "address": "Via Cosenza, 80069 Castellammare di Stabia NA",
       "category": "Historic Transport",
-      "image_url": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=1200",
+      "image_url": "",
       "trigger_radius_m": 80,
       "hours": "Apr–Oct, 07:30–16:40",
       "fun_fact": "An August 1960 earthquake damaged the cable — repaired overnight so hikers stranded at the summit came down by dawn.",
@@ -411,7 +425,8 @@
       "opening_line": {
         "en": "One thousand metres in eight minutes. The world's steepest beech forest is mine.",
         "it": "Mille metri in otto minuti. La faggeta più ripida del mondo è mia."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Punta Scutolo",
@@ -421,7 +436,7 @@
       "longitude": 14.4198,
       "address": "Punta Scutolo, 80069 Vico Equense NA",
       "category": "Historic Trace",
-      "image_url": "https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=1200",
+      "image_url": "",
       "trigger_radius_m": 50,
       "hours": "Always accessible",
       "fun_fact": "During the Allied landings in September 1943 the bunker was surrendered without a shot by its 14 German defenders.",
@@ -433,7 +448,8 @@
       "opening_line": {
         "en": "A wartime bunker, now pointed at Vesuvius. No one fires anymore.",
         "it": "Un bunker di guerra, ora puntato sul Vesuvio. Nessuno spara più."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Pasticceria Gabriele 1875 — Forno",
@@ -443,7 +459,7 @@
       "longitude": 14.4261,
       "address": "Corso Umberto I 5, 80069 Vico Equense NA",
       "category": "Artisan Workshop",
-      "image_url": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200",
+      "image_url": "",
       "trigger_radius_m": 25,
       "hours": "Tue–Sun 07:00–10:00 (observation window)",
       "fun_fact": "The lamination rolls at 4°C to keep the lard crystalline — the secret to a shatter-crisp shell.",
@@ -455,7 +471,8 @@
       "opening_line": {
         "en": "Sfogliatelle are rolled here every morning at seven. The lard is always cold.",
         "it": "Le sfogliatelle si arrotolano qui ogni mattina alle sette. Lo strutto è sempre freddo."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Chiostro di San Salvatore",
@@ -465,7 +482,7 @@
       "longitude": 14.4269,
       "address": "Via San Salvatore, 80069 Vico Equense NA",
       "category": "Hidden Cloister",
-      "image_url": "https://images.unsplash.com/photo-1551022372-0bdac482b9d6?w=1200",
+      "image_url": "",
       "trigger_radius_m": 35,
       "hours": "Mon–Fri 09:00–12:00",
       "fun_fact": "Twenty-four columns, for the twenty-four hours of the canonical day.",
@@ -477,7 +494,8 @@
       "opening_line": {
         "en": "Twenty-four columns, one for each hour of a canonical day. The well still answers.",
         "it": "Ventiquattro colonne, una per ogni ora del giorno canonico. Il pozzo risponde ancora."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Bar Centrale",
@@ -487,7 +505,7 @@
       "longitude": 14.4262,
       "address": "Corso Umberto I 12, 80069 Vico Equense NA",
       "category": "Historic Café",
-      "image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200",
+      "image_url": "",
       "trigger_radius_m": 25,
       "hours": "Daily 06:30–23:00",
       "fun_fact": "The guestbook contains Federico Fellini's handwritten note: 'qui si pensa meglio' (one thinks better here).",
@@ -499,7 +517,8 @@
       "opening_line": {
         "en": "Fellini wrote here that one thinks better in my chairs. Find a seat.",
         "it": "Fellini ha scritto qui che si pensa meglio sulle mie sedie. Trovane una."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Giardino Aranci di Vico",
@@ -509,7 +528,7 @@
       "longitude": 14.4258,
       "address": "Via Vescovado, 80069 Vico Equense NA",
       "category": "Hidden Garden",
-      "image_url": "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=1200",
+      "image_url": "",
       "trigger_radius_m": 40,
       "hours": "Open during Festa dei Limoni (May)",
       "fun_fact": "Three of its trees are clones of a 1602 specimen from the Farnese gardens in Rome.",
@@ -521,7 +540,8 @@
       "opening_line": {
         "en": "My bitter oranges perfume a Pope's chrism. Smell the chapel before you see it.",
         "it": "Le mie arance amare profumano il crisma di un Papa. Annusa la cappella prima di vederla."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Torre dell'Annunziata Vecchia",
@@ -531,7 +551,7 @@
       "longitude": 14.4238,
       "address": "Via Vescovado, 80069 Vico Equense NA",
       "category": "Historic Trace",
-      "image_url": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200",
+      "image_url": "",
       "trigger_radius_m": 30,
       "hours": "Always accessible",
       "fun_fact": "Fishermen call it 'a' crocetta — the little cross — and still use it as a visual marker.",
@@ -543,7 +563,8 @@
       "opening_line": {
         "en": "Lightning left me half a tower in 1632. Fishermen still steer by my cross.",
         "it": "Un fulmine mi lasciò mezza torre nel 1632. I pescatori orientano ancora la rotta sulla mia croce."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Macelleria De Gennaro",
@@ -553,7 +574,7 @@
       "longitude": 14.4271,
       "address": "Via Roma 22, 80069 Vico Equense NA",
       "category": "Historic Shop",
-      "image_url": "https://images.unsplash.com/photo-1542367592-8849eb950fd8?w=1200",
+      "image_url": "",
       "trigger_radius_m": 25,
       "hours": "Tue–Sat 07:00–13:30, 17:00–20:00",
       "fun_fact": "The cellar maintains a year-round 12°C from the volcanic rock — no electricity needed.",
@@ -565,7 +586,8 @@
       "opening_line": {
         "en": "My rock cellar stays at twelve degrees, year-round. The salami knows.",
         "it": "La mia cantina di tufo resta a dodici gradi, tutto l'anno. Il salame lo sa."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Belvedere Marinella",
@@ -575,7 +597,7 @@
       "longitude": 14.4268,
       "address": "Belvedere Marinella, 80069 Vico Equense NA",
       "category": "Scenic Viewpoint",
-      "image_url": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1200",
+      "image_url": "",
       "trigger_radius_m": 30,
       "hours": "Always accessible",
       "fun_fact": "The gazebo's original blueprints are in the Capodimonte archives, signed 'F. Luigi Caldieri, ing.'",
@@ -587,7 +609,8 @@
       "opening_line": {
         "en": "Sit on my marble bench at sunset. Vesuvius turns rose, then violet, then indigo.",
         "it": "Siediti sulla mia panchina di marmo al tramonto. Il Vesuvio diventa rosa, poi viola, poi indaco."
-      }
+      },
+      "image_wikimedia": ""
     },
     {
       "name": "Pizza a Metro da Gigino",
@@ -597,7 +620,7 @@
       "longitude": 14.4262,
       "address": "Via Nicotera 15, 80069 Vico Equense NA",
       "category": "Historic Trattoria",
-      "image_url": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200",
+      "image_url": "",
       "trigger_radius_m": 30,
       "hours": "Daily 12:00–15:00, 19:00–23:30",
       "fun_fact": "Sophia Loren famously ordered a two-metre Margherita here in 1972.",
@@ -614,7 +637,8 @@
         "Founded 1937 by Luigi 'Gigino' Dell'Amura.",
         "Invented pizza-by-the-meter (pizza a metro) in 1960.",
         "Wood-fired ovens since day one, still operated by the Dell'Amura family."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Chiesa della Santissima Annunziata",
@@ -624,7 +648,7 @@
       "longitude": 14.424023,
       "address": "Via Vescovado, 80069 Vico Equense NA",
       "category": "Historic Cathedral",
-      "image_url": "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1200",
+      "image_url": "",
       "trigger_radius_m": 35,
       "hours": "Daily 08:00–12:00, 16:00–19:00",
       "fun_fact": "The cliff below hosted a Roman maritime villa whose foundations are visible at low tide.",
@@ -641,7 +665,8 @@
         "Built 14th century, rebuilt after the 1732 earthquake.",
         "Perched on a 70-metre tuff cliff over the Tyrrhenian Sea.",
         "Adjacent to the Antiquarium Silio Italico."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Castello Giusso",
@@ -651,7 +676,7 @@
       "longitude": 14.425721,
       "address": "Via Castello Giusso, 80069 Vico Equense NA",
       "category": "Historic Castle",
-      "image_url": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1200",
+      "image_url": "",
       "trigger_radius_m": 40,
       "hours": "Private residence — exterior viewable from the road",
       "fun_fact": "The library contains an uncatalogued 16th-century manuscript of Torquato Tasso, still awaiting publication.",
@@ -668,7 +693,8 @@
         "Built 1284 under Charles II of Anjou.",
         "Home of the Giusso family since 1694.",
         "Private residence; grounds occasionally open for concerts and weddings."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Scrajo Terme",
@@ -678,7 +704,7 @@
       "longitude": 14.436338,
       "address": "SS145 Sorrentina, 80069 Vico Equense NA",
       "category": "Historic Baths",
-      "image_url": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200",
+      "image_url": "",
       "trigger_radius_m": 50,
       "hours": "Seasonal — typically Apr–Oct",
       "fun_fact": "A photograph of Enrico Caruso in a Scrajo bathrobe hangs in the main reception.",
@@ -695,7 +721,8 @@
         "Opened in 1895 as a Belle Époque thermal destination.",
         "Natural sulphur springs at 16°C, rich in iron and hydrogen sulphide.",
         "Certified by the Italian Ministry of Health for dermatological and respiratory treatments."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Gelateria Gabriele",
@@ -705,7 +732,7 @@
       "longitude": 14.426028,
       "address": "Corso Umberto I 5, 80069 Vico Equense NA",
       "category": "Historic Pastry",
-      "image_url": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=1200",
+      "image_url": "",
       "trigger_radius_m": 25,
       "hours": "Daily 07:00–23:00",
       "fun_fact": "Gabriele's limoncello sorbetto is the only one served at the President of Italy's Christmas luncheon.",
@@ -722,7 +749,8 @@
         "Founded in 1875, six generations of the Gabriele family.",
         "Renowned for lemon-based pastries made with Sorrento IGP lemons.",
         "Located on Corso Umberto I, Vico Equense's main promenade."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Piazza Umberto I",
@@ -732,7 +760,7 @@
       "longitude": 14.426473,
       "address": "Piazza Umberto I, 80069 Vico Equense NA",
       "category": "Town Square",
-      "image_url": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200",
+      "image_url": "",
       "trigger_radius_m": 35,
       "hours": "Always accessible",
       "fun_fact": "On 31 January every year the square fills with silver as the relics of Saints Cyrus and John are paraded around its perimeter.",
@@ -749,7 +777,8 @@
         "Vico Equense's main square since the 18th century.",
         "Anchored by the Church of Santi Ciro e Giovanni on the south side.",
         "Hosts the morning market and the evening passeggiata."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Hotel Aequa",
@@ -759,7 +788,7 @@
       "longitude": 14.426632,
       "address": "Via Filangieri 46, 80069 Vico Equense NA",
       "category": "Historic Hotel",
-      "image_url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200",
+      "image_url": "",
       "trigger_radius_m": 30,
       "hours": "Year-round, reception 24/7",
       "fun_fact": "Its 1971 guestbook is signed by an a young Lina Wertmüller, who scouted the bay from the terrace before filming nearby.",
@@ -776,7 +805,8 @@
         "Opened in 1968 on Via Filangieri 46.",
         "Family-run for three generations.",
         "Roof terrace with direct view of Vesuvius and the Bay of Naples."
-      ]
+      ],
+      "image_wikimedia": ""
     },
     {
       "name": "Tito's Ristorante",
@@ -786,7 +816,7 @@
       "longitude": 14.427209,
       "address": "Via Filangieri 67, 80069 Vico Equense NA",
       "category": "Family Trattoria",
-      "image_url": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200",
+      "image_url": "",
       "trigger_radius_m": 25,
       "hours": "Daily 11:00–23:30",
       "fun_fact": "The wood for the oven still arrives weekly from the chestnut groves of Monte Faito, just up the hill.",
@@ -803,7 +833,8 @@
         "Located at Via Filangieri 67, Vico Equense.",
         "Two minutes' walk from the Circumvesuviana station.",
         "Mediterranean menu with wood-fired pizza, vegetarian and gluten-free options."
-      ]
+      ],
+      "image_wikimedia": ""
     }
   ],
   "narrator": {

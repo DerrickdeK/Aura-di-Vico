@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { pickLocale } from "../lib/area";
+import EmptyPhotoSlot from "./EmptyPhotoSlot";
 
 const ZONE_DOT = {
   found: "#BD5745",
@@ -80,12 +81,7 @@ export default function NearbyPoiStrip({
                     loading="lazy"
                   />
                 ) : (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center text-2xl font-serif"
-                    style={{ color: "var(--text-tertiary)" }}
-                  >
-                    {name.charAt(0)}
-                  </div>
+                  <EmptyPhotoSlot label={name} language={language} variant="thumb" testId={`empty-photo-${poi.id || i}`} />
                 )}
                 {/* Zone tag — only when GPS gives us proximity info */}
                 {distance != null && (

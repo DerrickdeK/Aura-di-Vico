@@ -1,4 +1,5 @@
 import React from "react";
+import EmptyPhotoSlot from "./EmptyPhotoSlot";
 
 /**
  * Horizontal row of landmark thumbnail cards. Click a card → parent flies the
@@ -22,13 +23,22 @@ export default function LandmarkThumbs({ landmarks, activeId, onSelect, lang = "
             data-testid={`landmark-thumb-${l.id}`}
           >
             <div className="relative h-32 sm:h-36 overflow-hidden bg-[var(--bg)]">
-              <img
-                src={l.image}
-                alt={l.name[lang] || l.name.en}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                loading="lazy"
-                referrerPolicy="no-referrer"
-              />
+              {l.image ? (
+                <img
+                  src={l.image}
+                  alt={l.name[lang] || l.name.en}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <EmptyPhotoSlot
+                  label={l.name[lang] || l.name.en}
+                  language={lang}
+                  variant="thumb"
+                  testId={`empty-photo-thumb-${l.id}`}
+                />
+              )}
               <span className="absolute top-2 left-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-[var(--terracotta)] text-[var(--inverse)] text-xs font-serif font-bold shadow-md">
                 {i + 1}
               </span>
