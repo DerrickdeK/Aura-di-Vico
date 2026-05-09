@@ -480,6 +480,32 @@ async def delete_poi(poi_id: str, _: dict = Depends(require_admin)):
         raise HTTPException(status_code=404, detail="POI not found")
     return {"ok": True}
 
+
+class PoiImageUpdate(BaseModel):
+    image_url: str
+
+
+@api_router.patch("/pois/{poi_id}/image", response_model=POI)
+async def update_poi_image(
+    poi_id: str,
+    payload: PoiImageUpdate,
+    user: dict = Depends(get_current_user),
+):
+    """Targeted single-field update so admins/contributors can attach a photo
+    inline (from the POI drawer or photo strip) without re-submitting the
+    whole POI form."""
+    if user.get("role") not in {"admin", "contributor"}:
+        raise HTTPException(status_code=403, detail="Insufficient role")
+    res = await db.pois.update_one(
+        {"id": poi_id},
+        {"$set": {"image_url": (payload.image_url or "").strip()}},
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="POI not found")
+    poi = await db.pois.find_one({"id": poi_id}, {"_id": 0})
+    return poi
+
+
 @api_router.post("/pois/reset")
 async def reset_pois(_: dict = Depends(require_admin)):
     """Wipe all POIs so a student/curator can fill the database from scratch."""

@@ -4,6 +4,7 @@ import { X, Heart, MapPin, Clock, Sparkles, BookOpen, MessageCircle, Image as Im
 import { api } from "../lib/api";
 import { devWarn } from "../lib/log";
 import EmptyPhotoSlot from "./EmptyPhotoSlot";
+import { uploadPoiImage } from "../lib/uploads";
 import useLocale from "../hooks/useLocale";
 import { t } from "../lib/i18n";
 import POIChatPanel, { POIChatLauncher } from "./POIChatPanel";
@@ -52,10 +53,14 @@ const DRAWER_ANIMATE = { y: 0 };
 const DRAWER_EXIT = { y: "100%" };
 const DRAWER_TRANSITION = { type: "spring", damping: 28, stiffness: 260 };
 
-export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, isAuthed }) {
+export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, isAuthed, canEditPhoto = false, onPhotoUpdated }) {
   const [contributions, setContributions] = useState([]);
   const [chatOpen, setChatOpen] = useState(false);
+  const [localImageUrl, setLocalImageUrl] = useState(poi?.image_url || "");
   const { lang } = useLocale();
+
+  // Reset local image whenever a new poi opens.
+  useEffect(() => { setLocalImageUrl(poi?.image_url || ""); }, [poi?.id, poi?.image_url]);
 
   useEffect(() => {
     setChatOpen(false);  // collapse the chat each time the drawer opens with a new POI
@@ -92,16 +97,26 @@ export default function POIDrawer({ poi, isFavorite, onClose, onToggleFavorite, 
               <div className="w-12 h-1.5 rounded-full bg-[var(--border)]" />
             </div>
             <div className="relative">
-              {poi.image_url ? (
+              {localImageUrl ? (
                 <img
-                  src={poi.image_url}
+                  src={localImageUrl}
                   alt={poi.name}
                   className="w-full h-56 object-cover"
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               ) : (
                 <div className="w-full h-56">
-                  <EmptyPhotoSlot label={poi.name} language="it" variant="hero" testId={`empty-photo-poi-${poi.id}`} />
+                  <EmptyPhotoSlot
+                    label={poi.name}
+                    language={lang}
+                    variant="hero"
+                    testId={`empty-photo-poi-${poi.id}`}
+                    onUpload={canEditPhoto ? async (file) => {
+                      const url = await uploadPoiImage(poi.id, file);
+                      setLocalImageUrl(url);
+                      if (typeof onPhotoUpdated === "function") onPhotoUpdated(poi.id, url);
+                    } : undefined}
+                  />
                 </div>
               )}
               <button

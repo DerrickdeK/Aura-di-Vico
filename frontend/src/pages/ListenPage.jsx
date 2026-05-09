@@ -264,6 +264,12 @@ export default function ListenPage() {
         onClose={() => setActivePoi(null)}
         onToggleFavorite={() => {}}
         isAuthed={!!user}
+        canEditPhoto={["admin", "contributor"].includes(user?.role)}
+        onPhotoUpdated={(poiId, url) => {
+          // Optimistically reflect the new photo on the cards strip without
+          // a full refetch; next sightings poll will refresh authoritatively.
+          setActivePoi((p) => (p && p.id === poiId ? { ...p, image_url: url } : p));
+        }}
       />
     </div>
   );
