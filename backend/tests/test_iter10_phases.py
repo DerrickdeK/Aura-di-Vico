@@ -4,7 +4,11 @@ Covers:
   * Admin gift-stats endpoint shape + auth gating
   * Image upload validation paths (415/413/401) + GET cache headers
   * Tenant resolver + multi-tenant area endpoints
-  * Tenant-keyed admin area-settings (PATCH/DELETE isolation)
+  * Tenant-keyed admin area-settings (PATCH/DELETE round-trip)
+
+Workspace note: this is the Vico Equense deployment. Brera-specific
+cross-tenant isolation tests live in the Brera workspace; here we
+exercise the same plumbing against the single tenant that ships here.
 """
 from __future__ import annotations
 
@@ -12,18 +16,28 @@ import io
 import os
 import struct
 import zlib
+from pathlib import Path
 
 import pytest
 import requests
+from dotenv import load_dotenv
+
+# Load env from this workspace's backend/frontend .env files so the tests
+# pick up the real ADMIN_EMAIL / REACT_APP_BACKEND_URL of THIS deployment,
+# whichever city it serves.
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+load_dotenv(Path(__file__).resolve().parents[2] / "frontend" / ".env")
 
 BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL") or "").rstrip("/")
 if not BASE_URL:
-    # Fallback to local reach when REACT_APP_BACKEND_URL not exported
     BASE_URL = "http://localhost:8001"
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@brera.app"
-ADMIN_PW = "BreraAdmin2026!"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@vico.app")
+ADMIN_PW = os.environ.get("ADMIN_PASSWORD", "ChangeThisNow123!")
+
+# The tenant slug this workspace is configured for.
+DEFAULT_SLUG = os.environ.get("DEFAULT_TENANT_SLUG", "vico-equense")
 
 
 def _png_bytes(w: int = 1, h: int = 1) -> bytes:
@@ -128,92 +142,81 @@ class TestTenants:
         d = r.json()
         for k in ("active", "available", "area"):
             assert k in d
-        assert "brera-milano" in d["available"]
-        # Default per env note
-        assert d["active"] == "vico-equense", f"active was {d['active']}"
-
-    def test_tenant_specific_area(self):
-        r = requests.get(f"{API}/tenant/brera-discovery/area", timeout=15)
-        # 'brera-discovery' may or may not be in available_tenants; accept 200 or 404
-        assert r.status_code in (200, 404), r.status_code
+        # This workspace must list its own slug and not the removed ones.
+        assert DEFAULT_SLUG in d["available"]
+        assert "brera-milano" not in d["available"]
+        assert "oltrarno-florence" not in d["available"]
+        assert d["active"] == DEFAULT_SLUG, f"active was {d['active']}"
 
     def test_unknown_tenant_404(self):
         r = requests.get(f"{API}/tenant/atlantis-xyz/area", timeout=15)
         assert r.status_code == 404
 
-    def test_area_with_tenant_query(self):
-        r = requests.get(f"{API}/area", params={"tenant": "brera-milano"}, timeout=15)
+    def test_area_with_default_tenant_query(self):
+        r = requests.get(f"{API}/area", params={"tenant": DEFAULT_SLUG}, timeout=15)
         assert r.status_code == 200, r.text[:200]
-        d = r.json()
-        assert d.get("slug") == "brera-milano"
-        brand = d.get("brand", {})
-        # Brand contains 'Aura di Brera'
-        joined = " ".join(str(v) for v in brand.values()) if isinstance(brand, dict) else str(brand)
-        assert "Brera" in joined, f"Brera missing in brand: {brand}"
+        assert r.json().get("slug") == DEFAULT_SLUG
 
-    def test_area_with_tenant_header(self):
-        r = requests.get(f"{API}/area", headers={"X-Tenant-Slug": "brera-milano"}, timeout=15)
+    def test_area_with_default_tenant_header(self):
+        r = requests.get(f"{API}/area", headers={"X-Tenant-Slug": DEFAULT_SLUG}, timeout=15)
         assert r.status_code == 200
-        assert r.json().get("slug") == "brera-milano"
+        assert r.json().get("slug") == DEFAULT_SLUG
 
     def test_unknown_tenant_falls_back(self):
         r = requests.get(f"{API}/area", params={"tenant": "atlantis-xyz"}, timeout=15)
         assert r.status_code == 200, r.status_code
-        # Falls back to default (vico-equense)
-        assert r.json().get("slug") in ("vico-equense", "brera-milano")
+        # Falls back to the workspace default.
+        assert r.json().get("slug") == DEFAULT_SLUG
+
+    def test_removed_tenant_falls_back(self):
+        """Belt-and-braces — a stale ?tenant=brera-milano URL hitting this
+        deployment must NOT serve Brera content from leftover state."""
+        r = requests.get(f"{API}/area", params={"tenant": "brera-milano"}, timeout=15)
+        assert r.status_code == 200
+        assert r.json().get("slug") == DEFAULT_SLUG
 
     def test_default_tenant_when_no_param(self):
         r = requests.get(f"{API}/area", timeout=15)
         assert r.status_code == 200
-        assert r.json().get("slug") == "vico-equense"
+        assert r.json().get("slug") == DEFAULT_SLUG
 
 
-# ----------------- Phase 4: tenant-keyed admin area-settings -----------------
-class TestTenantKeyedAdminSettings:
+# ----------------- Phase 4: admin area-settings round-trip -----------------
+class TestAdminAreaSettings:
+    """Single-tenant variant of the original cross-tenant isolation tests.
+    Cross-tenant isolation is verified in the Brera workspace's own suite;
+    here we just confirm PATCH + DELETE work for the active tenant."""
+
     @pytest.fixture(autouse=True)
     def _cleanup(self, admin_session):
         yield
-        admin_session.delete(f"{API}/admin/area-settings", params={"tenant": "brera-milano"}, timeout=15)
-        admin_session.delete(f"{API}/admin/area-settings", params={"tenant": "vico-equense"}, timeout=15)
+        admin_session.delete(f"{API}/admin/area-settings",
+                             params={"tenant": DEFAULT_SLUG}, timeout=15)
 
-    def test_patch_brera_does_not_affect_vico(self, admin_session):
-        # Snapshot vico
-        vico_before = requests.get(f"{API}/area", params={"tenant": "vico-equense"}, timeout=15).json()
-        tagline_before = vico_before.get("tagline")
-
-        # Patch Brera tagline
-        new_tag = {"it": "TEST_BRERA_IT", "en": "TEST_BRERA_EN"}
+    def test_patch_then_get_reflects(self, admin_session):
+        new_tag = {"it": "TEST_TAGLINE_IT", "en": "TEST_TAGLINE_EN"}
         r = admin_session.patch(
             f"{API}/admin/area-settings",
-            params={"tenant": "brera-milano"},
+            params={"tenant": DEFAULT_SLUG},
             json={"tagline": new_tag},
             timeout=20,
         )
         assert r.status_code == 200, r.text[:300]
+        live = requests.get(f"{API}/area", params={"tenant": DEFAULT_SLUG}, timeout=15).json()
+        assert live.get("tagline") == new_tag
 
-        # Brera reflects
-        brera = requests.get(f"{API}/area", params={"tenant": "brera-milano"}, timeout=15).json()
-        assert brera.get("tagline") == new_tag
-
-        # Vico unchanged
-        vico_after = requests.get(f"{API}/area", params={"tenant": "vico-equense"}, timeout=15).json()
-        assert vico_after.get("tagline") == tagline_before
-
-    def test_delete_only_wipes_tenant(self, admin_session):
-        # Set Brera override
+    def test_delete_restores_defaults(self, admin_session):
         admin_session.patch(
             f"{API}/admin/area-settings",
-            params={"tenant": "brera-milano"},
+            params={"tenant": DEFAULT_SLUG},
             json={"tagline": {"it": "TEMP", "en": "TEMP"}},
             timeout=20,
         )
-        # Delete
         r = admin_session.delete(f"{API}/admin/area-settings",
-                                 params={"tenant": "brera-milano"}, timeout=15)
+                                 params={"tenant": DEFAULT_SLUG}, timeout=15)
         assert r.status_code in (200, 204)
-
-        brera = requests.get(f"{API}/area", params={"tenant": "brera-milano"}, timeout=15).json()
-        assert brera.get("tagline") != {"it": "TEMP", "en": "TEMP"}
+        live = requests.get(f"{API}/area", params={"tenant": DEFAULT_SLUG}, timeout=15).json()
+        assert live.get("tagline") != {"it": "TEMP", "en": "TEMP"}
 
 
 # ------------------------- Regression smoke -------------------------
@@ -221,7 +224,7 @@ class TestRegression:
     def test_auth_me_after_login(self, admin_session):
         r = admin_session.get(f"{API}/auth/me", timeout=15)
         assert r.status_code == 200
-        assert r.json().get("email") == ADMIN_EMAIL
+        assert r.json().get("email") == ADMIN_EMAIL.lower()
 
     def test_pois_no_tenant(self):
         r = requests.get(f"{API}/pois", timeout=15)
@@ -231,4 +234,4 @@ class TestRegression:
     def test_area_no_tenant_returns_default(self):
         r = requests.get(f"{API}/area", timeout=15)
         assert r.status_code == 200
-        assert r.json().get("slug") == "vico-equense"
+        assert r.json().get("slug") == DEFAULT_SLUG

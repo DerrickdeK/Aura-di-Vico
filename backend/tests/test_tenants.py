@@ -1,4 +1,10 @@
-"""Unit tests for the tenant resolver."""
+"""Unit tests for the tenant resolver.
+
+This workspace is the Vico Equense deployment. The multi-tenant engine is
+still exercised, but only against the tenant config(s) that actually
+ship here. Cross-tenant isolation is verified in the dedicated Brera
+workspace; here we just confirm the resolver mechanics still work.
+"""
 import os
 
 import pytest
@@ -22,28 +28,35 @@ def fake_request():
 
 
 class TestAvailableTenants:
-    def test_lists_brera_and_vico(self):
+    def test_lists_vico(self):
         from tenants import available_tenants
         slugs = set(available_tenants())
-        assert "brera-milano" in slugs
         assert "vico-equense" in slugs
+
+    def test_does_not_list_removed_tenants(self):
+        """Sanity: brera-milano and oltrarno-florence configs were removed
+        from this workspace so it can never accidentally serve them."""
+        from tenants import available_tenants
+        slugs = set(available_tenants())
+        assert "brera-milano" not in slugs
+        assert "oltrarno-florence" not in slugs
 
 
 class TestResolveTenant:
     def test_header_wins(self, fake_request):
         from tenants import resolve_tenant
-        r = fake_request(headers={"X-Tenant-Slug": "brera-milano"})
-        assert resolve_tenant(r) == "brera-milano"
+        r = fake_request(headers={"X-Tenant-Slug": "vico-equense"})
+        assert resolve_tenant(r) == "vico-equense"
 
     def test_query_param(self, fake_request):
         from tenants import resolve_tenant
-        r = fake_request(query={"tenant": "brera-milano"})
-        assert resolve_tenant(r) == "brera-milano"
+        r = fake_request(query={"tenant": "vico-equense"})
+        assert resolve_tenant(r) == "vico-equense"
 
     def test_subdomain(self, fake_request):
         from tenants import resolve_tenant
-        r = fake_request(headers={"host": "brera-milano.aura.app"})
-        assert resolve_tenant(r) == "brera-milano"
+        r = fake_request(headers={"host": "vico-equense.aura.app"})
+        assert resolve_tenant(r) == "vico-equense"
 
     def test_unknown_falls_back_to_default(self, fake_request):
         from tenants import resolve_tenant
@@ -52,6 +65,13 @@ class TestResolveTenant:
         # Default is whatever AREA_CONFIG_PATH points at — must exist in the list
         from tenants import available_tenants
         assert slug in available_tenants()
+
+    def test_removed_tenant_falls_back_to_default(self, fake_request):
+        """Belt-and-braces: a stale ?tenant=brera-milano URL must not
+        somehow serve Brera content from this workspace."""
+        from tenants import resolve_tenant
+        r = fake_request(query={"tenant": "brera-milano"})
+        assert resolve_tenant(r) == "vico-equense"
 
     def test_www_is_not_a_tenant(self, fake_request):
         from tenants import resolve_tenant
@@ -68,7 +88,7 @@ class TestResolveTenant:
 
 class TestDefaultTenant:
     def test_explicit_env_wins(self, monkeypatch):
-        monkeypatch.setenv("DEFAULT_TENANT_SLUG", "brera-milano")
+        monkeypatch.setenv("DEFAULT_TENANT_SLUG", "vico-equense")
         from tenants import default_tenant
-        assert default_tenant() == "brera-milano"
+        assert default_tenant() == "vico-equense"
         monkeypatch.delenv("DEFAULT_TENANT_SLUG")
