@@ -140,8 +140,8 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
         </label>
         <p className="text-xs text-[var(--text-tertiary)] mb-2">
           These take precedence over crowd-sourced memories when the place
-          speaks. Use short sentences. Example: <em>Founded 1774 by Maria
-          Theresa of Austria.</em>
+          speaks. Use short sentences. Example: <em>Built between the 13th
+          and 14th centuries, atop an Etruscan settlement.</em>
         </p>
         <textarea
           className="input-field"
@@ -149,7 +149,7 @@ export default function POIForm({ form, setForm, isNew, busy, error, onSubmit, o
           value={canonicalText}
           onChange={(e) => setCanonicalText(e.target.value)}
           data-testid="admin-form-canonical-facts"
-          placeholder={"Founded 1774 by Maria Theresa of Austria.\nTwo of its ginkgo biloba trees are over 240 years old.\nFree entry on the first Sunday of each month."}
+          placeholder={"Built in the 13th century atop an Etruscan settlement.\nThe bells have rung continuously since 1320.\nOpen to visitors Tuesday through Sunday, 9–13 and 16–19."}
         />
       </div>
 
