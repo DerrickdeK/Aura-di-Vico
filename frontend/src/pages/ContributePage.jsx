@@ -275,6 +275,14 @@ export default function ContributePage() {
       <h1 className="font-serif text-5xl mt-2 leading-none">{t(lang, "contribute.title")}</h1>
       <p className="mt-3 text-[var(--text-secondary)] max-w-lg">{t(lang, "contribute.lead")}</p>
 
+      <Link
+        to="/guida/contributore"
+        className="mt-4 inline-flex items-center gap-2 text-sm text-[var(--terracotta)] hover:underline"
+        data-testid="contribute-guida-link"
+      >
+        <BookOpen size={14} /> Leggi la guida del contributore
+      </Link>
+
       <section className="mt-8">
         <ContributionForm pois={pois} onSubmitted={() => setReloadKey((k) => k + 1)} />
       </section>

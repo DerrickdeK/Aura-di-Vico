@@ -18,6 +18,9 @@ import GiftComposerPage from "./pages/GiftComposerPage";
 import GiftRecipientPage from "./pages/GiftRecipientPage";
 import AdminAreaPage from "./pages/AdminAreaPage";
 import VicoPreviewPage from "./pages/VicoPreviewPage";
+import GuidaVisitatorePage from "./pages/GuidaVisitatorePage";
+import GuidaContributorePage from "./pages/GuidaContributorePage";
+import GuidaAdminPage from "./pages/GuidaAdminPage";
 import "./App.css";
 
 function ListenGate() {
@@ -48,6 +51,9 @@ function Shell() {
         <Route path="/admin/contributions" element={<AdminContributionsPage />} />
         <Route path="/gift/new" element={<GiftComposerPage />} />
         <Route path="/gift/:slug" element={<GiftRecipientPage />} />
+        <Route path="/guida" element={<GuidaVisitatorePage />} />
+        <Route path="/guida/contributore" element={<GuidaContributorePage />} />
+        <Route path="/guida/admin" element={<GuidaAdminPage />} />
       </Routes>
       <BottomNav />
     </>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Ear, Footprints, Sparkles, ArrowRight, ShieldCheck, PenLine, Gift } from "lucide-react";
+import { Ear, Footprints, Sparkles, ArrowRight, ShieldCheck, PenLine, Gift, BookOpen } from "lucide-react";
 
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -249,6 +249,13 @@ export default function LandingPage() {
         <p className="mt-10 text-xs text-[var(--text-tertiary)] tracking-widest uppercase">
           {t(lang, "landing.footerNote")}
         </p>
+        <Link
+          to="/guida"
+          className="mt-6 inline-flex items-center gap-2 text-sm text-[var(--terracotta)] hover:underline"
+          data-testid="landing-guida-link"
+        >
+          <BookOpen size={14} /> Guida per il visitatore
+        </Link>
       </section>
 
       {/* Reciprocity / weaving — the second core idea: voices intertwine */}

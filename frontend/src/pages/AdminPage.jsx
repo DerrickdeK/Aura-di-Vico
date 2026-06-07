@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Plus, RotateCcw, Sparkles } from "lucide-react";
+import { Plus, RotateCcw, Sparkles, BookOpen } from "lucide-react";
 import { api, formatApiError } from "../lib/api";
 import { devWarn } from "../lib/log";
 import { useAuth } from "../lib/auth";
@@ -160,6 +160,13 @@ export default function AdminPage() {
           <h1 className="font-serif text-5xl mt-2 leading-none">Curate {areaLabel}</h1>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Link
+            to="/guida/admin"
+            className="btn-ghost inline-flex items-center gap-2"
+            data-testid="admin-guida-link"
+          >
+            <BookOpen size={16} /> Guida admin
+          </Link>
           <Link
             to="/admin/area"
             className="btn-ghost inline-flex items-center gap-2"
